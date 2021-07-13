@@ -3,8 +3,19 @@
 interface
 
 uses
-  SysUtils, Classes, Types, Graphics, UITypes, Windows, Zip, IOUtils,
-  Excel4Delphi.Formula, Excel4Delphi.Xml, Excel4Delphi, Excel4Delphi.Common, Generics.Collections;
+  SysUtils,
+  Classes,
+  Types,
+  VCL.Graphics,
+  UITypes,
+  Windows,
+  Zip,
+  IOUtils,
+  Excel4Delphi.Formula,
+  Excel4Delphi.Xml,
+  Excel4Delphi,
+  Excel4Delphi.Common,
+  Generics.Collections;
 
 type
   TRelationType = (
@@ -511,12 +522,12 @@ function GetMaximumDigitWidth(fontName: string; fontSize: double): double;
 const
   numbers = '0123456789';
 var
-  bitmap: Graphics.TBitmap;
+  bitmap: VCL.Graphics.TBitmap;
   number: string;
 begin
   //А.А.Валуев Расчитываем ширину самого широкого числа.
   Result := 0;
-  bitmap := Graphics.TBitmap.Create;
+  bitmap := VCL.Graphics.TBitmap.Create;
   try
     bitmap.Canvas.Font.PixelsPerInch := 96;
     bitmap.Canvas.Font.Size := Trunc(fontSize);

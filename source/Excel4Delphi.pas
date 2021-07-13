@@ -3,8 +3,17 @@
 interface
 
 uses
-  Classes, SysUtils, Graphics, UITypes, Math, Windows, RegularExpressions,
-  Generics.Collections, Generics.Defaults, System.Contnrs, Excel4Delphi.Xml;
+  Classes,
+  SysUtils,
+  VCL.Graphics,
+  UITypes,
+  Math,
+  Windows,
+  RegularExpressions,
+  Generics.Collections,
+  Generics.Defaults,
+  System.Contnrs,
+  Excel4Delphi.Xml;
 
 var ZE_XLSX_APPLICATION: string;
 
