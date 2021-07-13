@@ -3,19 +3,19 @@
 interface
 
 uses
-  SysUtils,
-  Classes,
-  Types,
+  System.SysUtils,
+  System.Classes,
+  System.Types,
   VCL.Graphics,
-  UITypes,
+  System.UITypes,
   Windows,
-  Zip,
-  IOUtils,
+  System.Zip,
+  System.IOUtils,
   Excel4Delphi.Formula,
   Excel4Delphi.Xml,
   Excel4Delphi,
   Excel4Delphi.Common,
-  Generics.Collections;
+  System.Generics.Collections;
 
 type
   TRelationType = (rtNone = -1, rtWorkSheet = 0, rtStyles = 1, rtSharedStr = 2, rtDoc = 3, rtCoreProp = 4,
@@ -32,10 +32,10 @@ type
     id: string; // rID
     ftype: TRelationType; // тип ссылки
     target: string; // ссылка на файла
-    fileid: integer; // ссылка на запись
+    fileid: Integer; // ссылка на запись
     name: string; // имя листа
-    state: byte; // состояние
-    sheetid: integer; // номер листа
+    state: Byte; // состояние
+    sheetid: Integer; // номер листа
   end;
 
   TZXLSXFileItem = record
@@ -49,31 +49,31 @@ type
     id: string; // rID
     ftype: TRelationType; // тип ссылки
     target: string; // ссылка на файла
-    fileid: integer; // ссылка на запись
+    fileid: Integer; // ссылка на запись
     name: string; // имя листа
-    state: byte; // состояние
-    sheetid: integer; // номер листа
+    state: Byte; // состояние
+    sheetid: Integer; // номер листа
   end;
 
   TZXLSXRelationsArray = array of TZXLSXRelations;
 
   TZXLSXDiffBorderItemStyle = class(TPersistent)
   private
-    FUseStyle: boolean; // заменять ли стиль
-    FUseColor: boolean; // заменять ли цвет
+    FUseStyle: Boolean; // заменять ли стиль
+    FUseColor: Boolean; // заменять ли цвет
     FColor: TColor; // цвет линий
     FLineStyle: TZBorderType; // стиль линий
-    FWeight: byte;
+    FWeight: Byte;
   protected
   public
     constructor Create();
     procedure Clear();
     procedure Assign(Source: TPersistent); override;
-    property UseStyle: boolean read FUseStyle write FUseStyle;
-    property UseColor: boolean read FUseColor write FUseColor;
+    property UseStyle: Boolean read FUseStyle write FUseStyle;
+    property UseColor: Boolean read FUseColor write FUseColor;
     property Color: TColor read FColor write FColor;
     property LineStyle: TZBorderType read FLineStyle write FLineStyle;
-    property Weight: byte read FWeight write FWeight;
+    property Weight: Byte read FWeight write FWeight;
   end;
 
   TZXLSXDiffBorder = class(TPersistent)
@@ -93,19 +93,19 @@ type
   // TODO: возможно, для excel xml тоже понадобится (перенести?)
   TZXLSXDiffFormattingItem = class(TPersistent)
   private
-    FUseFont: boolean; // заменять ли шрифт
-    FUseFontColor: boolean; // заменять ли цвет шрифта
-    FUseFontStyles: boolean; // заменять ли стиль шрифта
+    FUseFont: Boolean; // заменять ли шрифт
+    FUseFontColor: Boolean; // заменять ли цвет шрифта
+    FUseFontStyles: Boolean; // заменять ли стиль шрифта
     FFontColor: TColor; // цвет шрифта
     FFontStyles: TFontStyles; // стиль шрифта
-    FUseBorder: boolean; // заменять ли рамку
+    FUseBorder: Boolean; // заменять ли рамку
     FBorders: TZXLSXDiffBorder; // Что менять в рамке
-    FUseFill: boolean; // заменять ли заливку
-    FUseCellPattern: boolean; // Заменять ли тип заливки
+    FUseFill: Boolean; // заменять ли заливку
+    FUseCellPattern: Boolean; // Заменять ли тип заливки
     FCellPattern: TZCellPattern; // тип заливки
-    FUseBGColor: boolean; // заменять ли цвет заливки
+    FUseBGColor: Boolean; // заменять ли цвет заливки
     FBGColor: TColor; // цвет заливки
-    FUsePatternColor: boolean; // Заменять ли цвет шаблона заливки
+    FUsePatternColor: Boolean; // Заменять ли цвет шаблона заливки
     FPatternColor: TColor; // Цвет шаблона заливки
   protected
   public
@@ -113,65 +113,65 @@ type
     destructor Destroy(); override;
     procedure Clear();
     procedure Assign(Source: TPersistent); override;
-    property UseFont: boolean read FUseFont write FUseFont;
-    property UseFontColor: boolean read FUseFontColor write FUseFontColor;
-    property UseFontStyles: boolean read FUseFontStyles write FUseFontStyles;
+    property UseFont: Boolean read FUseFont write FUseFont;
+    property UseFontColor: Boolean read FUseFontColor write FUseFontColor;
+    property UseFontStyles: Boolean read FUseFontStyles write FUseFontStyles;
     property FontColor: TColor read FFontColor write FFontColor;
     property FontStyles: TFontStyles read FFontStyles write FFontStyles;
-    property UseBorder: boolean read FUseBorder write FUseBorder;
+    property UseBorder: Boolean read FUseBorder write FUseBorder;
     property Borders: TZXLSXDiffBorder read FBorders write FBorders;
-    property UseFill: boolean read FUseFill write FUseFill;
-    property UseCellPattern: boolean read FUseCellPattern write FUseCellPattern;
+    property UseFill: Boolean read FUseFill write FUseFill;
+    property UseCellPattern: Boolean read FUseCellPattern write FUseCellPattern;
     property CellPattern: TZCellPattern read FCellPattern write FCellPattern;
-    property UseBGColor: boolean read FUseBGColor write FUseBGColor;
+    property UseBGColor: Boolean read FUseBGColor write FUseBGColor;
     property BGColor: TColor read FBGColor write FBGColor;
-    property UsePatternColor: boolean read FUsePatternColor write FUsePatternColor;
+    property UsePatternColor: Boolean read FUsePatternColor write FUsePatternColor;
     property PatternColor: TColor read FPatternColor write FPatternColor;
   end;
 
   // Differential formating
   TZXLSXDiffFormatting = class(TPersistent)
   private
-    FCount: integer;
-    FMaxCount: integer;
+    FCount: Integer;
+    FMaxCount: Integer;
     FItems: array of TZXLSXDiffFormattingItem;
   protected
-    function GetItem(Num: integer): TZXLSXDiffFormattingItem;
-    procedure SetItem(Num: integer; const Value: TZXLSXDiffFormattingItem);
-    procedure SetCount(ACount: integer);
+    function GetItem(Num: Integer): TZXLSXDiffFormattingItem;
+    procedure SetItem(Num: Integer; const Value: TZXLSXDiffFormattingItem);
+    procedure SetCount(ACount: Integer);
   public
     constructor Create();
     destructor Destroy(); override;
     procedure Add();
     procedure Assign(Source: TPersistent); override;
     procedure Clear();
-    property Count: integer read FCount;
-    property Items[Num: integer]: TZXLSXDiffFormattingItem read GetItem write SetItem; default;
+    property Count: Integer read FCount;
+    property Items[Num: Integer]: TZXLSXDiffFormattingItem read GetItem write SetItem; default;
   end;
 
   // List of cell number formats (date/numbers/currencies etc formats)
   TZEXLSXNumberFormats = class
   private
-    FFormatsCount: integer;
+    FFormatsCount: Integer;
     FFormats: array of string; // numFmts (include default formats)
-    FStyleFmtID: array of integer;
-    FStyleFmtIDCount: integer;
+    FStyleFmtID: array of Integer;
+    FStyleFmtIDCount: Integer;
   protected
-    function GetFormat(Num: integer): string;
-    procedure SetFormat(Num: integer; const Value: string);
-    function GetStyleFMTID(Num: integer): integer;
-    procedure SetStyleFMTID(Num: integer; const Value: integer);
-    procedure SetStyleFMTCount(Value: integer);
+    function GetFormat(Num: Integer): string;
+    procedure SetFormat(Num: Integer; const Value: string);
+    function GetStyleFMTID(Num: Integer): Integer;
+    procedure SetStyleFMTID(Num: Integer; const Value: Integer);
+    procedure SetStyleFMTCount(Value: Integer);
   public
     constructor Create();
     destructor Destroy(); override;
     procedure ReadNumFmts(const Xml: TZsspXMLReaderH);
-    function IsDateFormat(StyleNum: integer): boolean;
-    function FindFormatID(const Value: string): integer;
-    property FormatsCount: integer read FFormatsCount;
-    property Format[Num: integer]: string read GetFormat write SetFormat; default;
-    property StyleFMTID[Num: integer]: integer read GetStyleFMTID write SetStyleFMTID;
-    property StyleFMTCount: integer read FStyleFmtIDCount write SetStyleFMTCount;
+    function IsDateFormat(StyleNum: Integer): Boolean;
+    function FindFormatID(const Value: string): Integer;
+    property FormatsCount: Integer read FFormatsCount;
+    property Format[Num: Integer]: string read GetFormat write SetFormat; default;
+    property StyleFMTID[Num: Integer]: Integer read GetStyleFMTID write SetStyleFMTID;
+    property StyleFMTCount: Integer read FStyleFmtIDCount write SetStyleFMTCount;
   end;
 
   TZEXLSXReadHelper = class
@@ -189,7 +189,7 @@ type
 
   // Store link item
   TZEXLSXHyperLinkItem = record
-    RID: integer;
+    RID: Integer;
     RelType: TRelationType;
     CellRef: string;
     target: string;
@@ -202,29 +202,29 @@ type
   TZEXLSXWriteHelper = class
   private
     FHyperLinks: array of TZEXLSXHyperLinkItem;
-    FHyperLinksCount: integer;
-    FMaxHyperLinksCount: integer;
-    FCurrentRID: integer; // Current rID number (for HyperLinks/comments etc)
-    FisHaveComments: boolean; // Is Need create comments*.xml?
-    FisHaveDrawings: boolean; // Is Need create drawings*.xml?
-    FSheetHyperlinksArray: array of integer;
-    FSheetHyperlinksCount: integer;
+    FHyperLinksCount: Integer;
+    FMaxHyperLinksCount: Integer;
+    FCurrentRID: Integer; // Current rID number (for HyperLinks/comments etc)
+    FisHaveComments: Boolean; // Is Need create comments*.xml?
+    FisHaveDrawings: Boolean; // Is Need create drawings*.xml?
+    FSheetHyperlinksArray: array of Integer;
+    FSheetHyperlinksCount: Integer;
   protected
-    function GenerateRID(): integer;
+    function GenerateRID(): Integer;
   public
     constructor Create();
     destructor Destroy(); override;
     procedure AddHyperLink(const ACellRef, ATarget, AScreenTip, ATargetMode: string);
-    function AddDrawing(const ATarget: string): integer;
+    function AddDrawing(const ATarget: string): Integer;
     procedure WriteHyperLinksTag(const Xml: TZsspXMLWriterH);
     function CreateSheetRels(const Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string;
-      BOM: ansistring): integer;
-    procedure AddSheetHyperlink(PageNum: integer);
-    function IsSheetHaveHyperlinks(PageNum: integer): boolean;
+      BOM: ansistring): Integer;
+    procedure AddSheetHyperlink(PageNum: Integer);
+    function IsSheetHaveHyperlinks(PageNum: Integer): Boolean;
     procedure Clear();
-    property HyperLinksCount: integer read FHyperLinksCount;
-    property isHaveComments: boolean read FisHaveComments write FisHaveComments; // Is need create comments*.xml?
-    property isHaveDrawings: boolean read FisHaveDrawings write FisHaveDrawings; // Is need create drawings*.xml?
+    property HyperLinksCount: Integer read FHyperLinksCount;
+    property isHaveComments: Boolean read FisHaveComments write FisHaveComments; // Is need create comments*.xml?
+    property isHaveDrawings: Boolean read FisHaveDrawings write FisHaveDrawings; // Is need create drawings*.xml?
   end;
 
   TExcel4DelphiReader = class(TObject)
@@ -237,40 +237,40 @@ type
     FWorkBook: TZWorkBook;
 
     function ReadRunProperties(AXml: TZsspXMLReaderH; ATagName: string): TZFont;
-    procedure ReadComments(AStream: TStream; ASheetIndex: integer);
+    procedure ReadComments(AStream: TStream; ASheetIndex: Integer);
   public
     constructor Create(AWorkBook: TZWorkBook);
     destructor Destroy(); override;
 
     procedure ReadTheme(AStream: TStream); overload;
-    procedure ReadTheme(AFileName: string); overload;
+    procedure ReadTheme(const AFileName: string); overload;
 
     procedure ReadContentTypes(AStream: TStream); overload;
-    procedure ReadContentTypes(AFileName: string); overload;
+    procedure ReadContentTypes(const AFileName: string); overload;
 
     procedure ReadSharedStrings(AStream: TStream); overload;
-    procedure ReadSharedStrings(AFileName: string); overload;
+    procedure ReadSharedStrings(const AFileName: string); overload;
 
     procedure ReadStyles(AStream: TStream); overload;
-    procedure ReadStyles(AFileName: string); overload;
+    procedure ReadStyles(const AFileName: string); overload;
 
     procedure ReadRelationships(AStream: TStream); overload;
-    procedure ReadRelationships(AFileName: string); overload;
+    procedure ReadRelationships(const AFileName: string); overload;
 
     procedure ReadWorkBook(AStream: TStream); overload;
-    procedure ReadWorkBook(AFileName: string); overload;
+    procedure ReadWorkBook(const AFileName: string); overload;
 
-    procedure ReadWorkSheet(AStream: TStream; ASheetIndex: integer); overload;
-    procedure ReadWorkSheet(AFileName: string; ASheetIndex: integer); overload;
+    procedure ReadWorkSheet(AStream: TStream; ASheetIndex: Integer); overload;
+    procedure ReadWorkSheet(const AFileName: string; ASheetIndex: Integer); overload;
 
     procedure LoadFromStream(AStream: TStream);
-    procedure LoadFromDir(ADirName: string);
-    procedure LoadFromFile(AFileName: string);
+    procedure LoadFromDir(const ADirName: string);
+    procedure LoadFromFile(const AFileName: string);
   end;
 
   TExcel4DelphiWriter = class
   private
-    FSharedStrings: TObjectDictionary<TRichText, integer>;
+    FSharedStrings: TObjectDictionary<TRichText, Integer>;
     // FFileList: TList<TZXLSXFileItem>; // never used
     FCommentList: TList<string>;
     FWorkBook: TZWorkBook;
@@ -281,107 +281,107 @@ type
     destructor Destroy(); override;
 
     procedure WriteTheme(AStream: TStream); overload;
-    procedure WriteTheme(AFileName: string); overload;
+    procedure WriteTheme(const AFileName: string); overload;
 
     procedure WriteContentTypes(AStream: TStream); overload;
-    procedure WriteContentTypes(AFileName: string); overload;
+    procedure WriteContentTypes(const AFileName: string); overload;
 
     procedure WriteSharedStrings(AStream: TStream); overload;
-    procedure WriteSharedStrings(AFileName: string); overload;
+    procedure WriteSharedStrings(const AFileName: string); overload;
 
     procedure WriteStyles(AStream: TStream); overload;
-    procedure WriteStyles(AFileName: string); overload;
+    procedure WriteStyles(const AFileName: string); overload;
 
     procedure WriteRelationships(AStream: TStream); overload;
-    procedure WriteRelationships(AFileName: string); overload;
+    procedure WriteRelationships(const AFileName: string); overload;
 
     procedure WriteDrawings(AStream: TStream); overload;
-    procedure WriteDrawings(AFileName: string); overload;
+    procedure WriteDrawings(const AFileName: string); overload;
 
     procedure WriteDrawingRels(AStream: TStream); overload;
-    procedure WriteDrawingRels(AFileName: string); overload;
+    procedure WriteDrawingRels(const AFileName: string); overload;
 
     procedure WriteWorkBook(AStream: TStream); overload;
-    procedure WriteWorkBook(AFileName: string); overload;
+    procedure WriteWorkBook(const AFileName: string); overload;
 
     procedure WriteDocPropsApp(AStream: TStream); overload;
-    procedure WriteDocPropsApp(AFileName: string); overload;
+    procedure WriteDocPropsApp(const AFileName: string); overload;
 
     procedure WriteDocPropsCore(AStream: TStream); overload;
-    procedure WriteDocPropsCore(AFileName: string); overload;
+    procedure WriteDocPropsCore(const AFileName: string); overload;
 
-    procedure WriteWorkSheet(AStream: TStream; ASheetIndex: integer); overload;
-    procedure WriteWorkSheet(AFileName: string; ASheetIndex: integer); overload;
+    procedure WriteWorkSheet(AStream: TStream; ASheetIndex: Integer); overload;
+    procedure WriteWorkSheet(const AFileName: string; const ASheetIndex: Integer); overload;
 
     procedure SaveToStream(AStream: TStream);
     procedure SaveToDir(ADirName: string);
-    procedure SaveToFile(AFileName: string);
+    procedure SaveToFile(const AFileName: string);
   end;
 
   TZEXMLSSHelper = class helper for TZWorkBook
   public
-    procedure LoadFromStream(Stream: TStream);
-    procedure LoadFromFile(fileName: string);
-    procedure SaveToStream(Stream: TStream);
-    procedure SaveToFile(fileName: string);
+    procedure LoadFromStream(AStream: TStream);
+    procedure LoadFromFile(const AFileName: string);
+    procedure SaveToStream(AStream: TStream);
+    procedure SaveToFile(const AFileName: string);
   end;
 
 // Дополнительные функции для экспорта отдельных файлов
 function ZEXLSXCreateStyles(var XMLSS: TZWorkBook; Stream: TStream; TextConverter: TAnsiToCPConverter;
-  CodePageName: string; BOM: ansistring): integer;
+  CodePageName: string; BOM: ansistring): Integer;
 function ZEXLSXCreateWorkBook(var XMLSS: TZWorkBook; Stream: TStream; const _pages: TIntegerDynArray;
-  const _names: TStringDynArray; PageCount: integer; TextConverter: TAnsiToCPConverter; CodePageName: String;
-  BOM: ansistring): integer;
-function ZEXLSXCreateSheet(var XMLSS: TZWorkBook; Stream: TStream; SheetNum: integer;
-  var SharedStrings: TStringDynArray; const SharedStringsDictionary: TDictionary<string, integer>;
+  const _names: TStringDynArray; PageCount: Integer; TextConverter: TAnsiToCPConverter; CodePageName: String;
+  BOM: ansistring): Integer;
+function ZEXLSXCreateSheet(var XMLSS: TZWorkBook; Stream: TStream; SheetNum: Integer;
+  var SharedStrings: TStringDynArray; const SharedStringsDictionary: TDictionary<string, Integer>;
   TextConverter: TAnsiToCPConverter; CodePageName: String; BOM: ansistring;
-  const WriteHelper: TZEXLSXWriteHelper): integer;
-function ZEXLSXCreateContentTypes(var XMLSS: TZWorkBook; Stream: TStream; PageCount: integer; CommentCount: integer;
+  const WriteHelper: TZEXLSXWriteHelper): Integer;
+function ZEXLSXCreateContentTypes(var XMLSS: TZWorkBook; Stream: TStream; PageCount: Integer; CommentCount: Integer;
   const PagesComments: TIntegerDynArray; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring;
-  const WriteHelper: TZEXLSXWriteHelper): integer;
+  const WriteHelper: TZEXLSXWriteHelper): Integer;
 function ZEXLSXCreateRelsMain(Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string;
-  BOM: ansistring): integer;
+  BOM: ansistring): Integer;
 function ZEXLSXCreateSharedStrings(var XMLSS: TZWorkBook; Stream: TStream; const SharedStrings: TStringDynArray;
-  TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): integer;
+  TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): Integer;
 function ZEXLSXCreateDocPropsApp(Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string;
-  BOM: ansistring): integer;
+  BOM: ansistring): Integer;
 function ZEXLSXCreateDocPropsCore(var XMLSS: TZWorkBook; Stream: TStream; TextConverter: TAnsiToCPConverter;
-  CodePageName: string; BOM: ansistring): integer;
+  CodePageName: string; BOM: ansistring): Integer;
 function ZEXLSXCreateDrawing(sheet: TZSheet; Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: String;
-  BOM: ansistring): integer;
+  BOM: ansistring): Integer;
 function ZEXLSXCreateDrawingRels(sheet: TZSheet; Stream: TStream; TextConverter: TAnsiToCPConverter;
-  CodePageName: String; BOM: ansistring): integer;
+  CodePageName: String; BOM: ansistring): Integer;
 procedure ZEAddRelsRelation(Xml: TZsspXMLWriterH; const RID: string; ridType: TRelationType; const target: string;
   const TargetMode: string = '');
 
-function ReadXLSXPath(var XMLSS: TZWorkBook; DirName: string): integer;
-function ReadXLSXFile(var XMLSS: TZWorkBook; zipStream: TStream): integer;
-function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string; const SheetsNumbers: array of integer;
+function ReadXLSXPath(var XMLSS: TZWorkBook; DirName: string): Integer;
+function ReadXLSXFile(var XMLSS: TZWorkBook; zipStream: TStream): Integer;
+function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string; const SheetsNumbers: array of Integer;
   const SheetsNames: array of string; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring = '')
-  : integer; overload;
-function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string; const SheetsNumbers: array of integer;
-  const SheetsNames: array of string): integer; overload;
-function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string): integer; overload;
-function SaveXmlssToXLSX(var XMLSS: TZWorkBook; zipStream: TStream; const SheetsNumbers: array of integer;
+  : Integer; overload;
+function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string; const SheetsNumbers: array of Integer;
+  const SheetsNames: array of string): Integer; overload;
+function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string): Integer; overload;
+function SaveXmlssToXLSX(var XMLSS: TZWorkBook; zipStream: TStream; const SheetsNumbers: array of Integer;
   const SheetsNames: array of string; TextConverter: TAnsiToCPConverter; CodePageName: string;
-  BOM: ansistring = ''): integer;
+  BOM: ansistring = ''): Integer;
 
 // Дополнительные функции, на случай чтения отдельного файла
 function ZEXSLXReadTheme(var Stream: TStream; var ThemaFillsColors: TIntegerDynArray;
-  var ThemaColorCount: integer): boolean;
+  var ThemaColorCount: Integer): Boolean;
 function ZEXSLXReadContentTypes(var Stream: TStream; var FileArray: TArray<TZXLSXFileItem>;
-  var FilesCount: integer): boolean;
-function ZEXSLXReadSharedStrings(var Stream: TStream; out StrArray: TStringDynArray; out StrCount: integer): boolean;
+  var FilesCount: Integer): Boolean;
+function ZEXSLXReadSharedStrings(var Stream: TStream; out StrArray: TStringDynArray; out StrCount: Integer): Boolean;
 function ZEXSLXReadStyles(var XMLSS: TZWorkBook; var Stream: TStream; var ThemaFillsColors: TIntegerDynArray;
-  var ThemaColorCount: integer; var MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): boolean;
-function ZE_XSLXReadRelationships(var Stream: TStream; var Relations: TZXLSXRelationsArray; var RelationsCount: integer;
-  var isWorkSheet: boolean; needReplaceDelimiter: boolean): boolean;
+  var ThemaColorCount: Integer; var MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): Boolean;
+function ZE_XSLXReadRelationships(var Stream: TStream; var Relations: TZXLSXRelationsArray; var RelationsCount: Integer;
+  var isWorkSheet: Boolean; needReplaceDelimiter: Boolean): Boolean;
 function ZEXSLXReadWorkBook(var XMLSS: TZWorkBook; var Stream: TStream; var Relations: TZXLSXRelationsArray;
-  var RelationsCount: integer): boolean;
+  var RelationsCount: Integer): Boolean;
 function ZEXSLXReadSheet(var XMLSS: TZWorkBook; var Stream: TStream; const SheetName: string;
-  var StrArray: TStringDynArray; StrCount: integer; var Relations: TZXLSXRelationsArray; RelationsCount: integer;
-  MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): boolean;
-function ZEXSLXReadComments(var XMLSS: TZWorkBook; var Stream: TStream): boolean;
+  var StrArray: TStringDynArray; StrCount: Integer; var Relations: TZXLSXRelationsArray; RelationsCount: Integer;
+  MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): Boolean;
+function ZEXSLXReadComments(var XMLSS: TZWorkBook; var Stream: TStream): Boolean;
 
 implementation
 
@@ -466,17 +466,17 @@ const
 type
   TZEXLSXFont = record
     name: string;
-    bold: boolean;
-    italic: boolean;
-    underline: boolean;
-    strike: boolean;
-    charset: integer;
+    bold: Boolean;
+    italic: Boolean;
+    underline: Boolean;
+    strike: Boolean;
+    charset: Integer;
     Color: TColor;
-    ColorType: byte;
+    ColorType: Byte;
     LumFactor: double;
     fontsize: double;
-    superscript: boolean;
-    subscript: boolean;
+    superscript: Boolean;
+    subscript: Boolean;
   end;
 
   TZEXLSXFontArray = array of TZEXLSXFont;
@@ -550,7 +550,7 @@ end;
 
 constructor TZXLSXDiffFormatting.Create();
 var
-  i: integer;
+  i: Integer;
 begin
   FCount := 0;
   FMaxCount := 20;
@@ -561,7 +561,7 @@ end;
 
 destructor TZXLSXDiffFormatting.Destroy();
 var
-  i: integer;
+  i: Integer;
 begin
   for i := 0 to FMaxCount - 1 do
     if (Assigned(FItems[i])) then
@@ -578,7 +578,7 @@ end;
 procedure TZXLSXDiffFormatting.Assign(Source: TPersistent);
 var
   df: TZXLSXDiffFormatting;
-  i: integer;
+  i: Integer;
 begin
   if Assigned(Source) and (Source is TZXLSXDiffFormatting) then
   begin
@@ -591,9 +591,9 @@ begin
     inherited;
 end; // Assign
 
-procedure TZXLSXDiffFormatting.SetCount(ACount: integer);
+procedure TZXLSXDiffFormatting.SetCount(ACount: Integer);
 var
-  i: integer;
+  i: Integer;
 begin
   if (ACount >= FMaxCount) then
   begin
@@ -612,7 +612,7 @@ begin
   FCount := 0;
 end;
 
-function TZXLSXDiffFormatting.GetItem(Num: integer): TZXLSXDiffFormattingItem;
+function TZXLSXDiffFormatting.GetItem(Num: Integer): TZXLSXDiffFormattingItem;
 begin
   if ((Num >= 0) and (Num < Count)) then
     Result := FItems[Num]
@@ -620,7 +620,7 @@ begin
     Result := nil;
 end;
 
-procedure TZXLSXDiffFormatting.SetItem(Num: integer; const Value: TZXLSXDiffFormattingItem);
+procedure TZXLSXDiffFormatting.SetItem(Num: Integer; const Value: TZXLSXDiffFormattingItem);
 begin
   if ((Num >= 0) and (Num < Count)) then
     if (Assigned(Value)) then
@@ -637,7 +637,7 @@ end;
 procedure TZXLSXDiffBorderItemStyle.Assign(Source: TPersistent);
 var
   bs: TZXLSXDiffBorderItemStyle;
-  b: boolean;
+  b: Boolean;
 begin
   b := true;
   if (Assigned(Source)) then
@@ -669,7 +669,7 @@ end;
 
 constructor TZXLSXDiffBorder.Create();
 var
-  i: integer;
+  i: Integer;
 begin
   for i := 0 to 5 do
     FBorder[i] := TZXLSXDiffBorderItemStyle.Create();
@@ -678,7 +678,7 @@ end;
 
 destructor TZXLSXDiffBorder.Destroy();
 var
-  i: integer;
+  i: Integer;
 begin
   for i := 0 to 5 do
     FreeAndNil(FBorder[i]);
@@ -688,7 +688,7 @@ end;
 procedure TZXLSXDiffBorder.Assign(Source: TPersistent);
 var
   brd: TZXLSXDiffBorder;
-  b: boolean;
+  b: Boolean;
   i: TZBordersPos;
 begin
   b := true;
@@ -744,7 +744,7 @@ end;
 procedure TZXLSXDiffFormattingItem.Assign(Source: TPersistent);
 var
   dxfItem: TZXLSXDiffFormattingItem;
-  b: boolean;
+  b: Boolean;
 begin
   b := true;
   if (Assigned(Source)) then
@@ -798,7 +798,7 @@ end; // Clear
 
 constructor TZEXLSXNumberFormats.Create();
 var
-  i: integer;
+  i: Integer;
 begin
   FStyleFmtIDCount := 0;
   FFormatsCount := 164;
@@ -867,9 +867,9 @@ end;
 // RETURN
 // integer - >= 0 - index number if store.
 // -1 - not found
-function TZEXLSXNumberFormats.FindFormatID(const Value: string): integer;
+function TZEXLSXNumberFormats.FindFormatID(const Value: string): Integer;
 var
-  i: integer;
+  i: Integer;
 begin
   Result := -1;
   for i := 0 to FFormatsCount - 1 do
@@ -880,16 +880,16 @@ begin
     end;
 end;
 
-function TZEXLSXNumberFormats.GetFormat(Num: integer): string;
+function TZEXLSXNumberFormats.GetFormat(Num: Integer): string;
 begin
   Result := '';
   if ((Num >= 0) and (Num < FFormatsCount)) then
     Result := FFormats[Num];
 end;
 
-procedure TZEXLSXNumberFormats.SetFormat(Num: integer; const Value: string);
+procedure TZEXLSXNumberFormats.SetFormat(Num: Integer; const Value: string);
 var
-  i: integer;
+  i: Integer;
 begin
   if ((Num >= 0) and (Num < FFormatsCount)) then
     FFormats[Num] := Value
@@ -903,7 +903,7 @@ begin
   end;
 end;
 
-function TZEXLSXNumberFormats.GetStyleFMTID(Num: integer): integer;
+function TZEXLSXNumberFormats.GetStyleFMTID(Num: Integer): Integer;
 begin
   if ((Num >= 0) and (Num < FStyleFmtIDCount)) then
     Result := FStyleFmtID[Num]
@@ -911,9 +911,9 @@ begin
     Result := 0;
 end;
 
-function TZEXLSXNumberFormats.IsDateFormat(StyleNum: integer): boolean;
+function TZEXLSXNumberFormats.IsDateFormat(StyleNum: Integer): Boolean;
 var
-  fmtId: integer;
+  fmtId: Integer;
 begin
   Result := false;
   if ((StyleNum >= 0) and (StyleNum < FStyleFmtIDCount)) then
@@ -930,7 +930,7 @@ end;
 
 procedure TZEXLSXNumberFormats.ReadNumFmts(const Xml: TZsspXMLReaderH);
 var
-  temp: integer;
+  temp: Integer;
 begin
   with THTMLEncoding.Create do
     try
@@ -945,13 +945,13 @@ begin
     end;
 end;
 
-procedure TZEXLSXNumberFormats.SetStyleFMTID(Num: integer; const Value: integer);
+procedure TZEXLSXNumberFormats.SetStyleFMTID(Num: Integer; const Value: Integer);
 begin
   if ((Num >= 0) and (Num < FStyleFmtIDCount)) then
     FStyleFmtID[Num] := Value;
 end;
 
-procedure TZEXLSXNumberFormats.SetStyleFMTCount(Value: integer);
+procedure TZEXLSXNumberFormats.SetStyleFMTCount(Value: Integer);
 begin
   if (Value >= 0) then
   begin
@@ -985,7 +985,7 @@ end;
 /// /::::::::::::: TZEXLSXWriteHelper :::::::::::::::::////
 
 // Generate next RID for references
-function TZEXLSXWriteHelper.GenerateRID(): integer;
+function TZEXLSXWriteHelper.GenerateRID(): Integer;
 begin
   inc(FCurrentRID);
   Result := FCurrentRID;
@@ -1008,7 +1008,7 @@ end;
 
 procedure TZEXLSXWriteHelper.AddHyperLink(const ACellRef, ATarget, AScreenTip, ATargetMode: string);
 var
-  Num: integer;
+  Num: Integer;
 begin
   Num := FHyperLinksCount;
   inc(FHyperLinksCount);
@@ -1030,9 +1030,9 @@ end;
 // Add hyperlink
 // INPUT
 // const ATarget: string     - drawing target (../drawings/drawing2.xml)
-function TZEXLSXWriteHelper.AddDrawing(const ATarget: string): integer;
+function TZEXLSXWriteHelper.AddDrawing(const ATarget: string): Integer;
 var
-  Num: integer;
+  Num: Integer;
 begin
   Num := FHyperLinksCount;
   inc(FHyperLinksCount);
@@ -1058,7 +1058,7 @@ end;
 // const xml: TZsspXMLWriterH
 procedure TZEXLSXWriteHelper.WriteHyperLinksTag(const Xml: TZsspXMLWriterH);
 var
-  i: integer;
+  i: Integer;
 begin
   if (FHyperLinksCount > 0) then
   begin
@@ -1095,10 +1095,10 @@ end; // WriteHyperLinksTag
 // BOM: ansistring
 // RETURN
 function TZEXLSXWriteHelper.CreateSheetRels(const Stream: TStream; TextConverter: TAnsiToCPConverter;
-  CodePageName: string; BOM: ansistring): integer;
+  CodePageName: string; BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
-  i: integer;
+  i: Integer;
 begin
   Result := 0;
   Xml := TZsspXMLWriterH.Create(Stream);
@@ -1122,16 +1122,16 @@ begin
   end;
 end; // CreateSheetRels
 
-procedure TZEXLSXWriteHelper.AddSheetHyperlink(PageNum: integer);
+procedure TZEXLSXWriteHelper.AddSheetHyperlink(PageNum: Integer);
 begin
   SetLength(FSheetHyperlinksArray, FSheetHyperlinksCount + 1);
   FSheetHyperlinksArray[FSheetHyperlinksCount] := PageNum;
   inc(FSheetHyperlinksCount);
 end;
 
-function TZEXLSXWriteHelper.IsSheetHaveHyperlinks(PageNum: integer): boolean;
+function TZEXLSXWriteHelper.IsSheetHaveHyperlinks(PageNum: Integer): Boolean;
 var
-  i: integer;
+  i: Integer;
 begin
   Result := false;
   for i := 0 to FSheetHyperlinksCount - 1 do
@@ -1180,7 +1180,7 @@ begin
   end;
 end; // ZEXLSXGetRelationName
 
-function XLSXBoolToStr(Value: boolean): string;
+function XLSXBoolToStr(Value: Boolean): string;
 begin
   if (Value) then
     Result := 'true'
@@ -1196,11 +1196,11 @@ end;
 // RETURN
 // boolean - true - всё прочиталось успешно
 function ZEXSLXReadTheme(var Stream: TStream; var ThemaFillsColors: TIntegerDynArray;
-  var ThemaColorCount: integer): boolean;
+  var ThemaColorCount: Integer): Boolean;
 var
   Xml: TZsspXMLReaderH;
-  maxCount: integer;
-  flag: boolean;
+  maxCount: Integer;
+  flag: Boolean;
 
   procedure _addFillColor(const _rgb: string);
   begin
@@ -1257,7 +1257,7 @@ end; // ZEXSLXReadThema
 // RETURN
 // boolean - true - всё прочиталось успешно
 function ZEXSLXReadContentTypes(var Stream: TStream; var FileArray: TArray<TZXLSXFileItem>;
-  var FilesCount: integer): boolean;
+  var FilesCount: Integer): Boolean;
 var
   Xml: TZsspXMLReaderH;
   contType: string;
@@ -1303,11 +1303,11 @@ end; // ZEXSLXReadContentTypes
 // var StrCount: integer         - кол-во элементов
 // RETURN
 // boolean - true - всё ок
-function ZEXSLXReadSharedStrings(var Stream: TStream; out StrArray: TStringDynArray; out StrCount: integer): boolean;
+function ZEXSLXReadSharedStrings(var Stream: TStream; out StrArray: TStringDynArray; out StrCount: Integer): Boolean;
 var
   Xml: TZsspXMLReaderH;
   s: string;
-  k: integer;
+  k: Integer;
   rs: TRichString;
 begin
   Result := false;
@@ -1393,9 +1393,9 @@ end; // ZEXSLXReadSharedStrings
 // RETURN
 // boolean - true - условное форматирование и оператор успешно распознаны
 function ZEXLSX_getCFCondition(const xlsxCfType, xlsxCFOperator: string; out CFCondition: TZCondition;
-  out CFOperator: TZConditionalOperator): boolean;
+  out CFOperator: TZConditionalOperator): Boolean;
 var
-  isCheckOperator: boolean;
+  isCheckOperator: Boolean;
   procedure _SetCFOperator(AOperator: TZConditionalOperator);
   begin
     CFOperator := AOperator;
@@ -1407,7 +1407,7 @@ var
   // оператор
   // RETURN
   // boolean - true - всё ок, можно проверять далее
-  function _CheckXLSXCfType(out isNeddCheckOperator: boolean): boolean;
+  function _CheckXLSXCfType(out isNeddCheckOperator: Boolean): Boolean;
   begin
     Result := true;
     isNeddCheckOperator := true;
@@ -1429,7 +1429,7 @@ var
   end; // _CheckXLSXCfType
 
   // Проверить оператор
-  function _CheckCFoperator(): boolean;
+  function _CheckCFoperator(): Boolean;
   begin
     Result := true;
     if (xlsxCFOperator = 'lessThan') then
@@ -1474,11 +1474,11 @@ begin
   end;
 end; // ZEXLSX_getCFCondition
 
-function ZEXLSXReadDrawingRels(sheet: TZSheet; Stream: TStream): boolean;
+function ZEXLSXReadDrawingRels(sheet: TZSheet; Stream: TStream): Boolean;
 var
   Xml: TZsspXMLReaderH;
   target: string;
-  i, id: integer;
+  i, id: Integer;
 begin
   Result := false;
   Xml := TZsspXMLReaderH.Create();
@@ -1507,7 +1507,7 @@ begin
   end;
 end;
 
-function ZEXLSXReadDrawing(sheet: TZSheet; Stream: TStream): boolean;
+function ZEXLSXReadDrawing(sheet: TZSheet; Stream: TStream): Boolean;
 var
   Xml: TZsspXMLReaderH;
   picture: TZEPicture;
@@ -1638,30 +1638,30 @@ end;
 // RETURN
 // boolean - true - страница прочиталась успешно
 function ZEXSLXReadSheet(var XMLSS: TZWorkBook; var Stream: TStream; const SheetName: string;
-  var StrArray: TStringDynArray; StrCount: integer; var Relations: TZXLSXRelationsArray; RelationsCount: integer;
-  MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): boolean;
+  var StrArray: TStringDynArray; StrCount: Integer; var Relations: TZXLSXRelationsArray; RelationsCount: Integer;
+  MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): Boolean;
 var
   Xml: TZsspXMLReaderH;
-  currentPage: integer;
-  currentRow: integer;
-  currentCol: integer;
+  currentPage: Integer;
+  currentRow: Integer;
+  currentCol: Integer;
   currentSheet: TZSheet;
   currentCell: TZCell;
   str: string;
   tempReal: real;
-  tempInt: integer;
+  tempInt: Integer;
   tempDate: TDateTime;
   tempFloat: double;
 
   // Проверить кол-во строк
-  procedure CheckRow(const RowCount: integer);
+  procedure CheckRow(const RowCount: Integer);
   begin
     if (currentSheet.RowCount < RowCount) then
       currentSheet.RowCount := RowCount;
   end;
 
   // Проверить кол-во столбцов
-  procedure CheckCol(const ColCount: integer);
+  procedure CheckCol(const ColCount: Integer);
   begin
     if (currentSheet.ColCount < ColCount) then
       currentSheet.ColCount := ColCount
@@ -1670,12 +1670,12 @@ var
   // Чтение строк/столбцов
   procedure _ReadSheetData();
   var
-    t: integer;
+    t: Integer;
     v: string;
-    _num: integer;
+    _num: Integer;
     _type: string;
-    _cr, _cc: integer;
-    maxCol: integer;
+    _cr, _cc: Integer;
+    maxCol: Integer;
   begin
     _cr := 0;
     _cc := 0;
@@ -1839,11 +1839,11 @@ var
   // Чтение объединённых ячеек
   procedure _ReadMerge();
   var
-    i, t, Num: integer;
-    x1, x2, y1, y2: integer;
+    i, t, Num: Integer;
+    x1, x2, y1, y2: Integer;
     s1, s2: string;
-    b: boolean;
-    function _GetCoords(var x, y: integer): boolean;
+    b: Boolean;
+    function _GetCoords(var x, y: Integer): Boolean;
     begin
       Result := true;
       x := ZEGetColByA1(s1);
@@ -1925,13 +1925,13 @@ var
   procedure _ReadCols();
   type
     TZColInf = record
-      min, Max: integer;
-      bestFit, Hidden: boolean;
-      OutlineLevel: integer;
-      width: integer;
+      min, Max: Integer;
+      bestFit, Hidden: Boolean;
+      OutlineLevel: Integer;
+      width: Integer;
     end;
   var
-    i, j: integer;
+    i, j: Integer;
     t: real;
     colInf: TArray<TZColInf>;
   const
@@ -1986,7 +1986,7 @@ var
     end;
   end; // _ReadCols
 
-  function _StrToMM(const st: string; var retFloat: real): boolean;
+  function _StrToMM(const st: string; var retFloat: real): Boolean;
   begin
     Result := false;
     if (str > '') then
@@ -2003,7 +2003,7 @@ var
   procedure _GetDimension();
   var
     st, s: string;
-    i, l, _maxC, _maxR, c, r: integer;
+    i, l, _maxC, _maxR, c, r: Integer;
   begin
     c := 0;
     r := 0;
@@ -2042,7 +2042,7 @@ var
   // Чтение ссылок
   procedure _ReadHyperLinks();
   var
-    _c, _r, i: integer;
+    _c, _r, i: Integer;
   begin
     _c := 0;
     _r := 0;
@@ -2116,7 +2116,7 @@ var
   // <sheetViews> ... </sheetViews>
   procedure _ReadSheetViews();
   var
-    vValue, hValue: integer;
+    vValue, hValue: Integer;
     SplitMode: TZSplitMode;
     s: string;
   begin
@@ -2168,9 +2168,9 @@ var
 
   procedure _ReadConditionFormatting();
   var
-    MaxFormulasCount: integer;
+    MaxFormulasCount: Integer;
     _formulas: array of string;
-    Count: integer;
+    Count: Integer;
     _sqref: string;
     _type: string;
     _operator: string;
@@ -2178,31 +2178,31 @@ var
     _CFOperator: TZConditionalOperator;
     _Style: string;
     _text: string;
-    _isCFAdded: boolean;
-    _isOk: boolean;
+    _isCFAdded: Boolean;
+    _isOk: Boolean;
     // _priority: string;
     _CF: TZConditionalStyle;
     _tmpStyle: TZStyle;
 
-    function _AddCF(): boolean;
+    function _AddCF(): Boolean;
     var
       s, ss: string;
-      _len, i, kol: integer;
-      a: array of array [0 .. 5] of integer;
-      _maxx: integer;
+      _len, i, kol: Integer;
+      a: array of array [0 .. 5] of Integer;
+      _maxx: Integer;
       ch: char;
-      w, h: integer;
+      w, h: Integer;
 
-      function _GetOneArea(st: string): boolean;
+      function _GetOneArea(st: string): Boolean;
       var
-        i, j: integer;
+        i, j: Integer;
         s: string;
         ch: char;
-        _cnt: integer;
-        tmpArr: array [0 .. 1, 0 .. 1] of integer;
-        _isOk: boolean;
-        t: integer;
-        tmpB: boolean;
+        _cnt: Integer;
+        tmpArr: array [0 .. 1, 0 .. 1] of Integer;
+        _isOk: Boolean;
+        t: Integer;
+        tmpB: Boolean;
 
       begin
         Result := false;
@@ -2303,9 +2303,9 @@ var
     // Применяем условный стиль
     procedure _TryApplyCF();
     var
-      b: boolean;
-      Num: integer;
-      _id: integer;
+      b: Boolean;
+      Num: Integer;
+      _id: Integer;
       procedure _CheckTextCondition();
       begin
         if (Count = 1) then
@@ -2323,11 +2323,11 @@ var
       // dfNum: integer - номер дифференцированного форматирования
       // RETURN
       // integer - номер применяемого стиля
-      function _getStyleIdxForDF(dfNum: integer): integer;
+      function _getStyleIdxForDF(dfNum: Integer): Integer;
       var
         _df: TZXLSXDiffFormattingItem;
-        _r, _c: integer;
-        _t: integer;
+        _r, _c: Integer;
+        _t: Integer;
         i: TZBordersPos;
       begin
         // _currSheet
@@ -2711,14 +2711,14 @@ end; // ZEXSLXReadSheet
 // RETURN
 // boolean - true - стили прочитались без ошибок
 function ZEXSLXReadStyles(var XMLSS: TZWorkBook; var Stream: TStream; var ThemaFillsColors: TIntegerDynArray;
-  var ThemaColorCount: integer; var MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): boolean;
+  var ThemaColorCount: Integer; var MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): Boolean;
 type
   TZXLSXBorderItem = record
     Color: TColor;
-    isColor: boolean;
-    isEnabled: boolean;
+    isColor: Boolean;
+    isEnabled: Boolean;
     Style: TZBorderType;
-    Weight: byte;
+    Weight: Byte;
   end;
 
   // 0 - left           левая граница
@@ -2732,25 +2732,25 @@ type
 
   TZXLSXCellAlignment = record
     horizontal: TZHorizontalAlignment;
-    indent: integer;
-    shrinkToFit: boolean;
-    textRotation: integer;
+    indent: Integer;
+    shrinkToFit: Boolean;
+    textRotation: Integer;
     vertical: TZVerticalAlignment;
-    wrapText: boolean;
+    wrapText: Boolean;
   end;
 
   TZXLSXCellStyle = record
-    applyAlignment: boolean;
-    applyBorder: boolean;
-    applyFont: boolean;
-    applyProtection: boolean;
-    borderId: integer;
-    fillId: integer;
-    fontId: integer;
-    numFmtId: integer;
-    xfId: integer;
-    Hidden: boolean;
-    locked: boolean;
+    applyAlignment: Boolean;
+    applyBorder: Boolean;
+    applyFont: Boolean;
+    applyProtection: Boolean;
+    borderId: Integer;
+    fillId: Integer;
+    fontId: Integer;
+    numFmtId: Integer;
+    xfId: Integer;
+    Hidden: Boolean;
+    locked: Boolean;
     alignment: TZXLSXCellAlignment;
   end;
 
@@ -2758,20 +2758,20 @@ type
 
 type
   TZXLSXStyle = record
-    builtinId: integer; // ??
-    customBuiltin: boolean; // ??
+    builtinId: Integer; // ??
+    customBuiltin: Boolean; // ??
     name: string; // ??
-    xfId: integer;
+    xfId: Integer;
   end;
 
   TZXLSXStyleArray = array of TZXLSXStyle;
 
   TZXLSXFill = record
     patternfill: TZCellPattern;
-    bgColorType: byte; // 0 - rgb, 1 - indexed, 2 - theme
+    bgColorType: Byte; // 0 - rgb, 1 - indexed, 2 - theme
     BGColor: TColor;
     PatternColor: TColor;
-    patternColorType: byte;
+    patternColorType: Byte;
     lumFactorBG: double;
     lumFactorPattern: double;
   end;
@@ -2780,7 +2780,7 @@ type
 
   TZXLSXDFFont = record
     Color: TColor;
-    ColorType: byte;
+    ColorType: Byte;
     LumFactor: double;
   end;
 
@@ -2790,22 +2790,22 @@ var
   Xml: TZsspXMLReaderH;
   s: string;
   FontArray: TZEXLSXFontArray;
-  FontCount: integer;
+  FontCount: Integer;
   BorderArray: TZXLSXBordersArray;
-  BorderCount: integer;
+  BorderCount: Integer;
   CellXfsArray: TZXLSXCellStylesArray;
-  CellXfsCount: integer;
+  CellXfsCount: Integer;
   CellStyleArray: TZXLSXCellStylesArray;
-  CellStyleCount: integer;
+  CellStyleCount: Integer;
   StyleArray: TZXLSXStyleArray;
-  StyleCount: integer;
+  StyleCount: Integer;
   FillArray: TZXLSXFillArray;
-  FillCount: integer;
+  FillCount: Integer;
   indexedColor: TIntegerDynArray;
-  indexedColorCount: integer;
-  indexedColorMax: integer;
+  indexedColorCount: Integer;
+  indexedColorMax: Integer;
   _Style: TZStyle;
-  t, i, n: integer;
+  t, i, n: Integer;
   h1, s1, l1: double;
   _dfFonts: TZXLSXDFFontArray;
   _dfFills: TZXLSXFillArray;
@@ -2833,7 +2833,7 @@ var
   // var border: TZXLSXBorder - границы
   procedure ZEXLSXZeroBorder(var Border: TZXLSXBorder);
   var
-    i: integer;
+    i: Integer;
   begin
     for i := 0 to 5 do
     begin
@@ -2849,8 +2849,8 @@ var
   // var PattFill: TZXLSXFill - заливка
   procedure ZEXLSXSwapPatternFillColors(var PattFill: TZXLSXFill);
   var
-    t: integer;
-    _b: byte;
+    t: Integer;
+    _b: Byte;
   begin
     // если не сплошная заливка - нужно поменять местами цвета (bgColor <-> fgColor)
     if (not(PattFill.patternfill in [ZPNone, ZPSolid])) then
@@ -2931,9 +2931,9 @@ var
   // var retColor: TColor      - возвращаемый цвет
   // var retColorType: byte    - тип цвета: 0 - rgb, 1 - indexed, 2 - theme
   // var retLumfactor: double  - яркость
-  procedure ZXLSXGetColor(var retColor: TColor; var retColorType: byte; var retLumfactor: double);
+  procedure ZXLSXGetColor(var retColor: TColor; var retColorType: Byte; var retLumfactor: double);
   var
-    t: integer;
+    t: Integer;
   begin
     s := Xml.Attributes.ItemsByName['rgb'];
     if (length(s) > 2) then
@@ -2963,7 +2963,7 @@ var
 
   procedure _ReadFonts();
   var
-    _currFont: integer;
+    _currFont: Integer;
     sz: double;
   begin
     _currFont := -1;
@@ -3085,7 +3085,7 @@ var
   // var retStyle: TZBorderType  - возвращаемый стиль начертания линии
   // RETURN
   // boolean - true - стиль определён
-  function XLSXGetBorderStyle(const st: string; var retWidth: byte; var retStyle: TZBorderType): boolean;
+  function XLSXGetBorderStyle(const st: string; var retWidth: Byte; var retStyle: TZBorderType): Boolean;
   begin
     Result := true;
     retWidth := 1;
@@ -3138,13 +3138,13 @@ var
 
   procedure _ReadBorders();
   var
-    _diagDown, _diagUP: boolean;
-    _currBorder: integer; // текущий набор границ
-    _currBorderItem: integer; // текущая граница (левая/правая ...)
+    _diagDown, _diagUP: Boolean;
+    _currBorder: Integer; // текущий набор границ
+    _currBorderItem: Integer; // текущая граница (левая/правая ...)
     _color: TColor;
-    _isColor: boolean;
+    _isColor: Boolean;
 
-    procedure _SetCurBorder(borderNum: integer);
+    procedure _SetCurBorder(borderNum: Integer);
     begin
       _currBorderItem := borderNum;
       s := Xml.Attributes.ItemsByName['style'];
@@ -3240,7 +3240,7 @@ var
 
   procedure _ReadFills();
   var
-    _currFill: integer;
+    _currFill: Integer;
   begin
     _currFill := -1;
     while Xml.ReadToEndTagByName('fills') do
@@ -3308,10 +3308,10 @@ var
   // const TagName: string           - имя тэга
   // var CSA: TZXLSXCellStylesArray  - массив со стилями
   // var StyleCount: integer         - кол-во стилей
-  procedure _ReadCellCommonStyles(const TagName: string; var CSA: TZXLSXCellStylesArray; var StyleCount: integer);
+  procedure _ReadCellCommonStyles(const TagName: string; var CSA: TZXLSXCellStylesArray; var StyleCount: Integer);
   var
-    _currCell: integer;
-    b: boolean;
+    _currCell: Integer;
+    b: Boolean;
   begin
     _currCell := -1;
     while Xml.ReadToEndTagByName(TagName) do
@@ -3455,7 +3455,7 @@ var
   // Сами стили ?? (или для чего они вообще?)
   procedure _ReadCellStyles();
   var
-    b: boolean;
+    b: Boolean;
   begin
     while Xml.ReadToEndTagByName('cellStyles') do
     begin
@@ -3521,13 +3521,13 @@ var
   // out h: double   - Hue - тон цвета
   // out s: double   - Saturation - насыщенность
   // out l: double   - Lightness (Intensity) - светлота (яркость)
-  procedure ZRGBToHSL(r, g, b: byte; out h, s, l: double);
+  procedure ZRGBToHSL(r, g, b: Byte; out h, s, l: double);
   var
     _max, _min: double;
-    intMax, intMin: integer;
+    intMax, intMin: Integer;
     _r, _g, _b: double;
     _delta: double;
-    _idx: integer;
+    _idx: Integer;
   begin
     _r := r / 255;
     _g := g / 255;
@@ -3588,10 +3588,10 @@ var
   // out l: double     - Lightness (Intensity) - светлота (яркость)
   procedure ZColorToHSL(Color: TColor; out h, s, l: double);
   var
-    _rgb: integer;
+    _rgb: Integer;
   begin
     _rgb := ColorToRGB(Color);
-    ZRGBToHSL(byte(_rgb), byte(_rgb shr 8), byte(_rgb shr 16), h, s, l);
+    ZRGBToHSL(Byte(_rgb), Byte(_rgb shr 8), Byte(_rgb shr 16), h, s, l);
   end; // ZColorToHSL
 
   // Конвертирует HSL в RGB
@@ -3603,7 +3603,7 @@ var
   // out r: byte   -
   // out g: byte   -
   // out b: byte   -
-  procedure ZHSLToRGB(h, s, l: double; out r, g, b: byte);
+  procedure ZHSLToRGB(h, s, l: double; out r, g, b: Byte);
   var
     _r, _g, _b, q, p: double;
     function HueToRgb(p, q, t: double): double;
@@ -3640,9 +3640,9 @@ var
       _g := HueToRgb(p, q, h);
       _b := HueToRgb(p, q, h - 1 / 3);
     end;
-    r := byte(round(_r * 255));
-    g := byte(round(_g * 255));
-    b := byte(round(_b * 255));
+    r := Byte(round(_r * 255));
+    g := Byte(round(_g * 255));
+    b := Byte(round(_b * 255));
   end; // ZHSLToRGB
 
   // Конвертирует HSL в Color
@@ -3655,7 +3655,7 @@ var
   // TColor - цвет
   function ZHSLToColor(h, s, l: double): TColor;
   var
-    r, g, b: byte;
+    r, g, b: Byte;
   begin
     ZHSLToRGB(h, s, l, r, g, b);
     Result := (b shl 16) or (g shl 8) or r;
@@ -3685,7 +3685,7 @@ var
   procedure _Readdxfs();
   var
     _df: TZXLSXDiffFormattingItem;
-    _dfIndex: integer;
+    _dfIndex: Integer;
 
     procedure _addFontStyle(fnts: TFontStyle);
     begin
@@ -3754,7 +3754,7 @@ var
     procedure _ReadDFBorder();
     var
       _borderNum: TZBordersPos;
-      t: byte;
+      t: Byte;
       _bt: TZBorderType;
       procedure _SetDFBorder(borderNum: TZBordersPos);
       begin
@@ -3838,7 +3838,7 @@ var
     end; // while
   end; // _Readdxfs
 
-  procedure XLSXApplyColor(var AColor: TColor; ColorType: byte; LumFactor: double);
+  procedure XLSXApplyColor(var AColor: TColor; ColorType: Byte; LumFactor: double);
   begin
     // Thema color
     if (ColorType = 2) then
@@ -3859,7 +3859,7 @@ var
   // var XLSXStyle: TZXLSXCellStyle  - стиль в xlsx
   procedure _ApplyStyle(var XMLSSStyle: TZStyle; var XLSXStyle: TZXLSXCellStyle);
   var
-    i: integer;
+    i: Integer;
     b: TZBordersPos;
   begin
     if (XLSXStyle.numFmtId >= 0) then
@@ -4007,7 +4007,7 @@ var
       '#333333' // 63
       );
   var
-    i: integer;
+    i: Integer;
   begin
     if (indexedColorCount = 0) then
     begin
@@ -4153,11 +4153,11 @@ end; // ZEXSLXReadStyles
 // RETURN
 // boolean - true - названия прочитались без ошибок
 function ZEXSLXReadWorkBook(var XMLSS: TZWorkBook; var Stream: TStream; var Relations: TZXLSXRelationsArray;
-  var RelationsCount: integer): boolean;
+  var RelationsCount: Integer): Boolean;
 var
   Xml: TZsspXMLReaderH;
   s: string;
-  i, t, dn: integer;
+  i, t, dn: Integer;
 begin
   Result := false;
   Xml := TZsspXMLReaderH.Create();
@@ -4218,9 +4218,9 @@ end; // ZEXSLXReadWorkBook
 // INPUT
 // var FileArray: TArray<TZXLSXFileItem>  - файлы
 // FilesCount: integer         - кол-во файлов
-procedure ZE_XSLXReplaceDelimiter(var FileArray: TArray<TZXLSXFileItem>; FilesCount: integer);
+procedure ZE_XSLXReplaceDelimiter(var FileArray: TArray<TZXLSXFileItem>; FilesCount: Integer);
 var
-  i, j, k: integer;
+  i, j, k: Integer;
 begin
   for i := 0 to FilesCount - 1 do
   begin
@@ -4246,8 +4246,8 @@ end; // ZE_XSLXReplaceDelimiter
 // needReplaceDelimiter: boolean   - признак необходимости заменять разделитель
 // RETURN
 // boolean - true - успешно прочитано
-function ZE_XSLXReadRelationships(var Stream: TStream; var Relations: TZXLSXRelationsArray; var RelationsCount: integer;
-  var isWorkSheet: boolean; needReplaceDelimiter: boolean): boolean;
+function ZE_XSLXReadRelationships(var Stream: TStream; var Relations: TZXLSXRelationsArray; var RelationsCount: Integer;
+  var isWorkSheet: Boolean; needReplaceDelimiter: Boolean): Boolean;
 var
   Xml: TZsspXMLReaderH;
   rt: TRelationType;
@@ -4296,17 +4296,17 @@ end; // ZE_XSLXReadRelationsips
 // var Stream: TStream - поток для чтения
 // RETURN
 // boolean - true - всё нормально
-function ZEXSLXReadComments(var XMLSS: TZWorkBook; var Stream: TStream): boolean;
+function ZEXSLXReadComments(var XMLSS: TZWorkBook; var Stream: TStream): Boolean;
 var
   Xml: TZsspXMLReaderH;
   authors: TList<string>;
-  page: integer;
+  page: Integer;
 
   procedure _ReadComment();
   var
-    _c, _r, _a: integer;
+    _c, _r, _a: Integer;
     _comment, str: string;
-    _kol: integer;
+    _kol: Integer;
   begin
     _c := 0;
     _r := 0;
@@ -4381,14 +4381,14 @@ begin
   end;
 end; // ZEXSLXReadComments
 
-procedure XLSXSortRelationArray(var arr: TZXLSXRelationsArray; Count: integer);
+procedure XLSXSortRelationArray(var arr: TZXLSXRelationsArray; Count: Integer);
 var
   tmp: TZXLSXRelations;
-  i, j: integer;
-  _t1, _t2: integer;
+  i, j: Integer;
+  _t1, _t2: Integer;
   s: string;
-  b: boolean;
-  function _cmp(): boolean;
+  b: Boolean;
+  function _cmp(): Boolean;
   begin
     b := false;
     s := arr[j].id;
@@ -4425,25 +4425,25 @@ end;
 // DirName: string     - имя папки
 // RETURN
 // integer - номер ошибки (0 - всё OK)
-function ReadXLSXPath(var XMLSS: TZWorkBook; DirName: string): integer;
+function ReadXLSXPath(var XMLSS: TZWorkBook; DirName: string): Integer;
 var
   Stream: TStream;
   FileArray: TArray<TZXLSXFileItem>;
-  FilesCount: integer;
+  FilesCount: Integer;
   StrArray: TStringDynArray;
-  StrCount: integer;
+  StrCount: Integer;
   RelationsArray: array of TZXLSXRelationsArray;
-  RelationsCounts: array of integer;
+  RelationsCounts: array of Integer;
   SheetRelations: TZXLSXRelationsArray;
-  SheetRelationsCount: integer;
-  RelationsCount: integer;
+  SheetRelationsCount: Integer;
+  RelationsCount: Integer;
   ThemaColor: TIntegerDynArray;
-  ThemaColorCount: integer;
-  SheetRelationNumber: integer;
-  i, j, k: integer;
+  ThemaColorCount: Integer;
+  SheetRelationNumber: Integer;
+  i, j, k: Integer;
   s: string;
-  b: boolean;
-  _no_sheets: boolean;
+  b: Boolean;
+  _no_sheets: Boolean;
   MaximumDigitWidth: double;
   RH: TZEXLSXReadHelper;
   // Пытается прочитать rel для листа
@@ -4451,12 +4451,12 @@ var
   // const fname: string - имя файла листа
   // RETURN
   // boolean - true - прочитал успешно
-  function _CheckSheetRelations(const fname: string): boolean;
+  function _CheckSheetRelations(const fname: string): Boolean;
   var
     rstream: TStream;
     s: string;
-    i, Num: integer;
-    b: boolean;
+    i, Num: Integer;
+    b: Boolean;
   begin
     Result := false;
     SheetRelationsCount := 0;
@@ -4489,9 +4489,9 @@ var
   // Прочитать примечания
   procedure _ReadComments();
   var
-    i, l: integer;
+    i, l: Integer;
     s: string;
-    b: boolean;
+    b: Boolean;
     Stream: TStream;
   begin
     b := false;
@@ -4765,26 +4765,26 @@ begin
   end;
 end; // ReadXLSXPath
 
-function ReadXLSXFile(var XMLSS: TZWorkBook; zipStream: TStream): integer;
+function ReadXLSXFile(var XMLSS: TZWorkBook; zipStream: TStream): Integer;
 var
   Stream: TStream;
   FileArray: TArray<TZXLSXFileItem>;
   FileList: TList<TZXLSXFileItem>;
-  FilesCount: integer;
+  FilesCount: Integer;
   StrArray: TStringDynArray;
-  StrCount: integer;
+  StrCount: Integer;
   RelationsArray: array of TZXLSXRelationsArray;
-  RelationsCounts: array of integer;
+  RelationsCounts: array of Integer;
   SheetRelations: TZXLSXRelationsArray;
-  SheetRelationsCount: integer;
-  RelationsCount: integer;
+  SheetRelationsCount: Integer;
+  RelationsCount: Integer;
   ThemaColor: TIntegerDynArray;
-  ThemaColorCount: integer;
-  SheetRelationNumber: integer;
-  i, j, k: integer;
+  ThemaColorCount: Integer;
+  SheetRelationNumber: Integer;
+  i, j, k: Integer;
   s: string;
-  b: boolean;
-  _no_sheets: boolean;
+  b: Boolean;
+  _no_sheets: Boolean;
   RH: TZEXLSXReadHelper;
   Zip: TZipFile;
   encoding: TEncoding;
@@ -4793,12 +4793,12 @@ var
   MaximumDigitWidth: double;
   // zfiles: TArray<string>;
 
-  function _CheckSheetRelations(const fname: string): boolean;
+  function _CheckSheetRelations(const fname: string): Boolean;
   var
     rstream: TStream;
     s: string;
-    i, Num: integer;
-    b: boolean;
+    i, Num: Integer;
+    b: Boolean;
   begin
     Result := false;
     SheetRelationsCount := 0;
@@ -4833,9 +4833,9 @@ var
   // Прочитать примечания
   procedure _ReadComments();
   var
-    i, l: integer;
+    i, l: Integer;
     s: string;
-    b: boolean;
+    b: Boolean;
     _stream: TStream;
   begin
     b := false;
@@ -5160,13 +5160,13 @@ end; // ReadXLSXPath
 // const WriteHelper: TZEXLSXWriteHelper - additional data
 // RETURN
 // integer
-function ZEXLSXCreateContentTypes(var XMLSS: TZWorkBook; Stream: TStream; PageCount: integer; CommentCount: integer;
+function ZEXLSXCreateContentTypes(var XMLSS: TZWorkBook; Stream: TStream; PageCount: Integer; CommentCount: Integer;
   const PagesComments: TIntegerDynArray; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring;
-  const WriteHelper: TZEXLSXWriteHelper): integer;
+  const WriteHelper: TZEXLSXWriteHelper): Integer;
 var
   Xml: TZsspXMLWriterH;
   s: string;
-  procedure _WriteOverride(const PartName: string; ct: integer);
+  procedure _WriteOverride(const PartName: string; ct: Integer);
   begin
     Xml.Attributes.Clear();
     Xml.Attributes.Add('PartName', PartName);
@@ -5206,7 +5206,7 @@ var
 
   procedure _WriteTypes();
   var
-    i: integer;
+    i: Integer;
   begin
     _WriteTypeDefault('rels', 'application/vnd.openxmlformats-package.relationships+xml');
     _WriteTypeDefault('xml', 'application/xml');
@@ -5273,11 +5273,11 @@ begin
 end; // ZEXLSXCreateContentTypes
 
 function ZEXLSXCreateDrawing(sheet: TZSheet; Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: String;
-  BOM: ansistring): integer;
+  BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
   pic: TZEPicture;
-  i: integer;
+  i: Integer;
 begin
   Result := 0;
   Xml := TZsspXMLWriterH.Create(Stream);
@@ -5393,15 +5393,15 @@ begin
 end;
 
 function ZEXLSXCreateDrawingRels(sheet: TZSheet; Stream: TStream; TextConverter: TAnsiToCPConverter;
-  CodePageName: String; BOM: ansistring): integer;
+  CodePageName: String; BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
-  i: integer;
-  dic: TDictionary<integer, string>;
-  pair: TPair<integer, string>;
+  i: Integer;
+  dic: TDictionary<Integer, string>;
+  pair: TPair<Integer, string>;
 begin
   Result := 0;
-  dic := TDictionary<integer, string>.Create();
+  dic := TDictionary<Integer, string>.Create();
   Xml := TZsspXMLWriterH.Create(Stream);
   try
     Xml.TabLength := 1;
@@ -5446,22 +5446,22 @@ end;
 // WriteHelper: TZEXLSXWriteHelper                       - additional data
 // RETURN
 // integer
-function ZEXLSXCreateSheet(var XMLSS: TZWorkBook; Stream: TStream; SheetNum: integer;
-  var SharedStrings: TStringDynArray; const SharedStringsDictionary: TDictionary<string, integer>;
+function ZEXLSXCreateSheet(var XMLSS: TZWorkBook; Stream: TStream; SheetNum: Integer;
+  var SharedStrings: TStringDynArray; const SharedStringsDictionary: TDictionary<string, Integer>;
   TextConverter: TAnsiToCPConverter; CodePageName: String; BOM: ansistring;
-  const WriteHelper: TZEXLSXWriteHelper): integer;
+  const WriteHelper: TZEXLSXWriteHelper): Integer;
 var
   Xml: TZsspXMLWriterH; // писатель
   sheet: TZSheet;
   procedure WriteXLSXSheetHeader();
   var
     s: string;
-    b: boolean;
+    b: Boolean;
     SheetOptions: TZSheetOptions;
-    procedure _AddSplitValue(const SplitMode: TZSplitMode; const SplitValue: integer; const AttrName: string);
+    procedure _AddSplitValue(const SplitMode: TZSplitMode; const SplitValue: Integer; const AttrName: string);
     var
       s: string;
-      b: boolean;
+      b: Boolean;
     begin
       s := '0';
       b := true;
@@ -5481,10 +5481,10 @@ var
         Xml.Attributes.Add(AttrName, s);
     end; // _AddSplitValue
 
-    procedure _AddTopLeftCell(const VMode: TZSplitMode; const vValue: integer; const HMode: TZSplitMode;
-      const hValue: integer);
+    procedure _AddTopLeftCell(const VMode: TZSplitMode; const vValue: Integer; const HMode: TZSplitMode;
+      const hValue: Integer);
     var
-      isProblem: boolean;
+      isProblem: Boolean;
     begin
       isProblem := (VMode = ZSplitSplit) or (HMode = ZSplitSplit);
       isProblem := isProblem or (vValue > 1000) or (hValue > 100);
@@ -5650,7 +5650,7 @@ var
 
   procedure WriteXLSXSheetCols();
   var
-    i: integer;
+    i: Integer;
     s: string;
     ProcessedColumn: TZColOptions;
     MaximumDigitWidth: double;
@@ -5691,11 +5691,11 @@ var
 
   procedure WriteXLSXSheetData();
   var
-    i, j, n: integer;
-    b: boolean;
+    i, j, n: Integer;
+    b: Boolean;
     s: string;
     _r: TZMergeArea;
-    strIndex: integer;
+    strIndex: Integer;
   begin
     Xml.Attributes.Clear();
     Xml.WriteTagNode('sheetData', true, true, true);
@@ -5851,9 +5851,9 @@ var
     Xml.WriteEndTagNode(); // headerFooter
   end;
 
-  procedure WriteBreakData(TagName: string; breaks: TArray<integer>; manV, maxV: string);
+  procedure WriteBreakData(TagName: string; breaks: TArray<Integer>; manV, maxV: string);
   var
-    brk: integer;
+    brk: Integer;
   begin
     if length(breaks) > 0 then
     begin
@@ -5935,7 +5935,7 @@ var
 
   procedure WriteXLSXSheetDrawings();
   var
-    RID: integer;
+    RID: Integer;
   begin
     // drawings
     if (not sheet.Drawing.IsEmpty) then
@@ -5988,11 +5988,11 @@ end; // ZEXLSXCreateSheet
 // RETURN
 // integer
 function ZEXLSXCreateWorkBook(var XMLSS: TZWorkBook; Stream: TStream; const _pages: TIntegerDynArray;
-  const _names: TStringDynArray; PageCount: integer; TextConverter: TAnsiToCPConverter; CodePageName: String;
-  BOM: ansistring): integer;
+  const _names: TStringDynArray; PageCount: Integer; TextConverter: TAnsiToCPConverter; CodePageName: String;
+  BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
-  i: integer;
+  i: Integer;
 begin
   Result := 0;
   Xml := TZsspXMLWriterH.Create(Stream);
@@ -6085,40 +6085,40 @@ end; // ZEXLSXCreateWorkBook
 // RETURN
 // integer
 function ZEXLSXCreateStyles(var XMLSS: TZWorkBook; Stream: TStream; TextConverter: TAnsiToCPConverter;
-  CodePageName: string; BOM: ansistring): integer;
+  CodePageName: string; BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH; // писатель
   _FontIndex: TIntegerDynArray; // соответствия шрифтов
   _FillIndex: TIntegerDynArray; // заливки
   _BorderIndex: TIntegerDynArray; // границы
-  _StylesCount: integer;
-  _NumFmtIndexes: array of integer;
+  _StylesCount: Integer;
+  _NumFmtIndexes: array of Integer;
   _FmtParser: TNumFormatParser;
   _DateParser: TZDateTimeODSFormatParser;
 
   // <numFmts> .. </numFmts>
   procedure WritenumFmts();
   var
-    kol: integer;
-    i: integer;
+    kol: Integer;
+    i: Integer;
     _nfmt: TZEXLSXNumberFormats;
-    _is_dateTime: array of boolean;
+    _is_dateTime: array of Boolean;
     s: string;
-    _count: integer;
-    _idx: array of integer;
+    _count: Integer;
+    _idx: array of Integer;
     _fmt: array of string;
     _Style: TZStyle;
-    _currSheet: integer;
-    _currRow, _currCol: integer;
+    _currSheet: Integer;
+    _currRow, _currCol: Integer;
     _sheet: TZSheet;
-    _currstylenum: integer;
-    _numfmt_counter: integer;
+    _currstylenum: Integer;
+    _numfmt_counter: Integer;
 
-    function _GetNumFmt(StyleNum: integer): integer;
+    function _GetNumFmt(StyleNum: Integer): Integer;
     var
-      i, j, k: integer;
-      b: boolean;
-      _cs, _cr, _cc: integer;
+      i, j, k: Integer;
+      b: Boolean;
+      _cs, _cr, _cc: Integer;
     begin
       Result := 0;
       _Style := XMLSS.Styles[StyleNum];
@@ -6239,7 +6239,7 @@ var
   end; // WritenumFmts
 
   // Являются ли шрифты стилей одинаковыми
-  function _isFontsEqual(const stl1, stl2: TZStyle): boolean;
+  function _isFontsEqual(const stl1, stl2: TZStyle): Boolean;
   begin
     Result := false;
     if (stl1.Font.Color <> stl2.Font.Color) then
@@ -6268,11 +6268,11 @@ var
   // var arr: TIntegerDynArray  - массив
   // cnt: integer          - номер последнего элемента в массиве (начинает с 0)
   // (предполагается, что возникнет ситуация, когда нужно будет использовать только часть массива)
-  procedure _UpdateArrayIndex(var arr: TIntegerDynArray; cnt: integer);
+  procedure _UpdateArrayIndex(var arr: TIntegerDynArray; cnt: Integer);
   var
     res: TIntegerDynArray;
-    i, j: integer;
-    Num: integer;
+    i, j: Integer;
+    Num: Integer;
   begin
     // Assert( Length(arr) - cnt = 2, 'Wow! We really may need this parameter!');
     // cnt := Length(arr) - 2;   // get ready to strip it
@@ -6295,8 +6295,8 @@ var
   // <fonts>...</fonts>
   procedure WriteXLSXFonts();
   var
-    i, j, n: integer;
-    _fontCount: integer;
+    i, j, n: Integer;
+    _fontCount: Integer;
     fnt: TZFont;
   begin
     _fontCount := 0;
@@ -6402,7 +6402,7 @@ var
   end; // WriteXLSXFonts
 
   // Являются ли заливки одинаковыми
-  function _isFillsEqual(style1, style2: TZStyle): boolean;
+  function _isFillsEqual(style1, style2: TZStyle): Boolean;
   begin
     Result := (style1.BGColor = style2.BGColor) and (style1.PatternColor = style2.PatternColor) and
       (style1.CellPattern = style2.CellPattern);
@@ -6421,12 +6421,12 @@ var
   // <fills> ... </fills>
   procedure WriteXLSXFills();
   var
-    i, j: integer;
-    _fillCount: integer;
+    i, j: Integer;
+    _fillCount: Integer;
     s: string;
-    b: boolean;
+    b: Boolean;
     _tmpColor: TColor;
-    _reverse: boolean;
+    _reverse: Boolean;
 
   begin
     _fillCount := 0;
@@ -6554,11 +6554,11 @@ var
   end; // WriteXLSXFills();
 
   // единичная граница
-  procedure _WriteBorderItem(StyleNum: integer; borderNum: TZBordersPos);
+  procedure _WriteBorderItem(StyleNum: Integer; borderNum: TZBordersPos);
   var
     s, s1: string;
     _border: TZBorderStyle;
-    n: integer;
+    n: Integer;
   begin
     Xml.Attributes.Clear();
     case borderNum of
@@ -6650,8 +6650,8 @@ var
   // <borders> ... </borders>
   procedure WriteXLSXBorders();
   var
-    i, j: integer;
-    _borderCount: integer;
+    i, j: Integer;
+    _borderCount: Integer;
     s: string;
   begin
     _borderCount := 0;
@@ -6707,13 +6707,13 @@ var
   // NumStyle: integer - номер стиля
   // isxfId: boolean   - нужно ли добавлять атрибут "xfId"
   // xfId: integer     - значение "xfId"
-  procedure _WriteXF(NumStyle: integer; isxfId: boolean; xfId: integer);
+  procedure _WriteXF(NumStyle: Integer; isxfId: Boolean; xfId: Integer);
   var
-    _addalignment: boolean;
+    _addalignment: Boolean;
     _Style: TZStyle;
     s: string;
-    i: integer;
-    _num: integer;
+    i: Integer;
+    _num: Integer;
   begin
     Xml.Attributes.Clear();
     _Style := XMLSS.Styles[NumStyle];
@@ -6812,9 +6812,9 @@ var
   end; // _WriteXF
 
   // <cellStyleXfs> ... </cellStyleXfs> / <cellXfs> ... </cellXfs>
-  procedure WriteCellStyleXfs(const TagName: string; isxfId: boolean);
+  procedure WriteCellStyleXfs(const TagName: string; isxfId: Boolean);
   var
-    i: integer;
+    i: Integer;
   begin
     Xml.Attributes.Clear();
     Xml.Attributes.Add('count', IntToStr(XMLSS.Styles.Count + 1));
@@ -6899,7 +6899,7 @@ end; // ZEAddRelsID
 // RETURN
 // integer
 function ZEXLSXCreateRelsMain(Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string;
-  BOM: ansistring): integer;
+  BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
 begin
@@ -6932,11 +6932,11 @@ end; // ZEXLSXCreateRelsMain
 // BOM: ansistring                   - BOM
 // RETURN
 // integer
-function ZEXLSXCreateRelsWorkBook(PageCount: integer; Stream: TStream; TextConverter: TAnsiToCPConverter;
-  CodePageName: string; BOM: ansistring): integer;
+function ZEXLSXCreateRelsWorkBook(PageCount: Integer; Stream: TStream; TextConverter: TAnsiToCPConverter;
+  CodePageName: string; BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
-  i: integer;
+  i: Integer;
 begin
   Result := 0;
   Xml := TZsspXMLWriterH.Create(Stream);
@@ -6973,10 +6973,10 @@ end; // ZEXLSXCreateRelsWorkBook
 // RETURN
 // integer
 function ZEXLSXCreateSharedStrings(var XMLSS: TZWorkBook; Stream: TStream; const SharedStrings: TStringDynArray;
-  TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): integer;
+  TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
-  i, Count: integer;
+  i, Count: Integer;
   str: string;
 begin
   Result := 0;
@@ -7023,7 +7023,7 @@ end; // ZEXLSXCreateSharedStrings
 // RETURN
 // integer
 function ZEXLSXCreateDocPropsApp(Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string;
-  BOM: ansistring): integer;
+  BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
 begin
@@ -7058,7 +7058,7 @@ end; // ZEXLSXCreateDocPropsApp
 // RETURN
 // integer
 function ZEXLSXCreateDocPropsCore(var XMLSS: TZWorkBook; Stream: TStream; TextConverter: TAnsiToCPConverter;
-  CodePageName: string; BOM: ansistring): integer;
+  CodePageName: string; BOM: ansistring): Integer;
 var
   Xml: TZsspXMLWriterH;
   creationDate: string;
@@ -7105,19 +7105,19 @@ end; // ZEXLSXCreateDocPropsCore
 // BOM: ansistring                   - Byte Order Mark
 // RETURN
 // integer
-function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string; const SheetsNumbers: array of integer;
+function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string; const SheetsNumbers: array of Integer;
   const SheetsNames: array of string; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring = '')
-  : integer; overload;
+  : Integer; overload;
 var
   _pages: TIntegerDynArray; // номера страниц
   _names: TStringDynArray; // названия страниц
-  kol, i { , ii } : integer;
+  kol, i { , ii } : Integer;
   Stream: TStream;
   _WriteHelper: TZEXLSXWriteHelper;
   path_xl, path_sheets, path_relsmain, path_relsw, path_docprops: string;
   s: string;
   SharedStrings: TStringDynArray;
-  SharedStringsDictionary: TDictionary<string, integer>;
+  SharedStringsDictionary: TDictionary<string, Integer>;
   // iDrawingsCount: Integer;
   // path_draw, path_draw_rel, path_media: string;
   // _drawing: TZEDrawing;
@@ -7128,7 +7128,7 @@ begin
   _WriteHelper := nil;
   kol := 0;
   SharedStrings := [];
-  SharedStringsDictionary := TDictionary<string, integer>.Create;
+  SharedStringsDictionary := TDictionary<string, Integer>.Create;
   try
     if (not TDirectory.Exists(PathName)) then
     begin
@@ -7319,8 +7319,8 @@ end; // SaveXmlssToXLSXPath
 // (количество элементов в двух массивах должны совпадать)
 // RETURN
 // integer
-function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string; const SheetsNumbers: array of integer;
-  const SheetsNames: array of string): integer; overload;
+function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string; const SheetsNumbers: array of Integer;
+  const SheetsNames: array of string): Integer; overload;
 begin
   Result := SaveXmlssToXLSXPath(XMLSS, PathName, SheetsNumbers, SheetsNames, nil, 'UTF-8', '');
 end; // SaveXmlssToXLSXPath
@@ -7332,7 +7332,7 @@ end; // SaveXmlssToXLSXPath
 // PathName: string                  - путь к директории для сохранения (должна заканчиватся разделителем директории)
 // RETURN
 // integer
-function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string): integer; overload;
+function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string): Integer; overload;
 begin
   Result := SaveXmlssToXLSXPath(XMLSS, PathName, [], []);
 end; // SaveXmlssToXLSXPath
@@ -7349,18 +7349,18 @@ end; // SaveXmlssToXLSXPath
 // BOM: ansistring                   - Byte Order Mark
 // RETURN
 // integer
-function SaveXmlssToXLSX(var XMLSS: TZWorkBook; zipStream: TStream; const SheetsNumbers: array of integer;
+function SaveXmlssToXLSX(var XMLSS: TZWorkBook; zipStream: TStream; const SheetsNumbers: array of Integer;
   const SheetsNames: array of string; TextConverter: TAnsiToCPConverter; CodePageName: string;
-  BOM: ansistring = ''): integer;
+  BOM: ansistring = ''): Integer;
 var
   _pages: TIntegerDynArray; // numbers of sheets
   _names: TStringDynArray; // names of sheets
-  kol, i: integer;
+  kol, i: Integer;
   Zip: TZipFile;
   Stream: TStream;
   WriteHelper: TZEXLSXWriteHelper;
   SharedStrings: TStringDynArray;
-  SharedStringsDictionary: TDictionary<string, integer>;
+  SharedStringsDictionary: TDictionary<string, Integer>;
 begin
   Result := 0;
   SharedStrings := [];
@@ -7368,7 +7368,7 @@ begin
   try
     WriteHelper := TZEXLSXWriteHelper.Create();
     try
-      SharedStringsDictionary := TDictionary<string, integer>.Create;
+      SharedStringsDictionary := TDictionary<string, Integer>.Create;
       try
         if (not ZECheckTablesTitle(XMLSS, SheetsNumbers, SheetsNames, _pages, _names, kol)) then
           exit(2);
@@ -7542,11 +7542,11 @@ end; // SaveXmlssToXSLX
 
 { TZEXMLSSHelper }
 
-procedure TZEXMLSSHelper.LoadFromFile(fileName: string);
+procedure TZEXMLSSHelper.LoadFromFile(const AFileName: string);
 var
   Stream: TFileStream;
 begin
-  Stream := TFileStream.Create(fileName, fmOpenRead or fmShareDenyNone);
+  Stream := TFileStream.Create(AFileName, fmOpenRead or fmShareDenyNone);
   try
     LoadFromStream(Stream);
   finally
@@ -7554,16 +7554,16 @@ begin
   end;
 end;
 
-procedure TZEXMLSSHelper.LoadFromStream(Stream: TStream);
+procedure TZEXMLSSHelper.LoadFromStream(AStream: TStream);
 begin
-  ReadXLSXFile(self, Stream);
+  ReadXLSXFile(self, AStream);
 end;
 
-procedure TZEXMLSSHelper.SaveToFile(fileName: string);
+procedure TZEXMLSSHelper.SaveToFile(const AFileName: string);
 var
   Stream: TFileStream;
 begin
-  Stream := TFileStream.Create(fileName, fmCreate or fmOpenReadWrite);
+  Stream := TFileStream.Create(AFileName, fmCreate or fmOpenReadWrite);
   try
     SaveToStream(Stream);
   finally
@@ -7571,16 +7571,16 @@ begin
   end;
 end;
 
-procedure TZEXMLSSHelper.SaveToStream(Stream: TStream);
+procedure TZEXMLSSHelper.SaveToStream(AStream: TStream);
 begin
-  SaveXmlssToXLSX(self, Stream, [], [], nil, 'UTF-8');
+  SaveXmlssToXLSX(self, AStream, [], [], nil, 'UTF-8');
 end;
 
 { TExcel4DelphiWriter }
 
 constructor TExcel4DelphiWriter.Create(AWorkBook: TZWorkBook);
 begin
-  FSharedStrings := TObjectDictionary<TRichText, integer>.Create([doOwnsKeys], TRichTextComparer.Create);
+  FSharedStrings := TObjectDictionary<TRichText, Integer>.Create([doOwnsKeys], TRichTextComparer.Create);
 end;
 
 destructor TExcel4DelphiWriter.Destroy;
@@ -7599,7 +7599,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiWriter.SaveToFile(AFileName: string);
+procedure TExcel4DelphiWriter.SaveToFile(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7616,7 +7616,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiWriter.WriteContentTypes(AFileName: string);
+procedure TExcel4DelphiWriter.WriteContentTypes(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7632,8 +7632,8 @@ procedure TExcel4DelphiWriter.WriteContentTypes(AStream: TStream);
 var
   Xml: TZsspXMLWriterH;
   s: string;
-  i: integer;
-  procedure _WriteOverride(const PartName: string; ct: integer);
+  i: Integer;
+  procedure _WriteOverride(const PartName: string; ct: Integer);
   begin
     Xml.Attributes.Clear();
     Xml.Attributes.Add('PartName', PartName);
@@ -7756,7 +7756,7 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiWriter.WriteDocPropsApp(AFileName: string);
+procedure TExcel4DelphiWriter.WriteDocPropsApp(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7768,7 +7768,7 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiWriter.WriteDocPropsCore(AFileName: string);
+procedure TExcel4DelphiWriter.WriteDocPropsCore(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7818,7 +7818,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiWriter.WriteDrawingRels(AFileName: string);
+procedure TExcel4DelphiWriter.WriteDrawingRels(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7835,7 +7835,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiWriter.WriteRelationships(AFileName: string);
+procedure TExcel4DelphiWriter.WriteRelationships(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7852,7 +7852,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiWriter.WriteSharedStrings(AFileName: string);
+procedure TExcel4DelphiWriter.WriteSharedStrings(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7888,7 +7888,7 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiWriter.WriteStyles(AFileName: string);
+procedure TExcel4DelphiWriter.WriteStyles(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7905,7 +7905,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiWriter.WriteTheme(AFileName: string);
+procedure TExcel4DelphiWriter.WriteTheme(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7922,7 +7922,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiWriter.WriteDrawings(AFileName: string);
+procedure TExcel4DelphiWriter.WriteDrawings(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7939,7 +7939,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiWriter.WriteWorkBook(AFileName: string);
+procedure TExcel4DelphiWriter.WriteWorkBook(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -7951,12 +7951,12 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiWriter.WriteWorkSheet(AStream: TStream; ASheetIndex: integer);
+procedure TExcel4DelphiWriter.WriteWorkSheet(AStream: TStream; ASheetIndex: Integer);
 begin
 
 end;
 
-procedure TExcel4DelphiWriter.WriteWorkSheet(AFileName: string; ASheetIndex: integer);
+procedure TExcel4DelphiWriter.WriteWorkSheet(const AFileName: string; const ASheetIndex: Integer);
 var
   Stream: TFileStream;
 begin
@@ -7981,12 +7981,12 @@ begin
   inherited;
 end;
 
-procedure TExcel4DelphiReader.LoadFromDir(ADirName: string);
+procedure TExcel4DelphiReader.LoadFromDir(const ADirName: string);
 begin
 
 end;
 
-procedure TExcel4DelphiReader.LoadFromFile(AFileName: string);
+procedure TExcel4DelphiReader.LoadFromFile(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -8005,7 +8005,7 @@ var
   Zip: TZipFile;
   encoding: TEncoding;
   zipHdr: TZipHeader;
-  index: integer;
+  index: Integer;
   fileRec: TZFileItem;
 begin
   Zip := TZipFile.Create();
@@ -8114,12 +8114,12 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiReader.ReadComments(AStream: TStream; ASheetIndex: integer);
+procedure TExcel4DelphiReader.ReadComments(AStream: TStream; ASheetIndex: Integer);
 begin
 
 end;
 
-procedure TExcel4DelphiReader.ReadContentTypes(AFileName: string);
+procedure TExcel4DelphiReader.ReadContentTypes(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -8157,7 +8157,7 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiReader.ReadRelationships(AFileName: string);
+procedure TExcel4DelphiReader.ReadRelationships(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -8248,7 +8248,7 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiReader.ReadSharedStrings(AFileName: string);
+procedure TExcel4DelphiReader.ReadSharedStrings(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -8265,7 +8265,7 @@ begin
 
 end;
 
-procedure TExcel4DelphiReader.ReadStyles(AFileName: string);
+procedure TExcel4DelphiReader.ReadStyles(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -8277,7 +8277,7 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiReader.ReadTheme(AFileName: string);
+procedure TExcel4DelphiReader.ReadTheme(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -8322,7 +8322,7 @@ procedure TExcel4DelphiReader.ReadWorkBook(AStream: TStream);
 var
   Xml: TZsspXMLReaderH;
   // s: string;
-  { i, t, } dn: integer;
+  { i, t, } dn: Integer;
 begin
   Xml := TZsspXMLReaderH.Create();
   try
@@ -8372,7 +8372,7 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiReader.ReadWorkBook(AFileName: string);
+procedure TExcel4DelphiReader.ReadWorkBook(const AFileName: string);
 var
   Stream: TFileStream;
 begin
@@ -8384,7 +8384,7 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiReader.ReadWorkSheet(AFileName: string; ASheetIndex: integer);
+procedure TExcel4DelphiReader.ReadWorkSheet(const AFileName: string; ASheetIndex: Integer);
 var
   Stream: TFileStream;
 begin
@@ -8396,29 +8396,29 @@ begin
   end;
 end;
 
-procedure TExcel4DelphiReader.ReadWorkSheet(AStream: TStream; ASheetIndex: integer);
+procedure TExcel4DelphiReader.ReadWorkSheet(AStream: TStream; ASheetIndex: Integer);
 const
   MaximumDigitWidth: real = 5.0;
 var
   Xml: TZsspXMLReaderH;
   // currentPage: integer;
-  currentRow: integer;
-  currentCol: integer;
+  currentRow: Integer;
+  currentCol: Integer;
   currentSheet: TZSheet;
   currentCell: TZCell;
   str: string;
   tempReal: real;
-  tempInt: integer;
+  tempInt: Integer;
   tempDate: TDateTime;
   tempFloat: double;
 
-  procedure CheckRow(const RowCount: integer);
+  procedure CheckRow(const RowCount: Integer);
   begin
     if (currentSheet.RowCount < RowCount) then
       currentSheet.RowCount := RowCount;
   end;
 
-  procedure CheckCol(const ColCount: integer);
+  procedure CheckCol(const ColCount: Integer);
   begin
     if (currentSheet.ColCount < ColCount) then
       currentSheet.ColCount := ColCount
@@ -8426,12 +8426,12 @@ var
 
   procedure _ReadSheetData();
   var
-    t: integer;
+    t: Integer;
     v: string;
-    _num: integer;
+    _num: Integer;
     _type: string;
-    _cr, _cc: integer;
-    maxCol: integer;
+    _cr, _cc: Integer;
+    maxCol: Integer;
   begin
     _cr := 0;
     _cc := 0;
@@ -8592,11 +8592,11 @@ var
 
   procedure _ReadMerge();
   var
-    i, t, Num: integer;
-    x1, x2, y1, y2: integer;
+    i, t, Num: Integer;
+    x1, x2, y1, y2: Integer;
     s1, s2: string;
-    b: boolean;
-    function _GetCoords(var x, y: integer): boolean;
+    b: Boolean;
+    function _GetCoords(var x, y: Integer): Boolean;
     begin
       Result := true;
       x := ZEGetColByA1(s1);
@@ -8677,13 +8677,13 @@ var
   procedure _ReadCols();
   type
     TZColInf = record
-      min, Max: integer;
-      bestFit, Hidden: boolean;
-      OutlineLevel: integer;
-      width: integer;
+      min, Max: Integer;
+      bestFit, Hidden: Boolean;
+      OutlineLevel: Integer;
+      width: Integer;
     end;
   var
-    i, j: integer;
+    i, j: Integer;
     t: real;
     colInf: TArray<TZColInf>;
   const
@@ -8738,7 +8738,7 @@ var
     end;
   end; // _ReadCols
 
-  function _StrToMM(const st: string; var retFloat: real): boolean;
+  function _StrToMM(const st: string; var retFloat: real): Boolean;
   begin
     Result := false;
     if (str > '') then
@@ -8755,7 +8755,7 @@ var
   procedure _GetDimension();
   var
     st, s: string;
-    i, l, _maxC, _maxR, c, r: integer;
+    i, l, _maxC, _maxR, c, r: Integer;
   begin
     c := 0;
     r := 0;
@@ -8793,7 +8793,7 @@ var
 
   procedure _ReadHyperLinks();
   var
-    _c, _r, i: integer;
+    _c, _r, i: Integer;
   begin
     _c := 0;
     _r := 0;
@@ -8866,7 +8866,7 @@ var
 
   procedure _ReadSheetViews();
   var
-    vValue, hValue: integer;
+    vValue, hValue: Integer;
     SplitMode: TZSplitMode;
     s: string;
   begin
@@ -8918,9 +8918,9 @@ var
 
   procedure _ReadConditionFormatting();
   var
-    MaxFormulasCount: integer;
+    MaxFormulasCount: Integer;
     _formulas: array of string;
-    Count: integer;
+    Count: Integer;
     _sqref: string;
     _type: string;
     _operator: string;
@@ -8928,31 +8928,31 @@ var
     _CFOperator: TZConditionalOperator;
     _Style: string;
     _text: string;
-    _isCFAdded: boolean;
-    _isOk: boolean;
+    _isCFAdded: Boolean;
+    _isOk: Boolean;
     // _priority: string;
     _CF: TZConditionalStyle;
     _tmpStyle: TZStyle;
 
-    function _AddCF(): boolean;
+    function _AddCF(): Boolean;
     var
       s, ss: string;
-      _len, i, kol: integer;
-      a: array of array [0 .. 5] of integer;
-      _maxx: integer;
+      _len, i, kol: Integer;
+      a: array of array [0 .. 5] of Integer;
+      _maxx: Integer;
       ch: char;
-      w, h: integer;
+      w, h: Integer;
 
-      function _GetOneArea(st: string): boolean;
+      function _GetOneArea(st: string): Boolean;
       var
-        i, j: integer;
+        i, j: Integer;
         s: string;
         ch: char;
-        _cnt: integer;
-        tmpArr: array [0 .. 1, 0 .. 1] of integer;
-        _isOk: boolean;
-        t: integer;
-        tmpB: boolean;
+        _cnt: Integer;
+        tmpArr: array [0 .. 1, 0 .. 1] of Integer;
+        _isOk: Boolean;
+        t: Integer;
+        tmpB: Boolean;
 
       begin
         Result := false;
@@ -9053,9 +9053,9 @@ var
     // Применяем условный стиль
     procedure _TryApplyCF();
     var
-      b: boolean;
-      Num: integer;
-      _id: integer;
+      b: Boolean;
+      Num: Integer;
+      _id: Integer;
       procedure _CheckTextCondition();
       begin
         if (Count = 1) then
@@ -9073,11 +9073,11 @@ var
       // dfNum: integer - номер дифференцированного форматирования
       // RETURN
       // integer - номер применяемого стиля
-      function _getStyleIdxForDF(dfNum: integer): integer;
+      function _getStyleIdxForDF(dfNum: Integer): Integer;
       var
         _df: TZXLSXDiffFormattingItem;
-        _r, _c: integer;
-        _t: integer;
+        _r, _c: Integer;
+        _t: Integer;
         i: TZBordersPos;
       begin
         // _currSheet
