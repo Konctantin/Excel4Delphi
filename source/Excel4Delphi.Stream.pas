@@ -271,11 +271,11 @@ type
   TExcel4DelphiWriter = class
   private
     FSharedStrings: TObjectDictionary<TRichText, integer>;
-    FFileList: TList<TZXLSXFileItem>;
+    // FFileList: TList<TZXLSXFileItem>; // never used
     FCommentList: TList<string>;
     FWorkBook: TZWorkBook;
 
-    procedure ReadRunProperties(AXml: TZsspXMLWriterH; ATagName: string; AFont: TZFont);
+  // procedure ReadRunProperties(AXml: TZsspXMLWriterH; ATagName: string; AFont: TZFont);// never used
   public
     constructor Create(AWorkBook: TZWorkBook);
     destructor Destroy(); override;
@@ -7589,10 +7589,10 @@ begin
   inherited;
 end;
 
-procedure TExcel4DelphiWriter.ReadRunProperties(AXml: TZsspXMLWriterH; ATagName: string; AFont: TZFont);
-begin
-//
-end;
+// procedure TExcel4DelphiWriter.ReadRunProperties(AXml: TZsspXMLWriterH; ATagName: string; AFont: TZFont);
+// begin
+/// /
+// end;
 
 procedure TExcel4DelphiWriter.SaveToDir(ADirName: string);
 begin
