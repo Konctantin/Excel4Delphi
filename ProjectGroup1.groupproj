@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{C109B1B1-616E-4033-A1CA-7BB780922A8C}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="packages\Excel4DelphiLib.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="Demo\d1.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Excel4DelphiLib">
+        <MSBuild Projects="packages\Excel4DelphiLib.dproj"/>
+    </Target>
+    <Target Name="Excel4DelphiLib:Clean">
+        <MSBuild Projects="packages\Excel4DelphiLib.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Excel4DelphiLib:Make">
+        <MSBuild Projects="packages\Excel4DelphiLib.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="d1">
+        <MSBuild Projects="Demo\d1.dproj"/>
+    </Target>
+    <Target Name="d1:Clean">
+        <MSBuild Projects="Demo\d1.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="d1:Make">
+        <MSBuild Projects="Demo\d1.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Excel4DelphiLib;d1"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Excel4DelphiLib:Clean;d1:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Excel4DelphiLib:Make;d1:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
