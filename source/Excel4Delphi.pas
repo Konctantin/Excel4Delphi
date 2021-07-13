@@ -4358,6 +4358,7 @@ begin
   result := TZSheet.Create(FStore);
   SetLength(FSheets, Length(FSheets) + 1);
   FSheets[High(FSheets)] := result;
+  Inc(FCount);
 end;
 
 procedure TZSheets.Assign(Source: TPersistent);
