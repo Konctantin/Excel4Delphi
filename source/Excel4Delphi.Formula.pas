@@ -6,34 +6,37 @@ uses
   SysUtils;
 
 const
-  //ZE_RTA = ZE R1C1 to A1
-  ZE_RTA_ODF            =   1;  //преобразовывать для ODF (=[.A1] + [.B1])
-  ZE_RTA_ODF_PREFIX     =   2;  //добавлять префикс для ODF, если первый символ в формуле '=' (of:=[.A1] + [.B1])
-  ZE_RTA_NO_ABSOLUTE    =   4;  //все абсолютные ссылки заменять на относительные (R1C1 => A1) (относительные не меняет)
-  ZE_RTA_ONLY_ABSOLUTE  =   8;  //все относительные ссылки заменять на абсолютные (R[1]C[1] => $C$3) (абсолютные не меняет)
-  ZE_RTA_ODF_NO_BRACKET = $10;  //Для ODF, но не добавлять квадратные скобки, разделитель лист/ячейка - точка ".".
-  ZE_ATR_DEL_PREFIX     =   1;  //Удалять все символы до первого '='
+  // ZE_RTA = ZE R1C1 to A1
+  ZE_RTA_ODF = 1; // преобразовывать для ODF (=[.A1] + [.B1])
+  ZE_RTA_ODF_PREFIX = 2; // добавлять префикс для ODF, если первый символ в формуле '=' (of:=[.A1] + [.B1])
+  ZE_RTA_NO_ABSOLUTE = 4; // все абсолютные ссылки заменять на относительные (R1C1 => A1) (относительные не меняет)
+  ZE_RTA_ONLY_ABSOLUTE = 8; // все относительные ссылки заменять на абсолютные (R[1]C[1] => $C$3) (абсолютные не меняет)
+  ZE_RTA_ODF_NO_BRACKET = $10; // Для ODF, но не добавлять квадратные скобки, разделитель лист/ячейка - точка ".".
+  ZE_ATR_DEL_PREFIX = 1; // Удалять все символы до первого '='
 
 function ZEGetA1byCol(ColNum: integer; StartZero: boolean = true): string;
 function ZERangeToRow(range: string): integer;
 function ZEGetColByA1(AA: string; StartZero: boolean = true): integer;
-function ZER1C1ToA1(const formula: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string;
-function ZEA1ToR1C1(const formula: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string;
+function ZER1C1ToA1(const Formula: string; CurCol, CurRow: integer; options: integer;
+  StartZero: boolean = true): string;
+function ZEA1ToR1C1(const Formula: string; CurCol, CurRow: integer; options: integer;
+  StartZero: boolean = true): string;
 function ZEGetCellCoords(const cell: string; out column, row: integer; StartZero: boolean = true): boolean;
 
 implementation
 
 const
-  ZE_STR_ARRAY: array [0..25] of char = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
+  ZE_STR_ARRAY: array [0 .. 25] of char = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
 
-//Получает номер строки и столбца по строковому значению (для A1 стилей)
-//INPUT
-//  const cell: string      - номер ячейки в A1 стиле
-//  out column: integer     - возвращаемый номер столбца
-//  out row: integer        - возвращаемый номер строки
-//      StartZero: boolean  - признак нумерации с нуля
-//RETURN
-//      boolean - true - координаты успешно определены
+// Получает номер строки и столбца по строковому значению (для A1 стилей)
+// INPUT
+// const cell: string      - номер ячейки в A1 стиле
+// out column: integer     - возвращаемый номер столбца
+// out row: integer        - возвращаемый номер строки
+// StartZero: boolean  - признак нумерации с нуля
+// RETURN
+// boolean - true - координаты успешно определены
 function ZEGetCellCoords(const cell: string; out column, row: integer; StartZero: boolean = true): boolean;
 var
   i: integer;
@@ -47,27 +50,27 @@ begin
   s2 := '';
   b := false;
   for i := 1 to length(cell) do
-  case cell[i] of
-    'A'..'Z', 'a'..'z':
-      begin
-        s1 := s1 + cell[i];
-        b := true;
-      end;
-    '0'..'9':
-      begin
-        if (not b) then
+    case cell[i] of
+      'A' .. 'Z', 'a' .. 'z':
         begin
-          _isOk := false;
-          break;
+          s1 := s1 + cell[i];
+          b := true;
         end;
-        s2 := s2 + cell[i];
-      end;
+      '0' .. '9':
+        begin
+          if (not b) then
+          begin
+            _isOk := false;
+            break;
+          end;
+          s2 := s2 + cell[i];
+        end;
     else
       begin
         _isOk := false;
         break;
       end;
-  end;
+    end;
   if (_isOk) then
   begin
     if (not TryStrToInt(s2, row)) then
@@ -82,18 +85,18 @@ begin
     end;
   end;
   result := _isOk;
-end; //ZEGetCellCoords
+end; // ZEGetCellCoords
 
-//Попытка преобразовать номер ячейки из R1C1 в A1 стиль
-//если не удалось распознать номер ячейки, то возвратит обратно тот же текст
-//INPUT
-//  const st: string        - предположительно номер ячеки (диапазон)
-//      CurCol: integer     - номер столбца ячейки
-//      CurRow: integer     - номер строки ячейки
-//      options: integer    - параметры преобразования
-//      StartZero: boolean  - признак нумерации с нуля
-//RETURN
-//      string - номер ячейки в стиле A1
+// Попытка преобразовать номер ячейки из R1C1 в A1 стиль
+// если не удалось распознать номер ячейки, то возвратит обратно тот же текст
+// INPUT
+// const st: string        - предположительно номер ячеки (диапазон)
+// CurCol: integer     - номер столбца ячейки
+// CurRow: integer     - номер строки ячейки
+// options: integer    - параметры преобразования
+// StartZero: boolean  - признак нумерации с нуля
+// RETURN
+// string - номер ячейки в стиле A1
 function ReturnA1(const st: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string;
 var
   s: string;
@@ -115,41 +118,39 @@ var
   _num: integer;
   _use_bracket: boolean;
 
-  //Возвращает строку
+  // Возвращает строку
   procedure _getR(num: integer);
   begin
     if (isSq or (num = 0)) then
       num := CurRow + num;
     if (is_only_absolute and isSq) then
       isSq := false
-    else
-      if (is_no_absolute and (not isSq)) then
-        isSq := true;
+    else if (is_no_absolute and (not isSq)) then
+      isSq := true;
     _r := IntToStr(num);
     if (not isSq) then
       _r := '$' + _r;
     isNumber := false;
     inc(_num);
-  end; //_getR
+  end; // _getR
 
-  //Возвращает столбец
+  // Возвращает столбец
   procedure _getC(num: integer);
   begin
     if (isSq or (num = 0)) then
       num := CurCol + num;
     if (is_only_absolute and isSq) then
       isSq := false
-    else
-      if (is_no_absolute and (not isSq)) then
-        isSq := true;
+    else if (is_no_absolute and (not isSq)) then
+      isSq := true;
     _c := ZEGetA1byCol(num, false);
     if (not isSq) then
       _c := '$' + _c;
     isNumber := false;
     inc(_num);
-  end; //_getС
+  end; // _getС
 
-  //Проверяет символ
+  // Проверяет символ
   procedure _checksymbol(ch: char);
   begin
     if (isApos) then
@@ -159,13 +160,14 @@ var
         s := s + ch;
         exit;
       end;
-    end else
+    end
+    else
     begin
       if (isNumber) then
       begin
-        if (not CharInSet(ch, ['-', '0'..'9', ']', '[', ''''])) then
+        if (not CharInSet(ch, ['-', '0' .. '9', ']', '[', ''''])) then
         begin
-          if (not (isC xor isR)) then
+          if (not(isC xor isR)) then
           begin
             isOk := false;
             exit;
@@ -183,16 +185,17 @@ var
           isSq := false;
           s := '';
         end;
-      end else //if (isNumber)
+      end
+      else // if (isNumber)
       begin
-        //если адрес: RC (без чисел - нули)
+        // если адрес: RC (без чисел - нули)
         if (isR and CharInSet(ch, ['C', 'c'])) then
         begin
           _getR(0);
           s := '';
           isSq := false;
-        end else
-        if (isC and (not isNotLast)) then
+        end
+        else if (isC and (not isNotLast)) then
         begin
           _getC(0);
           s := '';
@@ -206,11 +209,13 @@ var
           s := s + ch;
           isApos := not isApos;
         end;
-      '[': {хм..};
-      ']': isSq := true;
+      '[': { хм.. }
+        ;
+      ']':
+        isSq := true;
       'R', 'r':
         begin
-          //R - ok, CR - что-то не то
+          // R - ok, CR - что-то не то
           if (isR or isC) then
             isOk := false;
           isR := true;
@@ -229,17 +234,17 @@ var
           s := '';
           isDelim := false;
         end;
-      '-', '0'..'9':
+      '-', '0' .. '9':
         begin
           s := s + ch;
           if (isC or isR) then
             if (not isNumber) then
               isNumber := true;
         end;
-      '!':  //разделитель страницы
+      '!': // разделитель страницы
         begin
           retTxt := retTxt + s;
-          if (isODF) then //ODF
+          if (isODF) then // ODF
             retTxt := retTxt + '.'
           else
             retTxt := retTxt + ch;
@@ -247,18 +252,18 @@ var
           isList := true;
           isDelim := false;
         end;
-      else
-        if (isDelim and isNotLast) then
-          s := s + ch
-        else
-          if (isNotLast) then
-            isOk := false; //O_o - вроде как не ячейка, выходим и возвращаем всё как есть
-    end; //case
-  end; //_checksymbol
+    else
+      if (isDelim and isNotLast) then
+        s := s + ch
+      else if (isNotLast) then
+        isOk := false; // O_o - вроде как не ячейка, выходим и возвращаем всё как есть
+    end; // case
+  end; // _checksymbol
 
 begin
   result := '';
-  if (TryStrToInt(st, t)) then begin
+  if (TryStrToInt(st, t)) then
+  begin
     result := st;
     exit;
   end;
@@ -281,48 +286,52 @@ begin
   is_no_absolute := (options and ZE_RTA_NO_ABSOLUTE = ZE_RTA_NO_ABSOLUTE);
   is_only_absolute := (options and ZE_RTA_ONLY_ABSOLUTE = ZE_RTA_ONLY_ABSOLUTE);
   isODF := (options and ZE_RTA_ODF = ZE_RTA_ODF);
-  for i := 1 to kol do begin
+  for i := 1 to kol do
+  begin
     _checksymbol(st[i]);
     if (not isOk) then
       break;
   end;
   isNotLast := false;
-  //нужно подумать, что делать, если было не 2 преобразования
+  // нужно подумать, что делать, если было не 2 преобразования
   if ((kol <= 0) or (_num = 0)) then
     isOk := false;
   _checksymbol(';');
-  if (not isOk) then begin
+  if (not isOk) then
+  begin
     result := st;
     exit;
   end;
   result := retTxt + _c + _r + s;
-  _use_bracket := not (options and ZE_RTA_ODF_NO_BRACKET = ZE_RTA_ODF_NO_BRACKET);
-  if (isODF and _use_bracket) then begin
+  _use_bracket := not(options and ZE_RTA_ODF_NO_BRACKET = ZE_RTA_ODF_NO_BRACKET);
+  if (isODF and _use_bracket) then
+  begin
     if (not isList) then
       result := '.' + result;
-    result := '[' + result + ']';  
+    result := '[' + result + ']';
   end;
-end; //ReturnA1
+end; // ReturnA1
 
-//Переводит формулу из стиля R1C1 в стиль A1
-//INPUT
-//  const formula: string - формула в стиле R1C1
-//      CurRow: integer   - номер строки ячейки
-//      CurCol: integer   - номер столбца ячейки
-//      options: integer  - настройки преобразования (ZE_RTA_ODF и ZE_RTA_ODF_PREFIX)
-//                              options and ZE_RTA_ODF = ZE_RTA_ODF - преобразовывать для ODF (=[.A1] + [.B1])
-//                              options and ZE_RTA_ODF_PREFIX = ZE_RTA_ODF_PREFIX - добавлять префикс для ODF, если первый символ в формуле '=' (of:=[.A1] + [.B1])
-//      StartZero: boolean- при true счёт строки/ячейки начинается с 0.
-//RETURN
-//      string  - текст формулы в стиле R1C1
-function ZER1C1ToA1(const formula: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string;
+// Переводит формулу из стиля R1C1 в стиль A1
+// INPUT
+// const formula: string - формула в стиле R1C1
+// CurRow: integer   - номер строки ячейки
+// CurCol: integer   - номер столбца ячейки
+// options: integer  - настройки преобразования (ZE_RTA_ODF и ZE_RTA_ODF_PREFIX)
+// options and ZE_RTA_ODF = ZE_RTA_ODF - преобразовывать для ODF (=[.A1] + [.B1])
+// options and ZE_RTA_ODF_PREFIX = ZE_RTA_ODF_PREFIX - добавлять префикс для ODF, если первый символ в формуле '=' (of:=[.A1] + [.B1])
+// StartZero: boolean- при true счёт строки/ячейки начинается с 0.
+// RETURN
+// string  - текст формулы в стиле R1C1
+function ZER1C1ToA1(const Formula: string; CurCol, CurRow: integer; options: integer;
+  StartZero: boolean = true): string;
 var
   kol: integer;
   i: integer;
   retFormula: string;
   s: string;
   isQuote: boolean; // " ... "
-  isApos: boolean;  // ' ... '
+  isApos: boolean; // ' ... '
   isNotLast: boolean;
   isSq: boolean;
 
@@ -339,11 +348,12 @@ var
             begin
               retFormula := retFormula + s + ch;
               s := '';
-            end else
+            end
+            else
             begin
               if (s > '') then
               begin
-                //O_o Странно
+                // O_o Странно
                 retFormula := retFormula + ReturnA1(s, CurCol, CurRow, options, StartZero);
                 s := '';
               end;
@@ -361,16 +371,16 @@ var
       '[':
         begin
           s := s + ch;
-          if (not (isQuote or isApos)) then
+          if (not(isQuote or isApos)) then
             isSq := true;
         end;
       ']':
         begin
           s := s + ch;
-          if (not (isQuote or isApos)) then
+          if (not(isQuote or isApos)) then
             isSq := false;
         end;
-      ':', ';', ' ', '-', '%', '^', '*', '/', '+', '&', '<', '>', '(', ')', '=': //разделители
+      ':', ';', ' ', '-', '%', '^', '*', '/', '+', '&', '<', '>', '(', ')', '=': // разделители
         begin
           if (isApos or isQuote or isSq) then
             s := s + ch
@@ -382,14 +392,14 @@ var
             s := '';
           end;
         end;
-      else
-        s := s + ch;
+    else
+      s := s + ch;
     end;
-  end; //_checksymbol
+  end; // _checksymbol
 
 begin
   result := '';
-  kol := length(formula);
+  kol := length(Formula);
   retFormula := '';
   s := '';
   if (StartZero) then
@@ -402,26 +412,26 @@ begin
   isNotLast := true;
   isSq := false;
   for i := 1 to kol do
-    _checksymbol(formula[i]);
-  isNotLast := false;  
+    _checksymbol(Formula[i]);
+  isNotLast := false;
   _checksymbol(';');
   result := retFormula;
   if (options and ZE_RTA_ODF = ZE_RTA_ODF) and (options and ZE_RTA_ODF_PREFIX = ZE_RTA_ODF_PREFIX) then
     if (kol > 0) then
-      if (formula[1] = '=') then
+      if (Formula[1] = '=') then
         result := 'of:' + result;
-end; //ZER1C1ToA1
+end; // ZER1C1ToA1
 
-//Попытка преобразовать номер ячейки из A1 в R1C1 стиль
-//если не удалось распознать номер ячейки, то возвратит обратно тот же текст
-//INPUT
-//  const st: string        - предположительно номер ячеки (диапазон)
-//      CurCol: integer     - номер столбца ячейки
-//      CurRow: integer     - номер строки ячейки
-//      options: integer    - настройки
-//      StartZero: boolean  - признак нумерации с нуля
-//RETURN
-//      string - номер ячейки в стиле R1C1
+// Попытка преобразовать номер ячейки из A1 в R1C1 стиль
+// если не удалось распознать номер ячейки, то возвратит обратно тот же текст
+// INPUT
+// const st: string        - предположительно номер ячеки (диапазон)
+// CurCol: integer     - номер столбца ячейки
+// CurRow: integer     - номер строки ячейки
+// options: integer    - настройки
+// StartZero: boolean  - признак нумерации с нуля
+// RETURN
+// string - номер ячейки в стиле R1C1
 function ReturnR1C1(const st: string; CurCol, CurRow: integer; StartZero: boolean = true): string;
 var
   i: integer;
@@ -439,11 +449,11 @@ var
 
   procedure _GetColumn();
   begin
-    //попробовать преобразовать
+    // попробовать преобразовать
     num := ZEGetColByA1(s, false);
-    if (num >= 0) then //распознался вроде нормально
+    if (num >= 0) then // распознался вроде нормально
     begin
-      if (num > 25000) then //сколько там колонок возможно?
+      if (num > 25000) then // сколько там колонок возможно?
         result := result + sa + s
       else
       begin
@@ -459,23 +469,24 @@ var
             column := 'C';
         end;
       end;
-    end else //что-то не то
+    end
+    else // что-то не то
       result := result + sa + s;
     if (isAbsolute > 0) then
       dec(isAbsolute);
     sa := '';
     s := '';
     isC := true;
-  end; //_GetColumn
+  end; // _GetColumn
 
-  procedure _CheckSymbol(ch: char);
+  procedure _checksymbol(ch: char);
   begin
-    if (not CharInSet(ch, ['0'..'9'])) then
+    if (not CharInSet(ch, ['0' .. '9'])) then
       if (not isApos) then
       begin
         if (_startNumber) then
         begin
-          if (TryStrToInt(s, t)) then //удалось получить число
+          if (TryStrToInt(s, t)) then // удалось получить число
           begin
             if (isAbsolute > 0) then
               result := result + 'R' + s + column
@@ -485,12 +496,13 @@ var
               if (t <> 0) then
                 result := result + 'R[' + IntToStr(t) + ']' + column
               else
-                result := result + 'R' + column;  
+                result := result + 'R' + column;
             end;
             if (isAbsolute > 0) then
               dec(isAbsolute);
-            isC := false;  
-          end else
+            isC := false;
+          end
+          else
             result := result + sa + s;
           s := '';
           sa := '';
@@ -508,9 +520,9 @@ var
           end;
           isApos := not isApos;
         end;
-      '.': //разделитель для листа (OpenOffice/LibreOffice)
+      '.': // разделитель для листа (OpenOffice/LibreOffice)
         begin
-           if (isApos) then
+          if (isApos) then
             s := s + ch
           else
           begin
@@ -519,7 +531,7 @@ var
             s := '';
           end;
         end;
-      '!': //разделитель для листа (excel)
+      '!': // разделитель для листа (excel)
         begin
           if (isApos) then
             s := s + ch
@@ -539,7 +551,7 @@ var
               _GetColumn();
             inc(isAbsolute);
             sa := ch;
-          end;  
+          end;
         end;
       '[':
         begin
@@ -557,28 +569,32 @@ var
           begin
           end;
         end;
-      '0'..'9':
-         begin
-           if (isApos) then
-             s := s + ch
-           else begin
-             if ((not _startNumber) and (not isC)) then begin
-               _GetColumn();
-               s := '';
-             end;
-             s := s+ ch;
-             _startNumber := true;
-           end;
-         end;
-      else
-        if (isNotLast) then
-          s := s + ch;
-    end; //case
+      '0' .. '9':
+        begin
+          if (isApos) then
+            s := s + ch
+          else
+          begin
+            if ((not _startNumber) and (not isC)) then
+            begin
+              _GetColumn();
+              s := '';
+            end;
+            s := s + ch;
+            _startNumber := true;
+          end;
+        end;
+    else
+      if (isNotLast) then
+        s := s + ch;
+    end; // case
   end; // _CheckSymbol
 
-  //Проверяет, с какого символа в строке начать
+  // Проверяет, с какого символа в строке начать
   procedure FindStartNumber(out num: integer);
-  var i: integer; z: boolean;
+  var
+    i: integer;
+    z: boolean;
   begin
     num := 1;
     z := false;
@@ -590,15 +606,16 @@ var
             z := not z;
           end;
         '!', '.':
-           if (not z) then begin
-             num := i;
-             exit;
-           end;
-         else
-           s := s + st[i];  
-      end; //case
-    s := '';  
-  end; //FindStartNumber
+          if (not z) then
+          begin
+            num := i;
+            exit;
+          end;
+      else
+        s := s + st[i];
+      end; // case
+    s := '';
+  end; // FindStartNumber
 
 begin
   result := '';
@@ -607,7 +624,8 @@ begin
   kol := length(st);
   if (kol >= 1) then
     if (st[1] <> '$') then
-      if (TryStrToInt(st, t)) then begin
+      if (TryStrToInt(st, t)) then
+      begin
         result := st;
         exit;
       end;
@@ -616,98 +634,108 @@ begin
   isAbsolute := 0;
   sa := '';
   column := '';
-  isNotlast := true;
+  isNotLast := true;
   isC := false;
-  while (i <= kol) do begin
-    _CheckSymbol(st[i]);
+  while (i <= kol) do
+  begin
+    _checksymbol(st[i]);
     inc(i);
-  end; //while
+  end; // while
   isNotLast := false;
-  _CheckSymbol(';');
+  _checksymbol(';');
   if (s > '') then
-    result := result + s; 
-end; //ReturnR1C1
+    result := result + s;
+end; // ReturnR1C1
 
-//Переводит формулу из стиля A1 в стиль R1C1
-//INPUT
-//  const formula: string - формула в стиле A1
-//      CurRow: integer   - номер строки ячейки
-//      CurCol: integer   - номер столбца ячейки
-//      options: integer  - настройки преобразования
-//      StartZero: boolean- при true счёт строки/ячейки начинается с 0.
-//RETURN
-//      string  - текст формулы в стиле R1C1
-function ZEA1ToR1C1(const formula: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string;
+// Переводит формулу из стиля A1 в стиль R1C1
+// INPUT
+// const formula: string - формула в стиле A1
+// CurRow: integer   - номер строки ячейки
+// CurCol: integer   - номер столбца ячейки
+// options: integer  - настройки преобразования
+// StartZero: boolean- при true счёт строки/ячейки начинается с 0.
+// RETURN
+// string  - текст формулы в стиле R1C1
+function ZEA1ToR1C1(const Formula: string; CurCol, CurRow: integer; options: integer;
+  StartZero: boolean = true): string;
 var
   i, l: integer;
   s: string;
   retFormula: string;
   isQuote: boolean; // " ... "
-  isApos: boolean;  // ' ... '
+  isApos: boolean; // ' ... '
   isNotLast: boolean;
   start_num: integer;
 
-  //Проверить символ
-  //INPUT
-  //  const ch: char - символ для проверки
-  procedure _CheckSymbol(const ch: char);
+  // Проверить символ
+  // INPUT
+  // const ch: char - символ для проверки
+  procedure _checksymbol(const ch: char);
   begin
     case ch of
       '"':
         begin;
           if (isApos) then
             s := s + ch
-          else begin
-            if (isQuote) then begin
+          else
+          begin
+            if (isQuote) then
+            begin
               retFormula := retFormula + s + ch;
               s := '';
-            end else begin
-              if (s > '') then begin
-                //O_o Странно
+            end
+            else
+            begin
+              if (s > '') then
+              begin
+                // O_o Странно
                 retFormula := retFormula + ReturnR1C1(s, CurCol, CurRow, StartZero);
                 s := '';
               end;
               s := ch
             end;
             isQuote := not isQuote;
-          end;  
+          end;
         end;
       '''':
         begin
           s := s + ch;
           if (not isQuote) then
             isApos := not isApos;
-        end; 
-      ':', ';', ' ', '-', '%', '^', '*', '/', '+', '&', '<', '>', '(', ')', ']', '[', '=': //разделители
+        end;
+      ':', ';', ' ', '-', '%', '^', '*', '/', '+', '&', '<', '>', '(', ')', ']', '[', '=': // разделители
         begin
           if (isQuote or isApos) then
             s := s + ch
-          else begin
+          else
+          begin
             retFormula := retFormula + ReturnR1C1(s, CurCol, CurRow, StartZero);
             if (isNotLast) then
-              if (not CharInSet(ch, ['[',']'])) then
+              if (not CharInSet(ch, ['[', ']'])) then
                 retFormula := retFormula + ch;
             s := '';
           end;
         end;
-      else
-        s := s + ch;
+    else
+      s := s + ch;
     end;
-  end; //_CheckSymbol
+  end; // _CheckSymbol
 
   procedure FindStartNum(var start_num: integer);
-  var i: integer;
+  var
+    i: integer;
   begin
     for i := 1 to l do
-      if (formula[i] = '=') then begin
+      if (Formula[i] = '=') then
+      begin
         start_num := i;
         exit;
       end;
-  end; //FindStartNum
+  end; // FindStartNum
 
 begin
   result := '';
-  l := length(formula);
+  l := length(Formula);
   s := '';
   retFormula := '';
   isQuote := false;
@@ -724,42 +752,48 @@ begin
     FindStartNum(start_num);
 
   for i := start_num to l do
-    _CheckSymbol(formula[i]);
-  isNotLast := false;  
-  _CheckSymbol(';');
+    _checksymbol(Formula[i]);
+  isNotLast := false;
+  _checksymbol(';');
   if (isQuote or isApos) then
     retFormula := retFormula + s;
   result := retFormula;
-end; //ZEA1ToR1C1
+end; // ZEA1ToR1C1
 
 function ZERangeToRow(range: string): integer;
-var i: integer;
+var
+  i: integer;
 begin
-    for I := 1 to Length(range)-1 do begin
-        if CharInSet(range.Chars[i], ['0'..'9']) then begin
-            exit(StrToInt(range.Substring(i)));
-        end;
+  for i := 1 to length(range) - 1 do
+  begin
+    if CharInSet(range.Chars[i], ['0' .. '9']) then
+    begin
+      exit(StrToInt(range.Substring(i)));
     end;
-    raise Exception.Create('Не удалось вычислить номер строки из формулы: ' + range);
+  end;
+  raise Exception.Create('Не удалось вычислить номер строки из формулы: ' + range);
 end;
 
-//Возвращает номер столбца по буквенному обозначению
-//INPUT
-//  const AA: string      - буквенное обозначение столбца
-//      StartZero: boolean  - если true, то счёт начинает с нуля (т.е. A = 0), в противном случае с 1.
-//RETURN
-//      integer -   -1 - не удалось преобразовать
+// Возвращает номер столбца по буквенному обозначению
+// INPUT
+// const AA: string      - буквенное обозначение столбца
+// StartZero: boolean  - если true, то счёт начинает с нуля (т.е. A = 0), в противном случае с 1.
+// RETURN
+// integer -   -1 - не удалось преобразовать
 function ZEGetColByA1(AA: string; StartZero: boolean = true): integer;
-var i: integer; num, t, kol, s: integer;
+var
+  i: integer;
+  num, t, kol, s: integer;
 begin
   result := -1;
   num := 0;
   AA := UpperCase(AA);
   kol := length(AA);
   s := 1;
-  for i := kol downto 1 do begin
-    if not CharInSet(AA[I], ['A'..'Z']) then
-        continue;
+  for i := kol downto 1 do
+  begin
+    if not CharInSet(AA[i], ['A' .. 'Z']) then
+      continue;
     t := ord(AA[i]) - ord('A');
     num := num + (t + 1) * s;
     s := s * 26;
@@ -769,28 +803,31 @@ begin
   result := num;
   if (StartZero) then
     result := result - 1;
-end; //ZEGetColByAA
+end; // ZEGetColByAA
 
-//Возвращает буквенное обозначение столбца для АА стиля
-//INPUT
-//      ColNum: integer     - номер столбца
-//      StartZero: boolean  - если true, то счёт начинается с 0, в противном случае - с 1.
+// Возвращает буквенное обозначение столбца для АА стиля
+// INPUT
+// ColNum: integer     - номер столбца
+// StartZero: boolean  - если true, то счёт начинается с 0, в противном случае - с 1.
 function ZEGetA1byCol(ColNum: integer; StartZero: boolean = true): string;
-var t, n: integer; s: string;
+var
+  t, n: integer;
+  s: string;
 begin
   t := ColNum;
   if (not StartZero) then
     dec(t);
   result := '';
   s := '';
-  while t >= 0 do begin
+  while t >= 0 do
+  begin
     n := t mod 26;
     t := (t div 26) - 1;
-    //ХЗ как там с кодировками будет
+    // ХЗ как там с кодировками будет
     s := s + ZE_STR_ARRAY[n];
   end;
   for t := length(s) downto 1 do
     result := result + s[t];
-end; //ZEGetAAbyCol
+end; // ZEGetAAbyCol
 
 end.
