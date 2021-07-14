@@ -3,7 +3,7 @@
 interface
 
 uses
-  Classes, SysUtils,
+  System.Classes, System.SysUtils,
   {$IFDEF FMX}
   FMX.Graphics,
   {$ELSE}
@@ -12,8 +12,8 @@ uses
   {$IFDEF MSWINDOWS}
   Winapi.Windows,
   {$ENDIF}
-  UITypes, Math, RegularExpressions, Generics.Collections,
-  Generics.Defaults, System.Contnrs, Excel4Delphi.Xml;
+  System.UITypes, System.Math, RegularExpressions, System.Generics.Collections,
+  System.Generics.Defaults, Excel4Delphi.Xml;
 
 var
   ZE_XLSX_APPLICATION: string;
@@ -25,6 +25,9 @@ const
 {$IFDEF FMX}
   DEFAULT_CHARSET = 1;
 {$ENDIF}
+
+type
+  TObjectList = TObjectList<TObject>;
 
 type
   /// <summary>
@@ -1985,7 +1988,9 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
+    {$IFNDEF FMX}
     procedure GetPixelSize(hdc: THandle);
+    {$ENDIF}
     property Sheets: TZSheets read FSheets write FSheets;
     property MediaList: TArray<TMediaRec> read FMediaList write FMediaList;
     function AddMediaContent(AFileName: string; AContent: TBytes; ACheckByName: Boolean): Integer;
@@ -4741,6 +4746,7 @@ begin
     FVertPixelSize := Value;
 end;
 
+{$IFNDEF FMX}
 procedure TZWorkBook.GetPixelSize(hdc: THandle);
 begin
   // горизонтальный размер пикселя в миллиметрах
@@ -4748,6 +4754,7 @@ begin
   // вертикальный размер пикселя в миллиметрах
   VertPixelSize := GetDeviceCaps(hdc, VERTSIZE) / GetDeviceCaps(hdc, VERTRES);
 end;
+{$ENDIF}
 
 function TZWorkBook.GetDefaultSheetOptions(): TZSheetOptions;
 begin

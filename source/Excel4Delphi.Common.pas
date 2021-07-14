@@ -60,7 +60,7 @@ uses
   {$IFDEF MSWINDOWS}
   Winapi.windows,
   {$ENDIF}
-  DateUtils, IOUtils;
+  System.DateUtils, System.IOUtils;
 
 function FileCreateTemp(var tempName: string): THandle;
 {$IFNDEF MSWINDOWS}
