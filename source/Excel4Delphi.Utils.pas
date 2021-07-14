@@ -3,7 +3,7 @@
 interface
 
 uses
-  Windows, SysUtils, UITypes, Types, Classes, Grids, Math, Graphics,
+  System.SysUtils, System.UITypes, System.Types, System.Classes, System.Math,
   Excel4Delphi, Excel4Delphi.Xml, Excel4Delphi.Common;
 
 /// <summary>
@@ -14,7 +14,7 @@ function SaveXmlssToHtml(sheet: TZSheet; CodePageName: string = 'UTF-8'): string
 implementation
 
 uses
-  Excel4Delphi.NumberFormats, StrUtils, AnsiStrings;
+  Excel4Delphi.NumberFormats, System.StrUtils, System.AnsiStrings;
 
 function SaveXmlssToHtml(sheet: TZSheet; CodePageName: string = 'UTF-8'): string;
 var
@@ -185,13 +185,13 @@ begin
           Xml.Attributes.Clear();
           Att.Clear();
           Att.Add('class', 'F' + IntToStr(t + 20));
-          if fsbold in sheet.WorkBook.Styles[t].Font.Style then
+          if TFontStyle.fsbold in sheet.WorkBook.Styles[t].Font.Style then
             Xml.WriteTagNode('B', false, false, false);
-          if fsItalic in sheet.WorkBook.Styles[t].Font.Style then
+          if TFontStyle.fsItalic in sheet.WorkBook.Styles[t].Font.Style then
             Xml.WriteTagNode('I', false, false, false);
-          if fsUnderline in sheet.WorkBook.Styles[t].Font.Style then
+          if TFontStyle.fsUnderline in sheet.WorkBook.Styles[t].Font.Style then
             Xml.WriteTagNode('U', false, false, false);
-          if fsStrikeOut in sheet.WorkBook.Styles[t].Font.Style then
+          if TFontStyle.fsStrikeOut in sheet.WorkBook.Styles[t].Font.Style then
             Xml.WriteTagNode('S', false, false, false);
 
           l := Length(sheet.Cell[j, i].Href);
@@ -237,13 +237,13 @@ begin
           if l > 0 then
             Xml.WriteEndTagNode(); // A
 
-          if fsbold in sheet.WorkBook.Styles[t].Font.Style then
+          if TFontStyle.fsbold in sheet.WorkBook.Styles[t].Font.Style then
             Xml.WriteEndTagNode(); // B
-          if fsItalic in sheet.WorkBook.Styles[t].Font.Style then
+          if TFontStyle.fsItalic in sheet.WorkBook.Styles[t].Font.Style then
             Xml.WriteEndTagNode(); // I
-          if fsUnderline in sheet.WorkBook.Styles[t].Font.Style then
+          if TFontStyle.fsUnderline in sheet.WorkBook.Styles[t].Font.Style then
             Xml.WriteEndTagNode(); // U
-          if fsStrikeOut in sheet.WorkBook.Styles[t].Font.Style then
+          if TFontStyle.fsStrikeOut in sheet.WorkBook.Styles[t].Font.Style then
             Xml.WriteEndTagNode(); // S
           Xml.WriteEndTagNode(); // TD
         end;

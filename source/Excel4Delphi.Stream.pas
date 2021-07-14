@@ -3,18 +3,14 @@
 interface
 
 uses
-  System.SysUtils,
-  System.Classes,
-  System.Types,
+  System.SysUtils, System.Classes, System.Types,
+  {$IFDEF FMX}
+  FMX.Graphics,
+  {$ELSE}
   VCL.Graphics,
-  System.UITypes,
-  Windows,
-  System.Zip,
-  System.IOUtils,
-  Excel4Delphi.Formula,
-  Excel4Delphi.Xml,
-  Excel4Delphi,
-  Excel4Delphi.Common,
+  {$ENDIF}
+  System.UITypes, Windows, System.Zip, System.IOUtils, Excel4Delphi.Formula,
+  Excel4Delphi.Xml, Excel4Delphi, Excel4Delphi.Common,
   System.Generics.Collections;
 
 type
@@ -385,7 +381,8 @@ function ZEXSLXReadComments(var XMLSS: TZWorkBook; var Stream: TStream): Boolean
 
 implementation
 
-uses AnsiStrings, StrUtils, Math, Excel4Delphi.NumberFormats, NetEncoding;
+uses
+  System.AnsiStrings, System.StrUtils, System.Math, Excel4Delphi.NumberFormats, System.NetEncoding;
 
 const
 {$REGION 'Indexed Colors'}
@@ -529,16 +526,25 @@ function GetMaximumDigitWidth(fontName: string; fontsize: double): double;
 const
   numbers = '0123456789';
 var
+  {$IFDEF FMX}
+  bitmap: FMX.Graphics.TBitmap;
+  {$ELSE}
   bitmap: VCL.Graphics.TBitmap;
+  {$ENDIF}
   number: string;
 begin
   // А.А.Валуев Расчитываем ширину самого широкого числа.
   Result := 0;
+  {$IFDEF FMX}
+  bitmap := FMX.Graphics.TBitmap.Create;
+  bitmap.Canvas.Font.Family := fontName;
+  {$ELSE}
   bitmap := VCL.Graphics.TBitmap.Create;
+  bitmap.Canvas.Font.PixelsPerInch := 96;
+  bitmap.Canvas.Font.name := fontName;
+  {$ENDIF}
   try
-    bitmap.Canvas.Font.PixelsPerInch := 96;
     bitmap.Canvas.Font.Size := Trunc(fontsize);
-    bitmap.Canvas.Font.name := fontName;
     for number in numbers do
       Result := Max(Result, bitmap.Canvas.TextWidth(number));
   finally
@@ -660,7 +666,7 @@ procedure TZXLSXDiffBorderItemStyle.Clear();
 begin
   FUseStyle := false;
   FUseColor := false;
-  FColor := clBlack;
+  FColor := TColorRec.Black;
   FWeight := 1;
   FLineStyle := ZENone;
 end;
@@ -778,7 +784,7 @@ begin
   FUseFont := false;
   FUseFontColor := false;
   FUseFontStyles := false;
-  FFontColor := clBlack;
+  FFontColor := TColorRec.Black;
   FFontStyles := [];
   FUseBorder := false;
   FBorders.Clear();
@@ -786,9 +792,9 @@ begin
   FUseCellPattern := false;
   FCellPattern := ZPNone;
   FUseBGColor := false;
-  FBGColor := clWindow;
+  FBGColor := TColorRec.cWindow;
   FUsePatternColor := false;
-  FPatternColor := clWindow;
+  FPatternColor := TColorRec.cWindow;
 end; // Clear
 
 // END Differential Formatting
@@ -1343,11 +1349,11 @@ begin
             while Xml.ReadToEndTagByName('rPr') do
             begin
               if Xml.IsTagClosedByName('b') then
-                rs.Font.Style := rs.Font.Style + [fsBold]
+                rs.Font.Style := rs.Font.Style + [TFontStyle.fsBold]
               else if Xml.IsTagClosedByName('u') then
-                rs.Font.Style := rs.Font.Style + [fsUnderline]
+                rs.Font.Style := rs.Font.Style + [TFontStyle.fsUnderline]
               else if Xml.IsTagClosedByName('i') then
-                rs.Font.Style := rs.Font.Style + [fsItalic]
+                rs.Font.Style := rs.Font.Style + [TFontStyle.fsItalic]
               else if Xml.IsTagClosedByName('sz') then
                 rs.Font.Size := StrToFloatDef(Xml.Attributes['val'], 11, TFormatSettings.Invariant)
               else if Xml.IsTagClosedByName('color ') then
@@ -2821,7 +2827,7 @@ var
     fnt.underline := false;
     fnt.strike := false;
     fnt.charset := 204;
-    fnt.Color := clBlack;
+    fnt.Color := TColorRec.Black;
     fnt.LumFactor := 0;
     fnt.ColorType := 0;
     fnt.fontsize := 8;
@@ -2874,8 +2880,8 @@ var
   procedure ZEXLSXClearPatternFill(var PattFill: TZXLSXFill);
   begin
     PattFill.patternfill := ZPNone;
-    PattFill.BGColor := clWindow;
-    PattFill.PatternColor := clWindow;
+    PattFill.BGColor := TColorRec.cWindow;
+    PattFill.PatternColor := TColorRec.cWindow;
     PattFill.bgColorType := 0;
     PattFill.patternColorType := 0;
     PattFill.lumFactorBG := 0.0;
@@ -3159,7 +3165,7 @@ var
     _currBorderItem := -1;
     _diagDown := false;
     _diagUP := false;
-    _color := clBlack;
+    _color := TColorRec.Black;
     while Xml.ReadToEndTagByName('borders') do
     begin
       if Xml.IsTagStartByName('border') then
@@ -3590,7 +3596,7 @@ var
   var
     _rgb: Integer;
   begin
-    _rgb := ColorToRGB(Color);
+    _rgb := TColorRec.ColorToRGB(Color);
     ZRGBToHSL(Byte(_rgb), Byte(_rgb shr 8), Byte(_rgb shr 16), h, s, l);
   end; // ZColorToHSL
 
@@ -3699,13 +3705,13 @@ var
       while Xml.ReadToEndTagByName('font') do
       begin
         if (Xml.TagName = 'i') then
-          _addFontStyle(fsItalic);
+          _addFontStyle(TFontStyle.fsItalic);
         if (Xml.TagName = 'b') then
-          _addFontStyle(fsBold);
+          _addFontStyle(TFontStyle.fsBold);
         if (Xml.TagName = 'u') then
-          _addFontStyle(fsUnderline);
+          _addFontStyle(TFontStyle.fsUnderline);
         if (Xml.TagName = 'strike') then
-          _addFontStyle(fsStrikeOut);
+          _addFontStyle(TFontStyle.fsStrikeOut);
 
         if (Xml.TagName = 'color') then
         begin
@@ -3912,13 +3918,13 @@ var
         XMLSSStyle.Font.charset := FontArray[n].charset;
         XMLSSStyle.Font.Color := FontArray[n].Color;
         if (FontArray[n].bold) then
-          XMLSSStyle.Font.Style := [fsBold];
+          XMLSSStyle.Font.Style := [TFontStyle.fsBold];
         if (FontArray[n].underline) then
-          XMLSSStyle.Font.Style := XMLSSStyle.Font.Style + [fsUnderline];
+          XMLSSStyle.Font.Style := XMLSSStyle.Font.Style + [TFontStyle.fsUnderline];
         if (FontArray[n].italic) then
-          XMLSSStyle.Font.Style := XMLSSStyle.Font.Style + [fsItalic];
+          XMLSSStyle.Font.Style := XMLSSStyle.Font.Style + [TFontStyle.fsItalic];
         if (FontArray[n].strike) then
-          XMLSSStyle.Font.Style := XMLSSStyle.Font.Style + [fsStrikeOut];
+          XMLSSStyle.Font.Style := XMLSSStyle.Font.Style + [TFontStyle.fsStrikeOut];
         XMLSSStyle.superscript := FontArray[n].superscript;
         XMLSSStyle.subscript := FontArray[n].subscript;
       end;
@@ -6338,35 +6344,35 @@ var
         Xml.Attributes.Add('val', FloatToStr(fnt.Size, TFormatSettings.Invariant));
         Xml.WriteEmptyTag('sz', true);
 
-        if (fnt.Color <> clWindowText) then
+        if (fnt.Color <> TColorRec.cWindowText) then
         begin
           Xml.Attributes.Clear();
           Xml.Attributes.Add('rgb', '00' + ColorToHTMLHex(fnt.Color));
           Xml.WriteEmptyTag('color', true);
         end;
 
-        if (fsBold in fnt.Style) then
+        if (TFontStyle.fsBold in fnt.Style) then
         begin
           Xml.Attributes.Clear();
           Xml.Attributes.Add('val', 'true');
           Xml.WriteEmptyTag('b', true);
         end;
 
-        if (fsItalic in fnt.Style) then
+        if (TFontStyle.fsItalic in fnt.Style) then
         begin
           Xml.Attributes.Clear();
           Xml.Attributes.Add('val', 'true');
           Xml.WriteEmptyTag('i', true);
         end;
 
-        if (fsStrikeOut in fnt.Style) then
+        if (TFontStyle.fsStrikeOut in fnt.Style) then
         begin
           Xml.Attributes.Clear();
           Xml.Attributes.Add('val', 'true');
           Xml.WriteEmptyTag('strike', true);
         end;
 
-        if (fsUnderline in fnt.Style) then
+        if (TFontStyle.fsUnderline in fnt.Style) then
         begin
           Xml.Attributes.Clear();
           Xml.Attributes.Add('val', 'single');
@@ -6506,7 +6512,7 @@ var
           s := 'solid';
         end; // case
 
-        b := (XMLSS.Styles[i].PatternColor <> clWindow) or (XMLSS.Styles[i].BGColor <> clWindow);
+        b := (XMLSS.Styles[i].PatternColor <> TColorRec.cWindow) or (XMLSS.Styles[i].BGColor <> TColorRec.cWindow);
         Xml.Attributes.Clear();
         if b and (XMLSS.Styles[i].CellPattern = ZPNone) then
           Xml.Attributes.Add('patternType', 'solid')
@@ -6520,7 +6526,7 @@ var
 
         _reverse := not(XMLSS.Styles[i].CellPattern in [ZPNone, ZPSolid]);
 
-        if (XMLSS.Styles[i].BGColor <> clWindow) then
+        if (XMLSS.Styles[i].BGColor <> TColorRec.cWindow) then
         begin
           Xml.Attributes.Clear();
           if (_reverse) then
@@ -6531,7 +6537,7 @@ var
           Xml.WriteEmptyTag('fgColor', true);
         end;
 
-        if (XMLSS.Styles[i].PatternColor <> clWindow) then
+        if (XMLSS.Styles[i].PatternColor <> TColorRec.cWindow) then
         begin
           Xml.Attributes.Clear();
           if (_reverse) then
@@ -6635,7 +6641,7 @@ var
     if (n > 0) then
       Xml.Attributes.Add('style', s1);
 
-    if ((_border.Color <> clBlack) and (n > 0)) then
+    if ((_border.Color <> TColorRec.Black) and (n > 0)) then
     begin
       Xml.WriteTagNode(s, true, true, true);
       Xml.Attributes.Clear();
@@ -8140,11 +8146,11 @@ begin
   while AXml.ReadToEndTagByName(ATagName) do
   begin
     if AXml.IsTagClosedByName('b') then
-      Result.Style := Result.Style + [fsBold]
+      Result.Style := Result.Style + [TFontStyle.fsBold]
     else if AXml.IsTagClosedByName('u') then
-      Result.Style := Result.Style + [fsUnderline]
+      Result.Style := Result.Style + [TFontStyle.fsUnderline]
     else if AXml.IsTagClosedByName('i') then
-      Result.Style := Result.Style + [fsItalic]
+      Result.Style := Result.Style + [TFontStyle.fsItalic]
     else if AXml.IsTagClosedByName('sz') then
       Result.Size := StrToFloatDef(AXml.Attributes['val'], { todo: default } 11, TFormatSettings.Invariant)
     else if AXml.IsTagClosedByName('rFont') then

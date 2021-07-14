@@ -3,7 +3,7 @@
 interface
 
 uses
-  SysUtils, Excel4Delphi.Xml;
+  System.SysUtils, Excel4Delphi.Xml;
 
 const
   // Main number formats
@@ -342,7 +342,8 @@ function TryXlsxTimeToDateTime(const XlsxDateTime: string; out retDateTime: TDat
 
 implementation
 
-uses Excel4Delphi.Common, StrUtils;
+uses
+  Excel4Delphi.Common, System.StrUtils;
 
 const
   ZE_NUMBER_FORMAT_DECIMAL_SEPARATOR = '.';
