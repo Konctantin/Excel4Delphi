@@ -3,17 +3,17 @@
 interface
 
 uses
-  Classes,
-  SysUtils,
-  VCL.Graphics,
-  UITypes,
-  Math,
-  Windows,
-  RegularExpressions,
-  Generics.Collections,
-  Generics.Defaults,
-  System.Contnrs,
-  Excel4Delphi.Xml;
+  System.Classes, System.SysUtils,
+  {$IFDEF FMX}
+  FMX.Graphics,
+  {$ELSE}
+  Vcl.Graphics,
+  {$ENDIF}
+  {$IFDEF MSWINDOWS}
+  Winapi.Windows,
+  {$ENDIF}
+  System.UITypes, System.Math, RegularExpressions, System.Generics.Collections,
+  System.Generics.Defaults, Excel4Delphi.Xml;
 
 var
   ZE_XLSX_APPLICATION: string;
@@ -21,6 +21,13 @@ var
 // 1 (topographical point) = 0.3528 mm
 const
   _PointToMM: Real = 0.3528;
+
+{$IFDEF FMX}
+  DEFAULT_CHARSET = 1;
+{$ENDIF}
+
+type
+  TObjectList = TObjectList<TObject>;
 
 type
   /// <summary>
@@ -306,9 +313,7 @@ type
     /// Number format
     /// </summary>
     property NumberFormat: string read GetNumberFormat write SetNumberFormat;
-
-    procedure SetBorderAround(borderWidth: Byte; BorderColor: TColor = clBlack;
-      BorderStyle: TZBorderType = TZBorderType.ZEContinuous);
+    procedure SetBorderAround(borderWidth: Byte; BorderColor: TColor = TColorRec.Black; BorderStyle: TZBorderType = TZBorderType.ZEContinuous);
   end;
 
   /// <summary>
@@ -536,7 +541,7 @@ type
     /// <summary>
     /// Color of fill pattern. <br />clWindow by default.
     /// </summary>
-    property PatternColor: TColor read FPatternColor write SetPatternColor default clWindow;
+    property PatternColor: TColor read FPatternColor write SetPatternColor default TColorRec.cWINDOW;
     /// <summary>
     /// Indicates whether or not this cell is protected. <br />True by default.
     /// </summary>
@@ -1003,11 +1008,11 @@ type
     /// <summary>
     /// Background color for header. <br />clWindow by default.
     /// </summary>
-    property HeaderBGColor: TColor read FHeaderBGColor write FHeaderBGColor default clWindow;
+    property HeaderBGColor: TColor read FHeaderBGColor write FHeaderBGColor default TColorRec.cWINDOW;
     /// <summary>
     /// Background color for footer. <br />clWindow by default.
     /// </summary>
-    property FooterBGColor: TColor read FFooterBGColor write FFooterBGColor default clWindow;
+    property FooterBGColor: TColor read FFooterBGColor write FFooterBGColor default TColorRec.cWINDOW;
     /// <summary>
     /// Document must be scaled to percentage value (100 - no scale). <br />100 by default.
     /// </summary>
@@ -1313,18 +1318,18 @@ type
   TZEChartTitleItem = class(TPersistent)
   private
     FText: string;
-    FFont: TFont;
+    FFont: TZFont;
     FRotationAngle: Integer;
     FIsDisplay: Boolean;
   protected
-    procedure SetFont(const Value: TFont);
+    procedure SetFont(const Value: TZFont);
   public
     constructor Create(); virtual;
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
     function IsEqual(const Source: TPersistent): Boolean; virtual;
     property Text: string read FText write FText;
-    property Font: TFont read FFont write SetFont;
+    property Font: TZFont read FFont write SetFont;
     property RotationAngle: Integer read FRotationAngle write FRotationAngle default 0;
     property IsDisplay: Boolean read FIsDisplay write FIsDisplay default true;
   end;
@@ -1695,7 +1700,7 @@ type
     /// Indicates whether or not this sheet is protected. <br />False by default.
     /// </summary>
     property Protect: Boolean read FProtect write FProtect default false;
-    property TabColor: TColor read FTabColor write FTabColor default clWindow;
+    property TabColor: TColor read FTabColor write FTabColor default TColorRec.cWINDOW;
     property FitToPage: Boolean read FFitToPage write FFitToPage default false;
 
     property SummaryBelow: Boolean read FSummaryBelow write FSummaryBelow;
@@ -1833,8 +1838,7 @@ type
     property VerticalText: Boolean read GetVerticalText write SetVerticalText;
     property Rotate: TZCellTextRotate read GetRotate write SetRotate;
     property NumberFormat: string read GetNumberFormat write SetNumberFormat;
-    procedure SetBorderAround(borderWidth: Byte; BorderColor: TColor = clBlack;
-      BorderStyle: TZBorderType = TZBorderType.ZEContinuous);
+    procedure SetBorderAround(borderWidth: Byte; BorderColor: TColor = TColorRec.Black; BorderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure Merge();
     procedure Clear();
   end;
@@ -1899,8 +1903,7 @@ type
     property VerticalText: Boolean read GetVerticalText write SetVerticalText;
     property Rotate: TZCellTextRotate read GetRotate write SetRotate;
     property NumberFormat: string read GetNumberFormat write SetNumberFormat;
-    procedure SetBorderAround(borderWidth: Byte; BorderColor: TColor = clBlack;
-      BorderStyle: TZBorderType = TZBorderType.ZEContinuous);
+    procedure SetBorderAround(borderWidth: Byte; BorderColor: TColor = TColorRec.Black; BorderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure Merge();
     procedure Clear();
   end;
@@ -1985,7 +1988,9 @@ type
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
-    procedure GetPixelSize(hdc: HWND);
+    {$IFNDEF FMX}
+    procedure GetPixelSize(hdc: THandle);
+    {$ENDIF}
     property Sheets: TZSheets read FSheets write FSheets;
     property MediaList: TArray<TMediaRec> read FMediaList write FMediaList;
     function AddMediaContent(AFileName: string; AContent: TBytes; ACheckByName: Boolean): Integer;
@@ -2062,7 +2067,8 @@ function IsIdenticalByteArray(Src, Dst: TBytes): Boolean;
 
 implementation
 
-uses Excel4Delphi.Formula;
+uses
+  Excel4Delphi.Formula;
 
 var
   invariantFormatSertting: TFormatSettings;
@@ -2375,14 +2381,20 @@ end;
 function ZEIsFontsEquals(const Font1, Font2: TFont): Boolean;
 begin
   Result := Assigned(Font1) and (Assigned(Font2));
-  if (Result) then
+  if Result then
   begin
     Result := false;
+    {$IFDEF FMX}
+    if (Font1.Family <> Font2.Family) then
+      exit;
+
+    {$ELSE}
     if (Font1.Color <> Font2.Color) then
       exit;
 
     if (Font1.Name <> Font2.Name) then
       exit;
+    {$ENDIF}
 
     if (Font1.Size <> Font2.Size) then
       exit;
@@ -2398,7 +2410,7 @@ function ColorToHTMLHex(Color: TColor): string;
 var
   _RGB: Integer;
 begin
-  _RGB := ColorToRGB(Color);
+  _RGB := TColorRec.ColorToRGB(Color);
   // result := IntToHex(GetRValue(_RGB), 2) + IntToHex(GetGValue(_RGB), 2) + IntToHex(GetBValue(_RGB), 2);
   Result := IntToHex(Byte(_RGB), 2) + IntToHex(Byte(_RGB shr 8), 2) + IntToHex(Byte(_RGB shr 16), 2);
 end;
@@ -2501,7 +2513,7 @@ end;
 constructor TZBorderStyle.Create();
 begin
   FWeight := 0;
-  FColor.RGB := clBlack;
+  FColor.RGB := TColorRec.Black;
   FColor.Indexed := 0;
   FColor.Theme := 0;
   FColor.Tint := 0;
@@ -2729,7 +2741,7 @@ end;
 constructor TZFont.Create;
 begin
   inherited;
-  FColor.RGB := clWindowText;
+  FColor.RGB := TColorRec.cWindowText;
   FColor.Indexed := 0;
   FColor.Theme := 0;
   FColor.Tint := 0;
@@ -2765,13 +2777,13 @@ var
   ST: Integer;
 begin
   ST := 0;
-  if fsBold in FStyle then
+  if TFontStyle.fsBold in FStyle then
     Inc(ST, 1);
-  if fsItalic in FStyle then
+  if TFontStyle.fsItalic in FStyle then
     Inc(ST, 2);
-  if fsUnderline in FStyle then
+  if TFontStyle.fsUnderline in FStyle then
     Inc(ST, 4);
-  if fsStrikeOut in FStyle then
+  if TFontStyle.fsStrikeOut in FStyle then
     Inc(ST, 8);
 
   Result := 17;
@@ -2802,13 +2814,17 @@ begin
   else if Source is TFont then
   begin
     srcFont := Source as TFont;
+    {$IFDEF FMX}
+    FName := srcFont.Family;
+    {$ELSE}
     FColor.RGB := srcFont.Color;
     FColor.Indexed := 0;
     FColor.Theme := 0;
     FColor.Tint := 0;
-    FSize := srcFont.Size;
     FCharset := srcFont.Charset;
     FName := srcFont.Name;
+    {$ENDIF}
+    FSize := srcFont.Size;
     FStyle := srcFont.Style;
   end
   else
@@ -2825,13 +2841,17 @@ begin
   begin
     dstFont := Dest as TFont;
     // А.А.Валуев Свойства, которых нет в TZFont сбрасываем на значения по умолчанию.
+    dstFont.Size := Round(FSize);
+    dstFont.Style := FStyle;
+    {$IFDEF FMX}
+    dstFont.Family := FName;
+    {$ELSE}
+    dstFont.Color := FColor.RGB;
     dstFont.Pitch := fpDefault;
     dstFont.Orientation := 0;
-    dstFont.Color := FColor.RGB;
-    dstFont.Size := round(FSize);
     dstFont.Charset := FCharset;
     dstFont.Name := FName;
-    dstFont.Style := FStyle;
+    {$ENDIF}
   end
   else
     inherited AssignTo(Dest);
@@ -2844,11 +2864,11 @@ begin
   FFont := TZFont.Create();
   FFont.Size := 10;
   FFont.Name := 'Arial';
-  FFont.Color := clBlack;
+  FFont.Color := TColorRec.Black;
   FBorder := TZBorder.Create();
   FAlignment := TZAlignment.Create();
-  FBGColor.RGB := clWindow;
-  FPatternColor := clWindow;
+  FBGColor.RGB := TColorRec.cWindow;
+  FPatternColor := TColorRec.cWindow;
   FCellPattern := ZPNone;
   FNumberFormat := '';
   FNumberFormatId := -1;
@@ -3893,8 +3913,8 @@ begin
   FEvenFooter := '';
   FFirstPageHeader := '';
   FFirstPageFooter := '';
-  FHeaderBGColor := clWindow;
-  FFooterBGColor := clWindow;
+  FHeaderBGColor := TColorRec.cWindow;
+  FFooterBGColor := TColorRec.cWindow;
   FSplitVerticalMode := ZSplitNone;
   FSplitHorizontalMode := ZSplitNone;
   FSplitVerticalValue := 0;
@@ -3988,7 +4008,7 @@ begin
   FDefaultColWidth := 48; // 60;
   FMergeCells := TZMergeCells.Create(Self);
   SetLength(FCells, FColCount);
-  FTabColor := clWindow;
+  FTabColor := TColorRec.cWindow;
   FProtect := false;
   FRightToLeft := false;
   FSelected := false;
@@ -4726,13 +4746,15 @@ begin
     FVertPixelSize := Value;
 end;
 
-procedure TZWorkBook.GetPixelSize(hdc: HWND);
+{$IFNDEF FMX}
+procedure TZWorkBook.GetPixelSize(hdc: THandle);
 begin
   // горизонтальный размер пикселя в миллиметрах
   HorPixelSize := GetDeviceCaps(hdc, HORZSIZE) / GetDeviceCaps(hdc, HORZRES);
   // вертикальный размер пикселя в миллиметрах
   VertPixelSize := GetDeviceCaps(hdc, VERTSIZE) / GetDeviceCaps(hdc, VERTRES);
 end;
+{$ENDIF}
 
 function TZWorkBook.GetDefaultSheetOptions(): TZSheetOptions;
 begin
@@ -5804,7 +5826,7 @@ end;
 
 constructor TZEChartTitleItem.Create();
 begin
-  FFont := TFont.Create();
+  FFont := TZFont.Create();
   FText := '';
   FRotationAngle := 0;
   FIsDisplay := true;
@@ -5860,7 +5882,7 @@ begin
   end;
 end;
 
-procedure TZEChartTitleItem.SetFont(const Value: TFont);
+procedure TZEChartTitleItem.SetFont(const Value: TZFont);
 begin
   if (Assigned(Value)) then
     FFont.Assign(Value);
@@ -6621,8 +6643,7 @@ begin
   FSheet.MergeCells.AddRectXY(FLeft, FTop, FRight, FBottom);
 end;
 
-procedure TZRange.SetBorderAround(borderWidth: Byte; BorderColor: TColor = clBlack;
-BorderStyle: TZBorderType = TZBorderType.ZEContinuous);
+procedure TZRange.SetBorderAround(borderWidth: Byte; BorderColor: TColor = TColorRec.Black; BorderStyle: TZBorderType = TZBorderType.ZEContinuous);
 var
   Row, Col: Integer;
   Style: TZStyle;

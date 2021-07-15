@@ -3,7 +3,7 @@
 interface
 
 uses
-  SysUtils, Types, Classes, Excel4Delphi, Excel4Delphi.Xml;
+  System.SysUtils, System.Types, System.Classes, Excel4Delphi, Excel4Delphi.Xml;
 
 const
   ZE_MMinInch: real = 25.4;
@@ -57,16 +57,27 @@ function ZENormalizeAngle180(const value: TZCellTextRotate): integer;
 implementation
 
 uses
-  DateUtils, IOUtils, WinApi.windows;
+  {$IFDEF MSWINDOWS}
+  Winapi.windows,
+  {$ENDIF}
+  System.DateUtils, System.IOUtils;
 
 function FileCreateTemp(var tempName: string): THandle;
+{$IFNDEF MSWINDOWS}
+var
+  FS: TFileStream;
+{$ENDIF}
 begin
   Result := INVALID_HANDLE_VALUE;
   tempName := TPath.GetTempFileName();
   if tempName <> '' then
   begin
+    {$IFDEF MSWINDOWS}
     Result := CreateFile(PChar(tempName), GENERIC_READ or GENERIC_WRITE, 0, nil, OPEN_EXISTING,
       FILE_ATTRIBUTE_TEMPORARY or FILE_FLAG_DELETE_ON_CLOSE, 0);
+    {$ELSE}
+    Result := FileCreate(tempName, fmCreate);
+    {$ENDIF}
     if Result = INVALID_HANDLE_VALUE then
       TFile.Delete(tempName);
   end;
