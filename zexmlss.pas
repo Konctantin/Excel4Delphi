@@ -129,6 +129,7 @@ type
     function GetFontSize: double;
     function GetFontStyle: TFontStyles;
     function GetHorizontalAlignment: TZHorizontalAlignment;
+    function GetIndentLevel(): integer;
     function GetNumberFormat: string;
     function GetRotate: TZCellTextRotate;
     function GetVerticalAlignment: TZVerticalAlignment;
@@ -142,6 +143,7 @@ type
     procedure SetFontSize(const Value: double);
     procedure SetFontStyle(const Value: TFontStyles);
     procedure SetHorizontalAlignment(const Value: TZHorizontalAlignment);
+    procedure SetIndentLevel(value: integer);
     procedure SetNumberFormat(const Value: string);
     procedure SetRotate(const Value: TZCellTextRotate);
     procedure SetVerticalAlignment(const Value: TZVerticalAlignment);
@@ -231,6 +233,10 @@ type
     /// Horisontal content alignment
     /// </summary>
     property HorizontalAlignment: TZHorizontalAlignment read GetHorizontalAlignment write SetHorizontalAlignment;
+    /// <summary>
+    /// Indent level of cell value.
+    /// </summary>
+    property IndentLevel: integer read GetIndentLevel write SetIndentLevel;
     /// <summary>
     /// Background cell color
     /// </summary>
@@ -1793,6 +1799,8 @@ type
     procedure SetVerticalAlignment(const Value: TZVerticalAlignment);
     function GetHorizontalAlignment(): TZHorizontalAlignment;
     procedure SetHorizontalAlignment(const Value: TZHorizontalAlignment);
+    function GetIndentLevel(): integer;
+    procedure SetIndentLevel(value: integer);
     function GetRotate(): TZCellTextRotate;
     procedure SetRotate(const Value: TZCellTextRotate);
     function GetBgColor(): TColor;
@@ -1824,6 +1832,7 @@ type
     //
     property VerticalAlignment: TZVerticalAlignment read GetVerticalAlignment write SetVerticalAlignment;
     property HorizontalAlignment: TZHorizontalAlignment read GetHorizontalAlignment write SetHorizontalAlignment;
+    property IndentLevel: integer read GetIndentLevel write SetIndentLevel;
     property BgColor: TColor read GetBgColor write SetBgColor;
     property FontColor: TColor read GetFontColor write SetFontColor;
     property FontSize: double read GetFontSize write SetFontSize;
@@ -1854,6 +1863,8 @@ type
     procedure SetVerticalAlignment(const Value: TZVerticalAlignment);
     function GetHorizontalAlignment(): TZHorizontalAlignment;
     procedure SetHorizontalAlignment(const Value: TZHorizontalAlignment);
+    function GetIndentLevel(): integer;
+    procedure SetIndentLevel(value: integer);
     function GetRotate(): TZCellTextRotate;
     procedure SetRotate(const Value: TZCellTextRotate);
     function GetBgColor(): TColor;
@@ -1889,6 +1900,7 @@ type
     destructor Destroy(); override;
     property VerticalAlignment: TZVerticalAlignment read GetVerticalAlignment write SetVerticalAlignment;
     property HorizontalAlignment: TZHorizontalAlignment read GetHorizontalAlignment write SetHorizontalAlignment;
+    property IndentLevel: integer read GetIndentLevel write SetIndentLevel;
     property BgColor: TColor read GetBgColor write SetBgColor;
     property FontColor: TColor read GetFontColor write SetFontColor;
     property FontSize: double read GetFontSize write SetFontSize;
@@ -3029,7 +3041,8 @@ var style: TZStyle;
 begin
   style := TZStyle.Create();
   try
-    style.Assign(self.Style);
+    if Assigned(self.Style) then
+      style.Assign(self.Style);
     proc(style);
     FCellStyle := FSheet.FStore.Styles.Add(style, true);
   finally
@@ -3117,6 +3130,13 @@ begin
   Result := TZHorizontalAlignment.ZHAutomatic;
   if FCellStyle > -1 then
     Result := Style.Alignment.Horizontal;
+end;
+
+function TZCell.GetIndentLevel: integer;
+begin
+  Result := 0;
+  if FCellStyle > -1 then
+    Result := Style.Alignment.Indent;
 end;
 
 function TZCell.GetNumberFormat: string;
@@ -3207,6 +3227,13 @@ procedure TZCell.SetHorizontalAlignment(const Value: TZHorizontalAlignment);
 begin
   ApplyStyleValue(procedure (style: TZStyle) begin
     style.Alignment.Horizontal := Value;
+  end);
+end;
+
+procedure TZCell.SetIndentLevel(value: integer);
+begin
+  ApplyStyleValue(procedure (style: TZStyle) begin
+    style.Alignment.Indent := Value;
   end);
 end;
 
@@ -6320,6 +6347,13 @@ begin
     Result := FSheet.FStore.FStyles[FSheet.Cell[FLeft,FTop].FCellStyle].Alignment.Horizontal;
 end;
 
+function TZRange.GetIndentLevel: integer;
+begin
+  Result := 0;
+  if HasStyle then
+    Result := FSheet.FStore.FStyles[FSheet.Cell[FLeft,FTop].FCellStyle].Alignment.Indent;
+end;
+
 function TZRange.GetNumberFormat(): string;
 begin
   Result := '';
@@ -6468,6 +6502,13 @@ procedure TZRange.SetHorizontalAlignment(const Value: TZHorizontalAlignment);
 begin
   ApplyStyleValue(procedure (style: TZStyle) begin
     style.Alignment.Horizontal := Value;
+  end);
+end;
+
+procedure TZRange.SetIndentLevel(value: integer);
+begin
+  ApplyStyleValue(procedure (style: TZStyle) begin
+    style.Alignment.Indent := Value;
   end);
 end;
 
