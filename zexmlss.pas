@@ -57,7 +57,7 @@ type
   /// <summary>
   /// Visibility state of a sheet.
   /// </summary>
-  TZSheetState = (ssVisible, ssHidden, ssVeryHidden); //См. https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/74cb1d22-b931-4bf8-997d-17517e2416e9
+  TZSheetVisible = (svVisible, svHidden, svVeryHidden); //См. https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/74cb1d22-b931-4bf8-997d-17517e2416e9
 
   /// <summary>
   /// An angle of the rotation (direction) for a text within a cell.
@@ -1624,7 +1624,7 @@ type
     FRowBreaks:TArray<integer>;
     FColBreaks:TArray<integer>;
     FConditionalFormatting: TZConditionalFormatting;
-    FState: TZSheetState;
+    FVisible: TZSheetVisible;
     procedure SetConditionalFormatting(Value: TZConditionalFormatting);
     procedure SetCharts(const Value: TZEChartStore);
     procedure SetColumn(num: integer; const Value:TZColOptions);
@@ -1730,7 +1730,7 @@ type
     /// <summary>
     /// Visibility state of the sheet.
     /// </summary>
-    property State: TZSheetState read FState write FState;
+    property Visible: TZSheetVisible read FVisible write FVisible;
     /// <summary>
     /// Sheet index in the workbook.
     /// </summary>
@@ -3787,7 +3787,7 @@ constructor TZSheet.Create(AStore: TZWorkBook);
 var i, j: integer;
 begin
   FTitle := '';
-  FState := ssVisible;
+  FVisible := svVisible;
   FStore := AStore;
   FRowCount := 0;
   FColCount := 0;

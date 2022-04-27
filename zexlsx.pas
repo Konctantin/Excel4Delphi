@@ -2199,11 +2199,11 @@ begin
     begin
       currentSheet.Title := SheetRelations^.name;
       if SameText(SheetRelations^.state, 'hidden') then
-        currentSheet.State := ssHidden
+        currentSheet.Visible := svHidden
       else if SameText(SheetRelations^.state, 'veryhidden') then
-        currentSheet.State := ssVeryHidden
+        currentSheet.Visible := svVeryHidden
       else
-        currentSheet.State := ssVisible;
+        currentSheet.Visible := svVisible;
     end
     else
       currentSheet.Title := '';
@@ -5469,9 +5469,9 @@ begin
       xml.Attributes.Clear();
       xml.Attributes.Add('name', _names[i], false);
       xml.Attributes.Add('sheetId', IntToStr(i + 1), false);
-      case XMLSS.Sheets[_pages[i]].State of
-        ssHidden: xml.Attributes.Add('state', 'hidden', false);
-        ssVeryHidden: xml.Attributes.Add('state', 'veryhidden', false);
+      case XMLSS.Sheets[_pages[i]].Visible of
+        svHidden: xml.Attributes.Add('state', 'hidden', false);
+        svVeryHidden: xml.Attributes.Add('state', 'veryhidden', false);
       else
         xml.Attributes.Add('state', 'visible', false);
       end;
