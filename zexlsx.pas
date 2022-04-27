@@ -29,14 +29,16 @@ type
   end;
 
   TZXLSXRelations = record
-    id: string;       //rID
-    ftype: TRelationType;   //тип ссылки
-    target: string;   //ссылка на файла
-    fileid: integer;  //ссылка на запись
-    name: string;     //имя листа
-    state: byte;      //состояние
-    sheetid: integer; //номер листа
+    id: string;           //rID
+    ftype: TRelationType; //тип ссылки
+    target: string;       //ссылка на файла
+    fileid: integer;      //ссылка на запись
+    name: string;         //имя листа
+    state: string;        //cостояние, возможные значения см. https://docs.microsoft.com/en-us/openspecs/office_file_formats/ms-xlsb/74cb1d22-b931-4bf8-997d-17517e2416e9
+    sheetid: integer;     //номер листа
   end;
+
+  PZXLSXRelations = ^TZXLSXRelations;
 
   TZXLSXRelationsArray = array of TZXLSXRelations;
 
@@ -258,9 +260,10 @@ function ZE_XSLXReadRelationships(var Stream: TStream;
 function ZEXSLXReadWorkBook(var XMLSS: TZWorkBook; var Stream: TStream;
     var Relations: TZXLSXRelationsArray; var RelationsCount: integer): boolean;
 function ZEXSLXReadSheet(var XMLSS: TZWorkBook; var Stream: TStream;
-    const SheetName: string; var StrArray: TStringDynArray; StrCount: integer;
-    var Relations: TZXLSXRelationsArray; RelationsCount: integer;
-    MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): boolean;
+    const SheetRelations: PZXLSXRelations; var StrArray: TStringDynArray;
+    StrCount: integer; var Relations: TZXLSXRelationsArray;
+    RelationsCount: integer; MaximumDigitWidth: double;
+    ReadHelper: TZEXLSXReadHelper): boolean;
 function ZEXSLXReadComments(var XMLSS: TZWorkBook; var Stream: TStream): boolean;
 
 implementation
@@ -1342,22 +1345,22 @@ begin
   end;
 end;
 
-//Читает страницу документа
+//Читает лист книги
 //INPUT
 //  var XMLSS: TZWorkBook                 - хранилище
-//  var Stream: TStream                 - поток для чтения
-//  const SheetName: string             - название страницы
-//  var StrArray: TStringDynArray       - строки для подстановки
-//      StrCount: integer               - кол-во строк подстановки
-//  var Relations: TZXLSXRelationsArray - отношения
-//      RelationsCount: integer         - кол-во отношений
-//  var MaximumDigitWidth: double       - ширина самого широкого числа в пикселях
-//      ReadHelper: TZEXLSXReadHelper   -
+//  var Stream: TStream                   - поток для чтения
+//  const SheetRelations: TZXLSXRelations - свойства страницы
+//  var StrArray: TStringDynArray         - строки для подстановки
+//      StrCount: integer                 - кол-во строк подстановки
+//  var Relations: TZXLSXRelationsArray   - отношения
+//      RelationsCount: integer           - кол-во отношений
+//  var MaximumDigitWidth: double         - ширина самого широкого числа в пикселях
+//      ReadHelper: TZEXLSXReadHelper     -
 //RETURN
 //      boolean - true - страница прочиталась успешно
 function ZEXSLXReadSheet(var XMLSS: TZWorkBook;
                          var Stream: TStream;
-                         const SheetName: string;
+                         const SheetRelations: PZXLSXRelations;
                          var StrArray: TStringDynArray;
                          StrCount: integer;
                          var Relations: TZXLSXRelationsArray;
@@ -2192,7 +2195,18 @@ begin
     XMLSS.Sheets.Count := XMLSS.Sheets.Count + 1;
     currentRow := 0;
     currentSheet := XMLSS.Sheets[currentPage];
-    currentSheet.Title := SheetName;
+    if assigned(SheetRelations) then
+    begin
+      currentSheet.Title := SheetRelations^.name;
+      if SameText(SheetRelations^.state, 'hidden') then
+        currentSheet.State := ssHidden
+      else if SameText(SheetRelations^.state, 'veryhidden') then
+        currentSheet.State := ssVeryHidden
+      else
+        currentSheet.State := ssVisible;
+    end
+    else
+      currentSheet.Title := '';
 
     while xml.ReadTag() do begin
       if xml.IsTagStartByName('sheetData') then
@@ -3730,7 +3744,7 @@ begin
             relations[i].sheetid := -1;
             if (TryStrToInt(s, t)) then
               relations[i].sheetid := t;
-            s := xml.Attributes.ItemsByName['state'];
+            Relations[i].state := xml.Attributes.ItemsByName['state'];
             break;
           end;
       end else
@@ -3806,7 +3820,7 @@ begin
           isWorkSheet := true;
 
         Relations[RelationsCount].fileid := -1;
-        Relations[RelationsCount].state := 0;
+        Relations[RelationsCount].state := '';
         Relations[RelationsCount].sheetid := 0;
         Relations[RelationsCount].name := '';
         Relations[RelationsCount].ftype := rt;
@@ -4208,7 +4222,7 @@ begin
             b := _CheckSheetRelations(FileArray[RelationsArray[SheetRelationNumber][j].fileid].name);
             FreeAndNil(stream);
             stream := TFileStream.Create(DirName + FileArray[RelationsArray[SheetRelationNumber][j].fileid].name, fmOpenRead or fmShareDenyNone);
-            if (not ZEXSLXReadSheet(XMLSS, stream, RelationsArray[SheetRelationNumber][j].name, StrArray, StrCount, SheetRelations, SheetRelationsCount, MaximumDigitWidth, RH)) then
+            if (not ZEXSLXReadSheet(XMLSS, stream, @RelationsArray[SheetRelationNumber][j], StrArray, StrCount, SheetRelations, SheetRelationsCount, MaximumDigitWidth, RH)) then
               result := result or 4;
             if (b) then
               _ReadComments();
@@ -4222,7 +4236,7 @@ begin
         b := _CheckSheetRelations(FileArray[i].name);
         FreeAndNil(stream);
         stream := TFileStream.Create(DirName + FileArray[i].name, fmOpenRead or fmShareDenyNone);
-        if (not ZEXSLXReadSheet(XMLSS, stream, '', StrArray, StrCount, SheetRelations, SheetRelationsCount, MaximumDigitWidth, RH)) then
+        if (not ZEXSLXReadSheet(XMLSS, stream, nil, StrArray, StrCount, SheetRelations, SheetRelationsCount, MaximumDigitWidth, RH)) then
           result := result or 4;
         if (b) then
             _ReadComments();
@@ -4545,7 +4559,7 @@ begin
             b := _CheckSheetRelations(FileArray[RelationsArray[SheetRelationNumber][j].fileid].name);
             zip.Read(FileArray[RelationsArray[SheetRelationNumber][j].fileid].original.Substring(1), stream, zipHdr);
             try
-              if (not ZEXSLXReadSheet(XMLSS, stream, RelationsArray[SheetRelationNumber][j].name, StrArray, StrCount, SheetRelations, SheetRelationsCount, MaximumDigitWidth, RH)) then
+              if (not ZEXSLXReadSheet(XMLSS, stream, @RelationsArray[SheetRelationNumber][j], StrArray, StrCount, SheetRelations, SheetRelationsCount, MaximumDigitWidth, RH)) then
                 result := result or 4;
               if (b) then
                 _ReadComments();
@@ -4563,7 +4577,7 @@ begin
             b := _CheckSheetRelations(FileArray[i].name);
             zip.Read(FileArray[i].original.Substring(1), stream, zipHdr);
             try
-              if (not ZEXSLXReadSheet(XMLSS, stream, '', StrArray, StrCount, SheetRelations, SheetRelationsCount, MaximumDigitWidth, RH)) then
+              if (not ZEXSLXReadSheet(XMLSS, stream, nil, StrArray, StrCount, SheetRelations, SheetRelationsCount, MaximumDigitWidth, RH)) then
                 result := result or 4;
               if (b) then
                 _ReadComments();
@@ -5390,9 +5404,9 @@ end; //ZEXLSXCreateSheet
 
 //Создаёт workbook.xml
 //INPUT
-//  var XMLSS: TZWorkBook                 - хранилище
+//  var XMLSS: TZWorkBook               - хранилище
 //    Stream: TStream                   - поток для записи
-//  const _pages: TIntegerDynArray       - массив страниц
+//  const _pages: TIntegerDynArray      - массив страниц
 //  const _names: TStringDynArray       - массив имён страниц
 //    PageCount: integer                - кол-во страниц
 //    TextConverter: TAnsiToCPConverter - конвертер из локальной кодировки в нужную
@@ -5400,8 +5414,10 @@ end; //ZEXLSXCreateSheet
 //    BOM: ansistring                   - BOM
 //RETURN
 //      integer
-function ZEXLSXCreateWorkBook(var XMLSS: TZWorkBook; Stream: TStream; const _pages: TIntegerDynArray;
-                              const _names: TStringDynArray; PageCount: integer; TextConverter: TAnsiToCPConverter; CodePageName: String; BOM: ansistring): integer;
+function ZEXLSXCreateWorkBook(var XMLSS: TZWorkBook; Stream: TStream;
+    const _pages: TIntegerDynArray; const _names: TStringDynArray;
+    PageCount: integer; TextConverter: TAnsiToCPConverter; CodePageName: String;
+    BOM: ansistring): integer;
 var xml: TZsspXMLWriterH; i: integer;
 begin
   result := 0;
@@ -5453,7 +5469,12 @@ begin
       xml.Attributes.Clear();
       xml.Attributes.Add('name', _names[i], false);
       xml.Attributes.Add('sheetId', IntToStr(i + 1), false);
-      xml.Attributes.Add('state', 'visible', false);
+      case XMLSS.Sheets[_pages[i]].State of
+        ssHidden: xml.Attributes.Add('state', 'hidden', false);
+        ssVeryHidden: xml.Attributes.Add('state', 'veryhidden', false);
+      else
+        xml.Attributes.Add('state', 'visible', false);
+      end;
       xml.Attributes.Add('r:id', 'rId' + IntToStr(i + 2), false);
       xml.WriteEmptyTag('sheet', true);
     end; //for i
@@ -6421,7 +6442,7 @@ end; //ZEXLSXCreateDocPropsCore
 
 //Сохраняет незапакованный документ в формате Office Open XML (OOXML)
 //INPUT
-//  var XMLSS: TZWorkBook                   - хранилище
+//  var XMLSS: TZWorkBook                 - хранилище
 //      PathName: string                  - путь к директории для сохранения (должна заканчиватся разделителем директории)
 //  const SheetsNumbers:array of integer  - массив номеров страниц в нужной последовательности
 //  const SheetsNames: array of string    - массив названий страниц
