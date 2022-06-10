@@ -1662,6 +1662,8 @@ type
     procedure Clear(); virtual;
     procedure InsertRows(ARow, ACount: Integer);
     procedure DeleteRows(ARow, ACount: Integer);
+    procedure InsertColumns(ACol, ACount: Integer);
+    procedure DeleteColumns(ACol, ACount: Integer);
     procedure CopyRows(ARowDst, ARowSrc, ACount: Integer);
     procedure SetCorrectTitle(const Value: string);
 
@@ -3931,6 +3933,44 @@ begin
   result := FSheetOptions;
 end;
 
+procedure TZSheet.InsertColumns(ACol, ACount: Integer);
+var r, c: Integer;
+begin
+  // resize
+  SetColCount(FColCount + ACount);
+
+  // append and reloc cells
+  for c := Length(FColumns) - 1 downto ACol do begin
+    // reloc rows
+    if (c - ACount) < ACol then begin
+      FColumns[c] := TZColOptions.Create(Self);
+      FColumns[c].Width := DefaultColWidth;
+    end else begin
+      FColumns[c] := FColumns[c - ACount];
+    end;
+
+    // reloc cells
+    for r := 0 to RowCount-1 do begin
+      if (c - ACount) < ACol then begin
+        FCells[c][r].Clear();
+      end else begin
+        FCells[c][r].Assign(FCells[c][r-ACount]);
+      end;
+    end;
+  end;
+
+  // reloc merged areas
+  for r := 0 to MergeCells.Count-1 do begin
+    if MergeCells[r].Left >= ACol then begin
+      MergeCells.Items[r] := TRect.Create(
+        MergeCells.Items[r].Left + ACount,
+        MergeCells.Items[r].Top,
+        MergeCells.Items[r].Right + ACount,
+        MergeCells.Items[r].Bottom);
+    end;
+  end;
+end;
+
 procedure TZSheet.InsertRows(ARow, ACount: Integer);
 var r, c: Integer;
 begin
@@ -3967,6 +4007,63 @@ begin
         MergeCells.Items[r].Bottom + ACount);
     end;
   end;
+end;
+
+procedure TZSheet.DeleteColumns(ACol, ACount: Integer);
+var r, c: Integer;
+begin
+  if ACol + ACount > ColCount then
+    exit;
+
+  for c := ACol to ColCount - 1 do begin
+    if c < ACol + ACount then
+      FreeAndNil(FColumns[c])
+    else
+    begin
+      FColumns[c - ACount] := FColumns[c];
+      FColumns[c] := nil;
+    end;
+
+    for r := 0 to RowCount - 1 do
+      if c < ACol + ACount then
+        FreeAndNil(FCells[c][r])
+      else
+      begin
+        FCells[c][r - ACount] := FCells[c][r];
+        FCells[c][r] := nil;
+      end;
+  end;
+
+  for c := MergeCells.Count - 1 downto 0 do
+    if ((MergeCells[c].Left >= ACol) and (MergeCells[c].Right < ACol + ACount))
+        or ((MergeCells[c].Left >= ACol) and (MergeCells[c].Right < ACol + ACount + 1)
+          and (MergeCells[c].Top = MergeCells[c].Top))
+        or ((MergeCells[c].Left >= ACol - 1) and (MergeCells[c].Right < ACol + ACount)
+          and (MergeCells[c].Top = MergeCells[c].Bottom)) then
+      MergeCells.DeleteItem(c)
+
+    else if (MergeCells[c].Left >= ACol) and (MergeCells[c].Left < ACol + ACount) then
+      MergeCells[c] := TRect.Create(
+        ACol,
+        MergeCells.Items[c].Top,
+        MergeCells.Items[c].Right - ACount,
+        MergeCells.Items[c].Bottom)
+
+    else if (MergeCells[c].Right >= ACol) and (MergeCells[c].Right < ACol + ACount) then
+      MergeCells[c] := TRect.Create(
+        MergeCells.Items[c].Left,
+        MergeCells.Items[c].Top,
+        ACol - 1,
+        MergeCells.Items[c].Bottom)
+
+    else if MergeCells[c].Left >= ACol + ACount then
+      MergeCells[c] := TRect.Create(
+        MergeCells.Items[c].Left - ACount,
+        MergeCells.Items[c].Top,
+        MergeCells.Items[c].Right - ACount,
+        MergeCells.Items[c].Bottom);
+
+  SetColCount(ColCount - ACount);
 end;
 
 procedure TZSheet.DeleteRows(ARow, ACount: Integer);
