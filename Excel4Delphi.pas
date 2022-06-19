@@ -14,8 +14,6 @@ uses
   System.Contnrs,
   Excel4Delphi.Xml;
 
-var ZE_XLSX_APPLICATION: string;
-
 // 1 (topographical point) = 0.3528 mm
 const _PointToMM: real = 0.3528;
 
@@ -2015,7 +2013,7 @@ type
   /// <summary>
   /// Contains spreadsheet document
   /// </summary>
-  TZWorkBook = class (TComponent)
+  TZWorkBook = class(TComponent)
   private
     FSheets: TZSheets;
     FDocumentProperties: TZEXMLDocumentProperties;
@@ -2029,6 +2027,7 @@ type
     function  GetDefaultSheetOptions(): TZSheetOptions;
     procedure SetDefaultSheetOptions(Value: TZSheetOptions);
   public
+    class var Application: string;
     FDefinedNames: TArray<TDefinedName>;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;

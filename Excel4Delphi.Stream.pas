@@ -6402,7 +6402,7 @@ begin
 
     xml.Attributes.Clear();
     xml.WriteTag('TotalTime', '0', true, false, false);
-    xml.WriteTag('Application', ZE_XLSX_APPLICATION, true, false, true);
+    xml.WriteTag('Application', TZWorkBook.Application, true, false, true);
     xml.WriteEndTagNode(); //Properties
   finally
     xml.Free();

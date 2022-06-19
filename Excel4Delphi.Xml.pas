@@ -617,7 +617,6 @@ type
 
 
     FRawTextTag: ansistring;           //Текст тэга
-//    FRawTextTagNotDecoded: ansistring; //Текст тэга не декодированный
     FTagName: ansistring;              //Имя тэга (инструкции/комментария)
     FValue: ansistring;                //Текст CDATA или комментария
     FTagType: TXmlTagType;
