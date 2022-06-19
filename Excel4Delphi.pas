@@ -1643,6 +1643,8 @@ type
     procedure SetSheetOptions(Value: TZSheetOptions);
     procedure SetPrintCols(const Value: TZSheetPrintTitles);
     procedure SetPrintRows(const Value: TZSheetPrintTitles);
+    function GetColWidthRef(column: string): real;
+    procedure SetColWidthRef(column: string; const Value: real);
   protected
     procedure SetColWidth(num: integer; const Value: real); virtual;
     function  GetColWidth(num: integer): real; virtual;
@@ -1682,6 +1684,10 @@ type
     /// Get or set the width (in points) of column num in the sheet.
     /// </summary>
     property ColWidths[num: integer]: real read GetColWidth write SetColWidth;
+    /// <summary>
+    /// Get or set the width (in points) of column identifier in the sheet.
+    /// </summary>
+    property ColWidthsRef[column: string]: real read GetColWidthRef write SetColWidthRef;
     /// <summary>
     /// Options of column num.
     /// </summary>
@@ -4272,12 +4278,31 @@ begin
     FColumns[num].Width := Value;
 end;
 
+procedure TZSheet.SetColWidthRef(column: string; const Value: real);
+var num: integer;
+begin
+  num := ZEGetColByA1(column, true);
+  if (num < ColCount) and (num >= 0) and (Value >= 0) then
+  if FColumns[num] <> nil then
+    FColumns[num].Width := Value;
+end;
+
 function TZSheet.GetColWidth(num: integer): real;
 begin
   result := 0;
   if (num < ColCount) and (num >= 0) then
     if Assigned(FColumns[num]) then
-      result := FColumns[num].Width
+      result := FColumns[num].Width;
+end;
+
+function TZSheet.GetColWidthRef(column: string): real;
+var num: integer;
+begin
+  result := 0;
+  num := ZEGetColByA1(column, true);
+  if (num < ColCount) and (num >= 0) then
+    if Assigned(FColumns[num]) then
+      result := FColumns[num].Width;
 end;
 
 procedure TZSheet.SetRowHeight(num: integer; const Value: real);
