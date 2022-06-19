@@ -1645,6 +1645,8 @@ type
     procedure SetPrintRows(const Value: TZSheetPrintTitles);
     function GetColWidthRef(column: string): real;
     procedure SetColWidthRef(column: string; const Value: real);
+    function GetColumnRef(column: string): TZColOptions;
+    procedure SetColumnRef(column: string; const Value: TZColOptions);
   protected
     procedure SetColWidth(num: integer; const Value: real); virtual;
     function  GetColWidth(num: integer): real; virtual;
@@ -1692,6 +1694,10 @@ type
     /// Options of column num.
     /// </summary>
     property Columns[num: integer]: TZColOptions read GetColumn write SetColumn;
+    /// <summary>
+    /// Options of column num.
+    /// </summary>
+    property ColumnsRef[column: string]: TZColOptions read GetColumnRef write SetColumnRef;
     /// <summary>
     /// Specifies various properties of the Row num.
     /// </summary>
@@ -4216,14 +4222,32 @@ begin
   self.FTitle := newTitle;
 end;
 
-procedure TZSheet.SetColumn(num: integer; const Value:TZColOptions);
+procedure TZSheet.SetColumn(num: integer; const Value: TZColOptions);
 begin
+  if (num >= 0) and (num < FColCount) then
+    FColumns[num].Assign(Value);
+end;
+
+procedure TZSheet.SetColumnRef(column: string; const Value: TZColOptions);
+var num: integer;
+begin
+  num := ZEGetColByA1(column, true);
   if (num >= 0) and (num < FColCount) then
     FColumns[num].Assign(Value);
 end;
 
 function  TZSheet.GetColumn(num: integer): TZColOptions;
 begin
+  if (num >= 0) and (num < FColCount) then
+    result := FColumns[num]
+  else
+    result := nil;
+end;
+
+function TZSheet.GetColumnRef(column: string): TZColOptions;
+var num: integer;
+begin
+  num := ZEGetColByA1(column, true);
   if (num >= 0) and (num < FColCount) then
     result := FColumns[num]
   else
