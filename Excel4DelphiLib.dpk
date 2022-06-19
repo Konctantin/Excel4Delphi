@@ -1,4 +1,4 @@
-﻿package zexmlsslib;
+﻿package Excel4DelphiLib;
 
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
@@ -23,20 +23,21 @@
 {$MINENUMSIZE 1}
 {$IMAGEBASE $400000}
 {$DEFINE DEBUG}
+{$DEFINE NOZCOLORSTRINGGRID}
 {$ENDIF IMPLICITBUILDING}
-{$DESCRIPTION 'ZEXMLSS component'}
+{$DESCRIPTION 'Excel4Delphi component'}
 {$IMPLICITBUILD ON}
 
 requires
   vcl;
 
 contains
-  zexmlss in 'zexmlss.pas',
-  zsspxml in 'zsspxml.pas',
-  zesavecommon in 'zesavecommon.pas',
-  zeformula in 'zeformula.pas',
-  zexmlssutils in 'zexmlssutils.pas',
-  zexlsx in 'zexlsx.pas',
-  zenumberformats in 'zenumberformats.pas';
+  Excel4Delphi in 'Excel4Delphi.pas',
+  Excel4Delphi.Stream in 'Excel4Delphi.Stream.pas',
+  Excel4Delphi.Xml in 'Excel4Delphi.Xml.pas',
+  Excel4Delphi.Common in 'Excel4Delphi.Common.pas',
+  Excel4Delphi.Formula in 'Excel4Delphi.Formula.pas',
+  Excel4Delphi.Export in 'Excel4Delphi.Export.pas',
+  Excel4Delphi.NumberFormat in 'Excel4Delphi.NumberFormat.pas';
 
 end.

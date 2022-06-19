@@ -1,9 +1,9 @@
-﻿unit zsspxml;
+﻿unit Excel4Delphi.Xml;
 
 interface
 
 uses
-  SysUtils, classes;
+  System.SysUtils, System.Classes;
 
 const
   BOMUTF8    = #239#187#191; // EF BB BF
