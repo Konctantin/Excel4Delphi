@@ -24,12 +24,13 @@
 *.cnt
 *.fts
 *.diff
+*.patch
 *.stat
 *.tmp
 
 *.pdb
-*.vshost.exe.manifest
 *.~*~
+~$*
 *.bak
 *.$$$
 
@@ -43,19 +44,15 @@
 *.orig
 *.rar
 *.zip
-
 *.dproj.local
-
-
 *.groupproj.local
 *.tvsconfig
+*.vshost.exe.manifest
 
-*.patch
-
-*/lib/*
-*/LOG/*
-*/Skin/*
+Win32/Debug/*
+Win64/Debug/*
+Win32/Release/*
+Win64/Release/*
 **/__history/*
 **/__recovery/*
 **/__astcache/*
-_Help/*
