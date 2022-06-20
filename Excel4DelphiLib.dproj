@@ -53,7 +53,6 @@
         <DCC_K>false</DCC_K>
         <GenPackage>true</GenPackage>
         <DCC_F>false</DCC_F>
-        <DCC_Define>NOZCOLORSTRINGGRID;$(DCC_Define)</DCC_Define>
         <DCC_Description>Excel4Delphi component</DCC_Description>
         <DCC_N>false</DCC_N>
         <DCC_E>false</DCC_E>
@@ -106,12 +105,12 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="vcl.dcp"/>
+        <DCCReference Include="Excel4Delphi.pas"/>
         <DCCReference Include="Excel4Delphi.Stream.pas"/>
         <DCCReference Include="Excel4Delphi.Xml.pas"/>
         <DCCReference Include="Excel4Delphi.Common.pas"/>
         <DCCReference Include="Excel4Delphi.Formula.pas"/>
         <DCCReference Include="Excel4Delphi.Export.pas"/>
-        <DCCReference Include="Excel4Delphi.pas"/>
         <DCCReference Include="Excel4Delphi.NumberFormat.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
@@ -161,12 +160,8 @@
                     <VersionInfoKeys Name="Comments"/>
                 </VersionInfoKeys>
                 <Excluded_Packages>
-                    <Excluded_Packages Name="C:\Projects\Delphi\VagTK\Win32\Debug\pipes250.bpl">(untitled)</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Projects\Delphi\VagTK\Win32\Debug\log4d250.bpl">File C:\Projects\Delphi\VagTK\Win32\Debug\log4d250.bpl not found</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcboffice2k250.bpl">Embarcadero C++Builder Office 2000 Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\bcbofficexp250.bpl">Embarcadero C++Builder Office XP Servers Package</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k250.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
-                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp250.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>
             </Delphi.Personality>
             <Platforms>

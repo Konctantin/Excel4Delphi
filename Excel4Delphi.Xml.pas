@@ -3,7 +3,7 @@
 interface
 
 uses
-  System.SysUtils, System.Classes;
+  SysUtils, Classes;
 
 const
   BOMUTF8    = #239#187#191; // EF BB BF

@@ -4614,6 +4614,7 @@ begin
   FDocumentProperties  := TZEXMLDocumentProperties.Create;
   FStyles              := TZStyles.Create();
   FSheets              := TZSheets.Create(self);
+  FDefinedNames        := [];
   FHorPixelSize        := 0.265;
   FVertPixelSize       := 0.265;
   FDefaultSheetOptions := TZSheetOptions.Create();
