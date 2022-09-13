@@ -1792,7 +1792,7 @@ var
         currentSheet.ViewMode := zvmNormal;
         if xml.Attributes.ItemsByName['view'] = 'pageBreakPreview' then
             currentSheet.ViewMode := zvmPageBreakPreview;
-        currentSheet.ShowZeros := ZETryStrToBoolean(xml.Attributes.ItemsByName['view'], true);
+        currentSheet.ShowZeros := ZETryStrToBoolean(xml.Attributes.ItemsByName['showZeros'], true);
       end;
 
       if xml.IsTagClosedByName('pane') then begin
