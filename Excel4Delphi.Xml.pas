@@ -72,6 +72,7 @@ type
   public
     constructor Create();
     destructor Destroy(); override;
+    procedure Assign(Source: TPersistent); override;
     /// <summary>
     /// Adds attribute
     /// </summary>
@@ -102,7 +103,6 @@ type
     /// Checks for attribute AttrName entry, if attribute was entered then changes it's value, else new attribute is added.
     /// </param>
     procedure Add(Att: array of TZAttrArray; TestMatch: boolean = true); overload;
-    procedure Assign(Source: TPersistent); override;
     /// <summary>
     /// Delete all atributes.
     /// </summary>
@@ -813,7 +813,7 @@ type
     procedure WriteTagNode(TagName: string; SAttributes: TZAttributesH); overload;
     procedure WriteTagNode(TagName: string; AttrArray: array of TZAttrArrayH); overload;
     procedure WriteTagNode(TagName: string); overload;
-    procedure WriteHeader(CodePageName: string; BOM: AnsiString);
+    procedure WriteHeader(CodePageName: string = 'UTF-8'; BOM: AnsiString = '');
     property Attributes: TZAttributesH read FAttributes write SetAttributes;
     property AttributeQuote: char read GetAttributeQuote write SetAttributeQuote;
     property Buffer: string read GetXMLBuffer;
@@ -3342,6 +3342,8 @@ begin
   inherited Create();
   FXMLWriter := TZsspXMLWriter.Create(Stream);
   FAttributes := TZAttributesH.Create();
+  TabLength := 1;
+  TabSymbol := ' ';
 end;
 
 destructor TZsspXMLWriterH.Destroy();

@@ -2024,6 +2024,10 @@ type
     Body: string;
   end;
 
+  TWorkbookTheme = record
+    ThemeColors: TArray<integer>;
+  end;
+
   /// <summary>
   /// Contains spreadsheet document
   /// </summary>
@@ -2043,6 +2047,7 @@ type
   public
     class var Application: string;
     FDefinedNames: TArray<TDefinedName>;
+    FTheme: TWorkbookTheme;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
