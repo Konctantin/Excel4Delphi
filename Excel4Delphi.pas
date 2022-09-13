@@ -1643,6 +1643,7 @@ type
     FColBreaks:TArray<integer>;
     FConditionalFormatting: TZConditionalFormatting;
     FVisible: TZSheetVisible;
+    FShowZeros: boolean;
     procedure SetConditionalFormatting(Value: TZConditionalFormatting);
     procedure SetCharts(const Value: TZEChartStore);
     procedure SetColumn(num: integer; const Value:TZColOptions);
@@ -1794,6 +1795,10 @@ type
     /// Indicates whether or not this sheet is selecteded.
     /// </summary>
     property Selected: boolean read FSelected write FSelected;
+    /// <summary>
+    /// If false, zero values in cells not shown.
+    /// </summary>
+    property ShowZeros: boolean read FShowZeros write FShowZeros;
     property WorkBook: TZWorkBook read FStore;
     property RowsToRepeat: TZSheetPrintTitles read FPrintRows write SetPrintRows;
     property ColsToRepeat: TZSheetPrintTitles read FPrintCols write SetPrintCols;
@@ -3845,6 +3850,7 @@ begin
   FSummaryBelow := true;
   FSummaryRight := true;
   FApplyStyles := false;
+  FShowZeros := true;
   FOutlineLevelRow := 0;
   FOutlineLevelCol := 0;
   FDrawingRid := 0;
@@ -3909,6 +3915,7 @@ begin
     RightToLeft := zSource.RightToLeft;
     DefaultRowHeight := zSource.DefaultRowHeight;
     DefaultColWidth  := zSource.DefaultColWidth;
+    FShowZeros := zSource.FShowZeros;
     FViewMode  := zSource.FViewMode;
     FRowBreaks := zSource.FRowBreaks;
     FColBreaks := zSource.FColBreaks;

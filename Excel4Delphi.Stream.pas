@@ -1792,6 +1792,7 @@ var
         currentSheet.ViewMode := zvmNormal;
         if xml.Attributes.ItemsByName['view'] = 'pageBreakPreview' then
             currentSheet.ViewMode := zvmPageBreakPreview;
+        currentSheet.ShowZeros := ZETryStrToBoolean(xml.Attributes.ItemsByName['view'], true);
       end;
 
       if xml.IsTagClosedByName('pane') then begin
@@ -4975,7 +4976,7 @@ var xml: TZsspXMLWriterH;    //писатель
     xml.Attributes.Add('showGridLines', 'true', false);
     xml.Attributes.Add('showOutlineSymbols', 'true', false);
     xml.Attributes.Add('showRowColHeaders', 'true', false);
-    xml.Attributes.Add('showZeros', 'true', false);
+    xml.Attributes.Add('showZeros', ifthen(sheet.ShowZeros, '1', '0'), false);
 
     if sheet.Selected then
       xml.Attributes.Add('tabSelected', 'true', false);
