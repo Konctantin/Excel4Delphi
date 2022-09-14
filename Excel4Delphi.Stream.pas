@@ -1,10 +1,21 @@
-﻿unit zexlsx;
+﻿unit Excel4Delphi.Stream;
 
 interface
 
 uses
-  SysUtils, Classes, Types, Graphics, UITypes, Windows, Zip, IOUtils,
-  zeformula, zsspxml, zexmlss, zesavecommon, Generics.Collections;
+  SysUtils,
+  Classes,
+  Types,
+  Graphics,
+  UITypes,
+  Windows,
+  Zip,
+  IOUtils,
+  Excel4Delphi.Formula,
+  Excel4Delphi.Xml,
+  Excel4Delphi,
+  Excel4Delphi.Common,
+  Generics.Collections;
 
 type
   TRelationType = (
@@ -245,30 +256,20 @@ function SaveXmlssToXLSXPath(var XMLSS: TZWorkBook; PathName: string): integer; 
 function SaveXmlssToXLSX(var XMLSS: TZWorkBook; zipStream: TStream; const SheetsNumbers: array of integer; const SheetsNames: array of string; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring = ''): integer;
 
 //Дополнительные функции, на случай чтения отдельного файла
-function ZEXSLXReadTheme(var Stream: TStream;
-    var ThemaFillsColors: TIntegerDynArray; var ThemaColorCount: integer): boolean;
-function ZEXSLXReadContentTypes(var Stream: TStream;
-    var FileArray: TArray<TZXLSXFileItem>; var FilesCount: integer): boolean;
-function ZEXSLXReadSharedStrings(var Stream: TStream;
-    out StrArray: TStringDynArray; out StrCount: integer): boolean;
-function ZEXSLXReadStyles(var XMLSS: TZWorkBook; var Stream: TStream;
-    var ThemaFillsColors: TIntegerDynArray; var ThemaColorCount: integer;
-    var MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): boolean;
-function ZE_XSLXReadRelationships(var Stream: TStream;
-    var Relations: TZXLSXRelationsArray; var RelationsCount: integer;
-    var isWorkSheet: boolean; needReplaceDelimiter: boolean): boolean;
-function ZEXSLXReadWorkBook(var XMLSS: TZWorkBook; var Stream: TStream;
-    var Relations: TZXLSXRelationsArray; var RelationsCount: integer): boolean;
-function ZEXSLXReadSheet(var XMLSS: TZWorkBook; var Stream: TStream;
-    const SheetRelations: PZXLSXRelations; var StrArray: TStringDynArray;
-    StrCount: integer; var Relations: TZXLSXRelationsArray;
-    RelationsCount: integer; MaximumDigitWidth: double;
-    ReadHelper: TZEXLSXReadHelper): boolean;
+function ZEXSLXReadTheme(var Stream: TStream; var ThemaFillsColors: TIntegerDynArray; var ThemaColorCount: integer): boolean;
+function ZEXSLXReadContentTypes(var Stream: TStream; var FileArray: TArray<TZXLSXFileItem>; var FilesCount: integer): boolean;
+function ZEXSLXReadSharedStrings(var Stream: TStream; out StrArray: TStringDynArray; out StrCount: integer): boolean;
+function ZEXSLXReadStyles(var XMLSS: TZWorkBook; var Stream: TStream; var ThemaFillsColors: TIntegerDynArray; var ThemaColorCount: integer; var MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): boolean;
+function ZE_XSLXReadRelationships(var Stream: TStream; var Relations: TZXLSXRelationsArray; var RelationsCount: integer; var isWorkSheet: boolean; needReplaceDelimiter: boolean): boolean;
+function ZEXSLXReadWorkBook(var XMLSS: TZWorkBook; var Stream: TStream; var Relations: TZXLSXRelationsArray; var RelationsCount: integer): boolean;
+function ZEXSLXReadSheet(var XMLSS: TZWorkBook; var Stream: TStream; const SheetRelations: PZXLSXRelations; var StrArray: TStringDynArray; StrCount: integer; var Relations: TZXLSXRelationsArray; RelationsCount: integer; MaximumDigitWidth: double; ReadHelper: TZEXLSXReadHelper): boolean;
 function ZEXSLXReadComments(var XMLSS: TZWorkBook; var Stream: TStream): boolean;
+
+
 
 implementation
 
-uses AnsiStrings, StrUtils, Math, zenumberformats, NetEncoding;
+uses AnsiStrings, StrUtils, Math, Excel4Delphi.NumberFormat, NetEncoding;
 
 
 const
@@ -736,25 +737,15 @@ procedure TZEXLSXNumberFormats.ReadNumFmts(const xml: TZsspXMLReaderH);
 var temp: integer;
 begin
   with THTMLEncoding.Create do
-
     try
-
       while xml.ReadToEndTagByName('numFmts') do begin
-
         if (xml.TagName = 'numFmt') then
-
           if (TryStrToInt(xml.Attributes['numFmtId'], temp)) then
-
             Format[temp] := Decode(xml.Attributes['formatCode']);
-
       end;
-
     finally
-
       Free;
-
     end;
-
 end;
 
 procedure TZEXLSXNumberFormats.SetStyleFMTID(num: integer; const value: integer);
@@ -1801,6 +1792,7 @@ var
         currentSheet.ViewMode := zvmNormal;
         if xml.Attributes.ItemsByName['view'] = 'pageBreakPreview' then
             currentSheet.ViewMode := zvmPageBreakPreview;
+        currentSheet.ShowZeros := ZETryStrToBoolean(xml.Attributes.ItemsByName['showZeros'], true);
       end;
 
       if xml.IsTagClosedByName('pane') then begin
@@ -4984,7 +4976,7 @@ var xml: TZsspXMLWriterH;    //писатель
     xml.Attributes.Add('showGridLines', 'true', false);
     xml.Attributes.Add('showOutlineSymbols', 'true', false);
     xml.Attributes.Add('showRowColHeaders', 'true', false);
-    xml.Attributes.Add('showZeros', 'true', false);
+    xml.Attributes.Add('showZeros', ifthen(sheet.ShowZeros, '1', '0'), false);
 
     if sheet.Selected then
       xml.Attributes.Add('tabSelected', 'true', false);
@@ -6391,7 +6383,7 @@ begin
 
     xml.Attributes.Clear();
     xml.WriteTag('TotalTime', '0', true, false, false);
-    xml.WriteTag('Application', ZE_XLSX_APPLICATION, true, false, true);
+    xml.WriteTag('Application', TZWorkBook.Application, true, false, true);
     xml.WriteEndTagNode(); //Properties
   finally
     xml.Free();

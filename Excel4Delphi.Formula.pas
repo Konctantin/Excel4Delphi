@@ -1,9 +1,9 @@
-﻿unit zeformula;
+﻿unit Excel4Delphi.Formula;
 
 interface
 
 uses
-  sysutils;
+  SysUtils;
 
 const
   //ZE_RTA = ZE R1C1 to A1

@@ -1,9 +1,10 @@
-﻿unit zenumberformats;
+﻿unit Excel4Delphi.NumberFormat;
 
 interface
 
 uses
-  SysUtils, zsspxml;
+  SysUtils,
+  Excel4Delphi.Xml;
 
 const
   //Main number formats
@@ -340,7 +341,8 @@ function TryXlsxTimeToDateTime(const XlsxDateTime: string; out retDateTime: TDat
 
 implementation
 
-uses zesavecommon, StrUtils;
+uses StrUtils,
+  Excel4Delphi.Common;
 
 const
   ZE_NUMBER_FORMAT_DECIMAL_SEPARATOR    = '.';

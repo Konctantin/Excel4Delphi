@@ -1,9 +1,13 @@
-﻿unit zesavecommon;
+﻿unit Excel4Delphi.Common;
 
 interface
 
 uses
-  SysUtils, Types, Classes, zexmlss, zsspxml;
+  SysUtils,
+  Types,
+  Classes,
+  Excel4Delphi,
+  Excel4Delphi.Xml;
 
 const
   ZE_MMinInch: real = 25.4;
@@ -57,7 +61,7 @@ function ZENormalizeAngle180(const value: TZCellTextRotate): integer;
 implementation
 
 uses
-  DateUtils, IOUtils, winapi.windows;
+  DateUtils, IOUtils, Winapi.Windows;
 
 function FileCreateTemp(var tempName: string): THandle;
 begin
