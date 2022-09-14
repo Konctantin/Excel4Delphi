@@ -5957,7 +5957,7 @@ var
     case _border.LineStyle of
       ZEContinuous:
         begin
-          if (_border.Weight = 1) then
+          if (_border.Weight <= 1) then
             s1 := 'thin'
           else
           if (_border.Weight = 2) then
