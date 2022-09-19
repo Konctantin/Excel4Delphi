@@ -74,13 +74,50 @@ type
     sheetid: integer;     //номер листа
   end;
 
-
+type TZXLSXDiffFormattingItem = class(TPersistent)
+  private
+    FUseFont: boolean;              //заменять ли шрифт
+    FUseFontColor: boolean;         //заменять ли цвет шрифта
+    FUseFontStyles: boolean;        //заменять ли стиль шрифта
+    FFontColor: TColor;             //цвет шрифта
+    FFontStyles: TFontStyles;       //стиль шрифта
+    FUseBorder: boolean;            //заменять ли рамку
+    FBorders: TZXLSXDiffBorder;     //Что менять в рамке
+    FUseFill: boolean;              //заменять ли заливку
+    FUseCellPattern: boolean;       //Заменять ли тип заливки
+    FCellPattern: TZCellPattern;    //тип заливки
+    FUseBGColor: boolean;           //заменять ли цвет заливки
+    FBGColor: TColor;               //цвет заливки
+    FUsePatternColor: boolean;      //Заменять ли цвет шаблона заливки
+    FPatternColor: TColor;          //Цвет шаблона заливки
+  protected
+  public
+    constructor Create();
+    destructor Destroy(); override;
+    procedure Clear();
+    procedure Assign(Source: TPersistent); override;
+    property UseFont: boolean read FUseFont write FUseFont;
+    property UseFontColor: boolean read FUseFontColor write FUseFontColor;
+    property UseFontStyles: boolean read FUseFontStyles write FUseFontStyles;
+    property FontColor: TColor read FFontColor write FFontColor;
+    property FontStyles: TFontStyles read FFontStyles write FFontStyles;
+    property UseBorder: boolean read FUseBorder write FUseBorder;
+    property Borders: TZXLSXDiffBorder read FBorders write FBorders;
+    property UseFill: boolean read FUseFill write FUseFill;
+    property UseCellPattern: boolean read FUseCellPattern write FUseCellPattern;
+    property CellPattern: TZCellPattern read FCellPattern write FCellPattern;
+    property UseBGColor: boolean read FUseBGColor write FUseBGColor;
+    property BGColor: TColor read FBGColor write FBGColor;
+    property UsePatternColor: boolean read FUsePatternColor write FUsePatternColor;
+    property PatternColor: TColor read FPatternColor write FPatternColor;
+  end;
 
 type
   TXlsxReader = class
   private
     MaximumDigitWidth: double;
     FWorkBook: TZWorkBook;
+    //FStyleReader: TZlsxStyleReader;
     FFiles: TList<TZXLSXFileItem>;
     FRelations: TList<TZXLSXRelations>;
     FSharedStrings: TList<string>;
@@ -129,9 +166,14 @@ type
     procedure SaveToStream(AStream: TStream);
   end;
 
+//type TZlsxStyleReader = class
+//  constructor Create();
+//end;
+
 implementation
 
-uses AnsiStrings, StrUtils, Math, Excel4Delphi.NumberFormat, NetEncoding
+uses AnsiStrings, StrUtils, Math, NetEncoding
+  , Excel4Delphi.NumberFormat
   , Excel4Delphi.Stream
 ;
 
@@ -1199,7 +1241,7 @@ var
     case _border.LineStyle of
       ZEContinuous:
         begin
-          if (_border.Weight = 1) then
+          if (_border.Weight <= 1) then
             s1 := 'thin'
           else
           if (_border.Weight = 2) then

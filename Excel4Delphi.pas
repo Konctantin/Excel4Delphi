@@ -1859,6 +1859,8 @@ type
     procedure SetFontColor(const Value: TColor);
     function GetFontSize(): double;
     procedure SetFontSize(const Value: double);
+    function GetFontFamily(): string;
+    procedure SetFontFamily(const Value: string);
     function GetFontStyle(): TFontStyles;
     procedure SetFontStyle(const Value: TFontStyles);
     function GetBorderStyle(Num: TZBordersPos): TZBorderType;
@@ -1886,6 +1888,7 @@ type
     property BgColor: TColor read GetBgColor write SetBgColor;
     property FontColor: TColor read GetFontColor write SetFontColor;
     property FontSize: double read GetFontSize write SetFontSize;
+    property FontFamily: string read GetFontFamily write SetFontFamily;
     property FontStyle: TFontStyles read GetFontStyle write SetFontStyle;
     property BorderStyle[num: TZBordersPos]: TZBorderType read GetBorderStyle write SetBorderStyle;
     property BorderWidht[num: TZBordersPos]: Byte read GetBorderWidht write SetBorderWidht;
@@ -1923,6 +1926,8 @@ type
     procedure SetFontColor(const Value: TColor);
     function GetFontSize(): double;
     procedure SetFontSize(const Value: double);
+    function GetFontFamily(): string;
+    procedure SetFontFamily(const Value: string);
     function GetFontStyle(): TFontStyles;
     procedure SetFontStyle(const Value: TFontStyles);
     function GetBorderStyle(Num: TZBordersPos): TZBorderType;
@@ -1954,6 +1959,7 @@ type
     property BgColor: TColor read GetBgColor write SetBgColor;
     property FontColor: TColor read GetFontColor write SetFontColor;
     property FontSize: double read GetFontSize write SetFontSize;
+    property FontFamily: string read GetFontFamily write SetFontFamily;
     property FontStyle: TFontStyles read GetFontStyle write SetFontStyle;
     property BorderStyle[num: TZBordersPos]: TZBorderType read GetBorderStyle write SetBorderStyle;
     property BorderWidht[num: TZBordersPos]: Byte read GetBorderWidht write SetBorderWidht;
@@ -6606,6 +6612,13 @@ begin
     Result := FSheet.FStore.FStyles[FSheet.Cell[FLeft,FTop].FCellStyle].Font.Color;
 end;
 
+function TZRange.GetFontFamily: string;
+begin
+  Result := '';
+  if HasStyle then
+    Result := FSheet.FStore.FStyles[FSheet.Cell[FLeft,FTop].FCellStyle].Font.FName;
+end;
+
 function TZRange.GetFontSize(): double;
 begin
   Result := 0;
@@ -6761,6 +6774,13 @@ procedure TZRange.SetFontColor(const Value: TColor);
 begin
   ApplyStyleValue(procedure (style: TZStyle) begin
     style.Font.Color := Value;
+  end);
+end;
+
+procedure TZRange.SetFontFamily(const Value: string);
+begin
+  ApplyStyleValue(procedure (style: TZStyle) begin
+    style.Font.Name := Value;
   end);
 end;
 
