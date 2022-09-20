@@ -304,6 +304,10 @@ type
     /// Number format
     /// </summary>
     property NumberFormat: string read GetNumberFormat write SetNumberFormat;
+    /// <summary>
+    /// Trying to convert probably number value and change cell type to number.
+    /// </summary>
+    procedure TryConvertToNumber();
 
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
   end;
@@ -2139,7 +2143,7 @@ function IsIdenticalByteArray(Src, Dst: TBytes): boolean;
 
 implementation
 
-uses Excel4Delphi.Formula;
+uses Excel4Delphi.Formula, Excel4Delphi.Common;
 
 var invariantFormatSertting: TFormatSettings;
 
@@ -3334,6 +3338,15 @@ begin
   ApplyStyleValue(procedure (style: TZStyle) begin
     style.Alignment.WrapText := Value;
   end);
+end;
+
+procedure TZCell.TryConvertToNumber;
+var val: double;
+begin
+  if self.CellType <> TZCellType.ZENumber then begin
+    if ZEIsTryStrToFloat(self.Data, val) then
+      self.AsDouble := val;
+  end;
 end;
 
 function TZCell.GetDataAsInteger: integer;
