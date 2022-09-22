@@ -1911,6 +1911,7 @@ type
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure Merge();
     procedure Clear();
+    procedure CopyTo(ASheet, ACol, ARow: integer);
   end;
 
   TZRange = class(TInterfacedObject, IZRange)
@@ -1986,6 +1987,7 @@ type
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure Merge();
     procedure Clear();
+    procedure CopyTo(ASheet, ACol, ARow: integer);
   end;
 
   /// <summary>
@@ -6595,6 +6597,43 @@ begin
       FSheet.Cell[col, row].Formula := '';
       FSheet.Cell[col, row].Comment := '';
       FSheet.Cell[col, row].CommentAuthor := '';
+    end;
+  end;
+end;
+
+procedure TZRange.CopyTo(ASheet, ACol, ARow: integer);
+var dstSheet: TZSheet;
+  i, cs, cd, rs, rd: integer;
+begin
+  if ASheet >= self.FSheet.WorkBook.Sheets.Count then
+    raise Exception.Create('Sheet index does not exists');
+
+  dstSheet := self.FSheet.WorkBook.Sheets[ASheet];
+
+  if dstSheet.ColCount < ACol + (FRight-FLeft) then
+    dstSheet.ColCount := ACol + (FRight-FLeft)+1;
+
+  if dstSheet.RowCount < ARow + (FBottom-FTop) then
+    dstSheet.RowCount := ARow + (FBottom-FTop)+1;
+
+  cd := ACol;
+  for cs := self.FLeft to self.FRight do begin
+    rd := ARow;
+    for rs := self.FTop to self.FBottom do begin
+      dstSheet.Cell[cd, rd].Assign(self.FSheet.Cell[cs, rs]);
+      inc(rd);
+    end;
+    inc(cd);
+  end;
+
+  for I := 0 to self.FSheet.MergeCells.Count-1 do begin
+    if FSheet.MergeCells.IsCrossWithArea(I, FLeft, FTop, FRight, FBottom) then begin
+      dstSheet.MergeCells.AddRectXY(
+        FSheet.MergeCells[i].Left + ACol,
+        FSheet.MergeCells[i].Top + ARow,
+        FSheet.MergeCells[i].Right + ACol,
+        FSheet.MergeCells[i].Bottom + ARow
+      );
     end;
   end;
 end;
