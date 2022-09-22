@@ -241,9 +241,55 @@ end;
 //  out isOk: boolean       - если true - ошибки небыло
 //    valueIfError: double  - значение, которое подставляется при ошибке преобразования
 function ZETryStrToFloat(const st: string; out isOk: boolean; valueIfError: double = 0): double;
-var s: string; i: integer;
+var
+  s: string;
+  i: integer;
+  n: integer;
+  c: integer;
+  done: boolean;
+  hasSep: boolean;
 begin
-  result := 0;
+  Result := valueIfError;
+  SetLength(s, Length(st));
+  n := 0;
+  done := false;
+  hasSep := false;
+  isOk := false;
+  for i := 1 to Length(st) do
+  begin
+    c := Ord(st[i]);
+    if c = 32 then
+    begin
+      if n > 0 then
+        done := true;
+      continue;
+    end
+    else if (c >= 48) and (c <= 57) then
+    begin
+      if done then
+        exit; // Если уже был пробел и опять пошли цифры, то это ошибка, поэтому выходим.
+      Inc(n);
+      s[n] := Char(c);
+    end
+    else if c in [44, 46] then
+    begin
+      if done or hasSep then
+        exit; // Если уже был пробел или разделитель и опять попался разделитель, то это ошибка, поэтому выходим.
+      Inc(n);
+      s[n] := FormatSettings.DecimalSeparator;
+      hasSep := true;
+    end;
+  end;
+  if n > 0 then
+  begin
+    SetLength(s, n);
+    isOk := TryStrToFloat(s, Result);
+    if (not isOk) then
+      Result := valueIfError;
+  end;
+
+  // Здесь были ошибки из-за того, что в конце строки оказывался не символ #0.
+  {result := 0;
   isOk := true;
   if (length(trim(st)) <> 0) then begin
     s := '';
@@ -256,7 +302,7 @@ begin
     isOk := TryStrToFloat(s, result);
     if (not isOk) then
       result := valueIfError;
-  end;
+  end;}
 end; //ZETryStrToFloat
 
 //Попытка преобразовать строку в число
@@ -264,22 +310,10 @@ end; //ZETryStrToFloat
 //  const st: string        - строка
 //    valueIfError: double  - значение, которое подставляется при ошибке преобразования
 function ZETryStrToFloat(const st: string; valueIfError: double = 0): double;
-var s: string; i: integer;
+var
+  isOk: boolean;
 begin
-  result := 0;
-  if (trim(st) <> '') then begin
-    s := '';
-    for i := 1 to length(st) do
-      if (CharInSet(st[i], ['.', ','])) then
-        s := s + FormatSettings.DecimalSeparator
-      else if (st[i] <> ' ') then
-        s := s + st[i];
-      try
-        result := StrToFloat(s);
-      except
-        result := valueIfError;
-      end;
-  end;
+  Result := ZETryStrToFloat(st, isOk, valueIfError);
 end; //ZETryStrToFloat
 
 //заменяет все запятые на точки
