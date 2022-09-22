@@ -4028,7 +4028,7 @@ begin
       if (c - ACount) < ACol then begin
         FCells[c][r].Clear();
       end else begin
-        FCells[c][r].Assign(FCells[c][r-ACount]);
+        FCells[c][r].Assign(FCells[c-ACount][r]);
       end;
     end;
   end;
