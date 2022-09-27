@@ -324,7 +324,7 @@ type
     procedure SetWeight(const Value: byte);
     procedure SetColor(const Value: TColor);
   public
-    constructor Create();virtual;
+    constructor Create(); virtual;
     procedure Assign(Source: TPersistent); override;
     /// <returns>
     /// True, when border equal to Source.
@@ -1910,6 +1910,8 @@ type
     procedure SetBorderBottom(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure Merge();
+    procedure MergeAndCenter();
+    procedure UnMerge();
     procedure Clear();
     procedure CopyTo(ASheet, ACol, ARow: integer);
   end;
@@ -1986,6 +1988,8 @@ type
     procedure SetBorderBottom(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure Merge();
+    procedure MergeAndCenter();
+    procedure UnMerge();
     procedure Clear();
     procedure CopyTo(ASheet, ACol, ARow: integer);
   end;
@@ -2087,6 +2091,7 @@ type
     property DocumentProperties: TZEXMLDocumentProperties read FDocumentProperties write FDocumentProperties;
     property HorPixelSize: real read FHorPixelSize write SetHorPixelSize;  // размер пикселя по горизонтали
     property VertPixelSize: real read FVertPixelSize write SetVertPixelSize;  //размер пикселя по вертикали
+    //property DefinedNames: TArray<TDefinedName> read FDefinedNames write FDefinedNames;
   end;
 
 /// <summary>
@@ -6494,13 +6499,25 @@ begin
 end;
 
 procedure TZRange.Merge();
+begin
+  UnMerge;
+  FSheet.MergeCells.AddRectXY(FLeft, FTop, FRight, FBottom);
+end;
+
+procedure TZRange.MergeAndCenter();
+begin
+  Merge();
+  VerticalAlignment := TZVerticalAlignment.ZVCenter;
+  HorizontalAlignment := TZHorizontalAlignment.ZHCenter;
+end;
+
+procedure TZRange.UnMerge();
 var I: Integer;
 begin
-  for I := FSheet.MergeCells.Count-1 downto 0 do begin
+  for I := FSheet.MergeCells.Count - 1 downto 0 do begin
     if FSheet.MergeCells.IsCrossWithArea(I, FLeft, FTop, FRight, FBottom) then
       FSheet.MergeCells.DeleteItem(I);
   end;
-  FSheet.MergeCells.AddRectXY(FLeft, FTop, FRight, FBottom);
 end;
 
 procedure TZRange.SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -6591,12 +6608,17 @@ end;
 procedure TZRange.Clear();
 var col, row: Integer;
 begin
+  { В Excel по Clear чистятся не только данные по ячейкам, но и объединённые
+    ячейки и стили, поэтому делаем здесь так же.
+    Пример использования см. TFormSvod.BitBtn3Click. }
+  UnMerge;
   for col := FLeft to FRight do begin
     for row := FTop to FBottom do begin
       FSheet.Cell[col, row].Data := '';
       FSheet.Cell[col, row].Formula := '';
       FSheet.Cell[col, row].Comment := '';
       FSheet.Cell[col, row].CommentAuthor := '';
+      FSheet.Cell[col, row].CellStyle := -1;
     end;
   end;
 end;
