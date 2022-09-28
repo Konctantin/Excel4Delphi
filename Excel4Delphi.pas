@@ -1885,6 +1885,11 @@ type
     procedure SetVerticalText(const Value: Boolean);
     function GetNumberFormat(): string;
     procedure SetNumberFormat(const Value: string);
+    function GetSheet: TZSheet;
+    function GetLeft: Integer;
+    function GetTop: Integer;
+    function GetRight: Integer;
+    function GetBottom: Integer;
     //
     property VerticalAlignment: TZVerticalAlignment read GetVerticalAlignment write SetVerticalAlignment;
     property HorizontalAlignment: TZHorizontalAlignment read GetHorizontalAlignment write SetHorizontalAlignment;
@@ -1904,6 +1909,11 @@ type
     property VerticalText: Boolean read GetVerticalText write SetVerticalText;
     property Rotate: TZCellTextRotate read GetRotate write SetRotate;
     property NumberFormat: string read GetNumberFormat write SetNumberFormat;
+    property Sheet: TZSheet read GetSheet;
+    property Left: Integer read GetLeft;
+    property Top: Integer read GetTop;
+    property Right: Integer read GetRight;
+    property Bottom: Integer read GetBottom;
     procedure SetBorderLeft(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderTop(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderRight(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -1918,7 +1928,7 @@ type
   TZRange = class(TInterfacedObject, IZRange)
   private
     FSheet: TZSheet;
-    FLeft,FTop,FRight,FBottom: Integer;
+    FLeft, FTop, FRight, FBottom: Integer;
 
     function HasStyle: Boolean;
     procedure ApplyStyleValue(proc: TProc<TZStyle>);
@@ -1958,7 +1968,11 @@ type
     procedure SetVerticalText(const Value: Boolean);
     function GetNumberFormat(): string;
     procedure SetNumberFormat(const Value: string);
-  protected
+    function GetSheet: TZSheet;
+    function GetLeft: Integer;
+    function GetTop: Integer;
+    function GetRight: Integer;
+    function GetBottom: Integer;
   public
     constructor Create(ASheet: TZSheet; ALeft, ATop, ARight, ABottom: Integer); virtual;
     procedure Assign(Source: TZRange);
@@ -1981,6 +1995,11 @@ type
     property VerticalText: Boolean read GetVerticalText write SetVerticalText;
     property Rotate: TZCellTextRotate read GetRotate write SetRotate;
     property NumberFormat: string read GetNumberFormat write SetNumberFormat;
+    property Sheet: TZSheet read GetSheet;
+    property Left: Integer read GetLeft;
+    property Top: Integer read GetTop;
+    property Right: Integer read GetRight;
+    property Bottom: Integer read GetBottom;
     procedure SetBorderLeft(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderTop(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderRight(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -2073,6 +2092,7 @@ type
     procedure SetDefaultSheetOptions(Value: TZSheetOptions);
   public
     class var Application: string;
+  public
     FDefinedNames: TArray<TDefinedName>;
     FTheme: TWorkbookTheme;
     constructor Create(AOwner: TComponent); override;
@@ -6981,6 +7001,31 @@ begin
   ApplyStyleValue(procedure (style: TZStyle) begin
     style.NumberFormat := Value;
   end);
+end;
+
+function TZRange.GetSheet: TZSheet;
+begin
+  Result := FSheet;
+end;
+
+function TZRange.GetLeft: Integer;
+begin
+  Result := FLeft;
+end;
+
+function TZRange.GetTop: Integer;
+begin
+  Result := FTop;
+end;
+
+function TZRange.GetRight: Integer;
+begin
+  Result := FRight;
+end;
+
+function TZRange.GetBottom: Integer;
+begin
+  Result := FBottom;
 end;
 
 procedure TZRange.SetRotate(const Value: TZCellTextRotate);

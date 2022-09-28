@@ -3720,14 +3720,14 @@ begin
       xml.ReadTag();
 
       if xml.IsTagStartByName('definedName') then begin
-         xml.ReadTag();
-         SetLength(XMLSS.FDefinedNames, dn + 1);
-         XMLSS.FDefinedNames[dn].LocalSheetId := StrToIntDef(xml.Attributes.ItemsByName['localSheetId'], 0);
-         XMLSS.FDefinedNames[dn].Name := xml.Attributes.ItemsByName['name'];
-         XMLSS.FDefinedNames[dn].Body := xml.TagValue;
-         inc(dn);
-      end else
-      if xml.IsTagClosedByName('sheet') then begin
+        SetLength(XMLSS.FDefinedNames, dn + 1);
+        XMLSS.FDefinedNames[dn].LocalSheetId := StrToIntDef(xml.Attributes.ItemsByName['localSheetId'], 0);
+        XMLSS.FDefinedNames[dn].Name := xml.Attributes.ItemsByName['name'];
+        inc(dn);
+      end
+      else if xml.IsTagEndByName('definedName') and (Length(XMLSS.FDefinedNames) = dn) then
+        XMLSS.FDefinedNames[dn - 1].Body := xml.TagValue
+      else if xml.IsTagClosedByName('sheet') then begin
         s := xml.Attributes.ItemsByName['r:id'];
         for i := 0 to RelationsCount - 1 do
           if (Relations[i].id = s) then begin
