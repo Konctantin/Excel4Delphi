@@ -324,7 +324,7 @@ type
     procedure SetWeight(const Value: byte);
     procedure SetColor(const Value: TColor);
   public
-    constructor Create();virtual;
+    constructor Create(); virtual;
     procedure Assign(Source: TPersistent); override;
     /// <returns>
     /// True, when border equal to Source.
@@ -1920,6 +1920,7 @@ type
     procedure SetBorderBottom(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure Merge();
+    procedure MergeAndCenter();
     procedure UnMerge();
     procedure Clear();
     procedure CopyTo(ASheet, ACol, ARow: integer);
@@ -2006,6 +2007,7 @@ type
     procedure SetBorderBottom(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure Merge();
+    procedure MergeAndCenter();
     procedure UnMerge();
     procedure Clear();
     procedure CopyTo(ASheet, ACol, ARow: integer);
@@ -2109,6 +2111,7 @@ type
     property DocumentProperties: TZEXMLDocumentProperties read FDocumentProperties write FDocumentProperties;
     property HorPixelSize: real read FHorPixelSize write SetHorPixelSize;  // размер пикселя по горизонтали
     property VertPixelSize: real read FVertPixelSize write SetVertPixelSize;  //размер пикселя по вертикали
+    //property DefinedNames: TArray<TDefinedName> read FDefinedNames write FDefinedNames;
   end;
 
 /// <summary>
@@ -6519,6 +6522,13 @@ procedure TZRange.Merge();
 begin
   UnMerge;
   FSheet.MergeCells.AddRectXY(FLeft, FTop, FRight, FBottom);
+end;
+
+procedure TZRange.MergeAndCenter();
+begin
+  Merge();
+  VerticalAlignment := TZVerticalAlignment.ZVCenter;
+  HorizontalAlignment := TZHorizontalAlignment.ZHCenter;
 end;
 
 procedure TZRange.UnMerge();

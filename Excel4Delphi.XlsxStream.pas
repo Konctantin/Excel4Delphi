@@ -74,6 +74,38 @@ type
     sheetid: integer;     //номер листа
   end;
 
+  TZXLSXDiffBorderItemStyle = class(TPersistent)
+  private
+    FUseStyle: boolean;             //заменять ли стиль
+    FUseColor: boolean;             //заменять ли цвет
+    FColor: TColor;                 //цвет линий
+    FLineStyle: TZBorderType;       //стиль линий
+    FWeight: byte;
+  protected
+  public
+    constructor Create();
+    procedure Clear();
+    procedure Assign(Source: TPersistent); override;
+    property UseStyle: boolean read FUseStyle write FUseStyle;
+    property UseColor: boolean read FUseColor write FUseColor;
+    property Color: TColor read FColor write FColor;
+    property LineStyle: TZBorderType read FLineStyle write FLineStyle;
+    property Weight: byte read FWeight write FWeight;
+  end;
+
+  TZXLSXDiffBorder = class(TPersistent)
+  private
+    FBorder: array [0..5] of TZXLSXDiffBorderItemStyle;
+    procedure SetBorder(Num: TZBordersPos; Const Value: TZXLSXDiffBorderItemStyle);
+    function GetBorder(Num: TZBordersPos): TZXLSXDiffBorderItemStyle;
+  public
+    constructor Create(); virtual;
+    destructor Destroy(); override;
+    procedure Clear();
+    procedure Assign(Source: TPersistent);override;
+    property Border[Num: TZBordersPos]: TZXLSXDiffBorderItemStyle read GetBorder write SetBorder; default;
+  end;
+
 type TZXLSXDiffFormattingItem = class(TPersistent)
   private
     FUseFont: boolean;              //заменять ли шрифт
