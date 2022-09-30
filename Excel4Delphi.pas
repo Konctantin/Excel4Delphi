@@ -88,7 +88,7 @@ type
   public
     property Text: string read FText write FText;
     property Font: TZFont read FFont write FFont;
-
+    constructor Create(); virtual;
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
     function GetHashCode(): integer; override;
@@ -102,8 +102,10 @@ type
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
     function GetHashCode(): integer; override;
+    property List: TList<TRichString> read FList;
+    class function FromText(text: string): TRichText;
     //function ToHtml(): string;
-    //function ToString(): string; override;
+    function ToString(): string; override;
   end;
 
   /// <summary>
@@ -231,7 +233,7 @@ type
     /// <summary>
     /// Rich formated text.
     /// </summary>
-    property RichText: TRichText read FRichText;
+    property RichText: TRichText read FRichText write FRichText;
     /// <summary>
     /// Present cell data as double value
     /// </summary>
@@ -454,8 +456,11 @@ type
   TZFont = class (TPersistent)
   private
     FColor: TColor;
+    FColorTheme: integer;
     FSize: double;
     FCharset: TFontCharset;
+    FFamily: byte;
+    FScheme: string;
     FName: TFontName;
     FStyle: TFontStyles;
   public
@@ -467,6 +472,9 @@ type
     property Color: TColor read FColor write FColor;
     property Size: double read FSize write FSize;
     property Charset: TFontCharset read FCharset write FCharset;
+    property ColorTheme: integer read FColorTheme write FColorTheme;
+    property Family: byte read FFamily write FFamily;
+    property Scheme: string read FScheme write FScheme;
     property Name: TFontName read FName write FName;
     property Style: TFontStyles read FStyle write FStyle;
   end;
@@ -1885,6 +1893,11 @@ type
     procedure SetVerticalText(const Value: Boolean);
     function GetNumberFormat(): string;
     procedure SetNumberFormat(const Value: string);
+    function GetSheet: TZSheet;
+    function GetLeft: Integer;
+    function GetTop: Integer;
+    function GetRight: Integer;
+    function GetBottom: Integer;
     //
     property VerticalAlignment: TZVerticalAlignment read GetVerticalAlignment write SetVerticalAlignment;
     property HorizontalAlignment: TZHorizontalAlignment read GetHorizontalAlignment write SetHorizontalAlignment;
@@ -1904,6 +1917,11 @@ type
     property VerticalText: Boolean read GetVerticalText write SetVerticalText;
     property Rotate: TZCellTextRotate read GetRotate write SetRotate;
     property NumberFormat: string read GetNumberFormat write SetNumberFormat;
+    property Sheet: TZSheet read GetSheet;
+    property Left: Integer read GetLeft;
+    property Top: Integer read GetTop;
+    property Right: Integer read GetRight;
+    property Bottom: Integer read GetBottom;
     procedure SetBorderLeft(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderTop(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderRight(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -1919,7 +1937,7 @@ type
   TZRange = class(TInterfacedObject, IZRange)
   private
     FSheet: TZSheet;
-    FLeft,FTop,FRight,FBottom: Integer;
+    FLeft, FTop, FRight, FBottom: Integer;
 
     function HasStyle: Boolean;
     procedure ApplyStyleValue(proc: TProc<TZStyle>);
@@ -1959,7 +1977,11 @@ type
     procedure SetVerticalText(const Value: Boolean);
     function GetNumberFormat(): string;
     procedure SetNumberFormat(const Value: string);
-  protected
+    function GetSheet: TZSheet;
+    function GetLeft: Integer;
+    function GetTop: Integer;
+    function GetRight: Integer;
+    function GetBottom: Integer;
   public
     constructor Create(ASheet: TZSheet; ALeft, ATop, ARight, ABottom: Integer); virtual;
     procedure Assign(Source: TZRange);
@@ -1982,6 +2004,11 @@ type
     property VerticalText: Boolean read GetVerticalText write SetVerticalText;
     property Rotate: TZCellTextRotate read GetRotate write SetRotate;
     property NumberFormat: string read GetNumberFormat write SetNumberFormat;
+    property Sheet: TZSheet read GetSheet;
+    property Left: Integer read GetLeft;
+    property Top: Integer read GetTop;
+    property Right: Integer read GetRight;
+    property Bottom: Integer read GetBottom;
     procedure SetBorderLeft(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderTop(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderRight(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -2075,6 +2102,7 @@ type
     procedure SetDefaultSheetOptions(Value: TZSheetOptions);
   public
     class var Application: string;
+  public
     FDefinedNames: TArray<TDefinedName>;
     FTheme: TWorkbookTheme;
     constructor Create(AOwner: TComponent); override;
@@ -2768,19 +2796,25 @@ procedure TZFont.Assign(Source: TPersistent);
 var zSource: TZFont; srcFont: TFont;
 begin
   if Source is TZFont then begin
-    zSource  := Source as TZFont;
-    FColor   := zSource.Color;
-    FSize    := zSource.Size;
-    FCharset := zSource.Charset;
-    FName    := zSource.Name;
-    FStyle   := zSource.Style;
+    zSource     := Source as TZFont;
+    FColor      := zSource.Color;
+    FSize       := zSource.Size;
+    FCharset    := zSource.Charset;
+    FName       := zSource.Name;
+    FStyle      := zSource.Style;
+    FColorTheme := zSource.FColorTheme;
+    FFamily     := zSource.FFamily;
+    FScheme     := zSource.FScheme;
   end else if Source is TFont then begin
-    srcFont  := Source as TFont;
-    FColor   := srcFont.Color;
-    FSize    := srcFont.Size;
-    FCharset := srcFont.Charset;
-    FName    := srcFont.Name;
-    FStyle   := srcFont.Style;
+    srcFont     := Source as TFont;
+    FColor      := srcFont.Color;
+    FSize       := srcFont.Size;
+    FCharset    := srcFont.Charset;
+    FName       := srcFont.Name;
+    FStyle      := srcFont.Style;
+    FColorTheme := 0;
+    FFamily     := 2;
+    FScheme     := 'minor';
   end else
     inherited Assign(Source);
 end;
@@ -3077,7 +3111,7 @@ begin
   FCellStyle         := -1; //по дефолту
   FAlwaysShowComment := false;
   FShowComment       := false;
-  FRichText := TRichText.Create();
+  FRichText          := nil;
 end;
 
 destructor TZCell.Destroy;
@@ -3100,7 +3134,13 @@ begin
     FCellType          := zSource.CellType;
     FAlwaysShowComment := zSource.AlwaysShowComment;
     FShowComment       := zSource.ShowComment;
-    FRichText.Assign(zSource.FRichText);
+    if assigned(zSource.FRichText) then begin
+      FRichText := TRichText.Create();
+      FRichText.Assign(zSource.FRichText);
+    end else if assigned(FRichText) then begin
+      FRichText.Free();
+      FRichText := nil;
+    end;
   end else
     inherited Assign(Source);
 end;
@@ -3117,6 +3157,10 @@ begin
   FCellStyle         := -1;
   FAlwaysShowComment := false;
   FShowComment       := false;
+  if Assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end
 end;
 
 procedure TZCell.ApplyStyleValue(proc: TProc<TZStyle>);
@@ -3374,6 +3418,10 @@ begin
   FCellType := ZEDateTime;
   //FData := ZEDateTimeToStr(Value, true);
   FData := FloatToStr(Value).Replace(',','.');
+  if assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end;
 end;
 
 function TZCell.GetDataAsDouble: double;
@@ -3414,20 +3462,30 @@ procedure TZCell.SetDataAsInteger(const Value: integer);
 begin
   Data := Trim(IntToStr(Value));
   CellType := ZENumber;
-// Val adds the prepending space, maybe some I2S implementation would adds too
-// and Excel dislikes it. Better safe than sorry.
+  if assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end;
 end;
 
 procedure TZCell.SetDataAsDouble(const Value: double);
 begin
   CellType := ZENumber;
   FData := FloatToStr(value, invariantFormatSertting).ToUpper;
+  if assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end;
 end;
 
 procedure TZCell.SetDataAsString(const Value: string);
 begin
   FData := Value;
   CellType := ZEString;
+  if assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end;
 end;
 
 ////::::::::::::: TZMergeCells :::::::::::::::::////
@@ -6993,6 +7051,31 @@ begin
   end);
 end;
 
+function TZRange.GetSheet: TZSheet;
+begin
+  Result := FSheet;
+end;
+
+function TZRange.GetLeft: Integer;
+begin
+  Result := FLeft;
+end;
+
+function TZRange.GetTop: Integer;
+begin
+  Result := FTop;
+end;
+
+function TZRange.GetRight: Integer;
+begin
+  Result := FRight;
+end;
+
+function TZRange.GetBottom: Integer;
+begin
+  Result := FBottom;
+end;
+
 procedure TZRange.SetRotate(const Value: TZCellTextRotate);
 begin
   ApplyStyleValue(procedure (style: TZStyle) begin
@@ -7041,41 +7124,67 @@ begin
   FList.Free();
 end;
 
+class function TRichText.FromText(text: string): TRichText;
+var part: TRichString;
+begin
+  result := TRichText.Create();
+  part := TRichString.Create();
+  part.Font := nil;
+  part.FText := text;
+  result.List.Add(part);
+end;
+
 procedure TRichText.Assign(Source: TPersistent);
-var i: integer;
+var i: integer; part: TRichString;
 begin
   if Source is TRichText then begin
     FList.Clear();
-    for I := 0 to TRichText(Source).FList.Count-1 do
-      FList.Add(TRichText(Source).FList[i]);
+    for I := 0 to TRichText(Source).FList.Count-1 do begin
+      part := TRichString.Create();
+      part.Assign(TRichText(Source).FList[i]);
+      FList.Add(part);
+    end;
   end;
 end;
 
 function TRichText.GetHashCode(): integer;
 var i: integer;
 begin
-
   result := 17;
   for I := 0 to FList.Count-1 do
     result := result * 23 + FList[i].GetHashCode();
 end;
 
+function TRichText.ToString: string;
+var part: TRichString;
+begin
+  result := '';
+  for part in List do
+    result := result + part.Text;
+end;
+
 {TRichString}
+
+constructor TRichString.Create;
+begin
+  FText := '';
+  FFont := nil;
+end;
 
 destructor TRichString.Destroy();
 begin
   if Assigned(FFont) then
-
     FFont.Free();
-
 end;
 
 procedure TRichString.Assign(Source: TPersistent);
 begin
   if Source is TRichString then begin
     FText := TRichString(Source).FText;
-    if Assigned(TRichString(Source).FFont) then
-       FFont.Assign(TRichString(Source).FFont);
+    if Assigned(TRichString(Source).FFont) then begin
+      FFont := TZFont.Create();
+      FFont.Assign(TRichString(Source).FFont);
+    end;
   end;
 end;
 
