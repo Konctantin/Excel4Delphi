@@ -2768,6 +2768,9 @@ begin
   FCharset := DEFAULT_CHARSET;
   FName    := 'MS Sans Serif';
   FStyle   := [];
+  FScheme  := '';
+  Family   := 0;
+  FColorTheme := 0;
 end;
 
 destructor TZFont.Destroy;

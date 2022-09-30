@@ -1123,13 +1123,13 @@ begin
                   if xml.IsTagClosedByName('i') then
                     part.Font.Style := part.Font.Style + [fsItalic];
                   if xml.IsTagClosedByName('sz') then
-                    part.Font.Size := ZETryStrToFloat(xml.Attributes['val'], 11);
+                    part.Font.Size := ZETryStrToFloat(xml.Attributes['val'], 0);
                   if xml.IsTagClosedByName('rFont') then
                     part.Font.Name := xml.Attributes['val'];
                   if xml.IsTagClosedByName('family') then
-                    part.Font.Family := StrToIntDef(xml.Attributes['val'], 2);
+                    part.Font.Family := StrToIntDef(xml.Attributes['val'], 0);
                   if xml.IsTagClosedByName('charset') then
-                    part.Font.Charset := StrToIntDef(xml.Attributes['val'], 204);
+                    part.Font.Charset := StrToIntDef(xml.Attributes['val'], 0);
                   if xml.IsTagClosedByName('scheme') then
                     part.Font.Scheme := xml.Attributes['val'];
                   if xml.IsTagClosedByName('color') then begin
@@ -6389,32 +6389,44 @@ begin
           if TFontStyle.fsUnderline in part.Font.Style then
             xml.WriteEmptyTag('u', true);
 
-          xml.Attributes.Clear();
-          xml.Attributes.Add('val', FloatToStr(part.Font.Size), false);
-          xml.WriteEmptyTag('sz', true);
+          if part.Font.Size > 0 then begin
+            xml.Attributes.Clear();
+            xml.Attributes.Add('val', FloatToStr(part.Font.Size), false);
+            xml.WriteEmptyTag('sz', true);
+          end;
 
-          xml.Attributes.Clear();
-          if part.Font.ColorTheme > 0 then
-            xml.Attributes.Add('theme', IntToStr(part.Font.ColorTheme), false)
-          else
-            xml.Attributes.Add('rgb', ColorToHTMLHex(part.Font.Color), false);
-          xml.WriteEmptyTag('color', true);
+          if (part.Font.ColorTheme > 0) or (part.Font.Color <> 0) then begin
+            xml.Attributes.Clear();
+            if part.Font.ColorTheme > 0 then
+              xml.Attributes.Add('theme', IntToStr(part.Font.ColorTheme), false)
+            else if part.Font.Color <> 0 then
+              xml.Attributes.Add('rgb', ColorToHTMLHex(part.Font.Color), false);
+            xml.WriteEmptyTag('color', true);
+          end;
 
-          xml.Attributes.Clear();
-          xml.Attributes.Add('val', part.Font.Name, false);
-          xml.WriteEmptyTag('rFont', true);
+          if not trim(part.Font.Name).IsEmpty then begin
+            xml.Attributes.Clear();
+            xml.Attributes.Add('val', part.Font.Name, false);
+            xml.WriteEmptyTag('rFont', true);
+          end;
 
-          xml.Attributes.Clear();
-          xml.Attributes.Add('val', IntToStr(part.Font.Family), false);
-          xml.WriteEmptyTag('family', true);
+          if part.Font.Family > 0 then begin
+            xml.Attributes.Clear();
+            xml.Attributes.Add('val', IntToStr(part.Font.Family), false);
+            xml.WriteEmptyTag('family', true);
+          end;
 
-          xml.Attributes.Clear();
-          xml.Attributes.Add('val', IntToStr(part.Font.Charset), false);
-          xml.WriteEmptyTag('charset', true);
+          if part.Font.Charset > 0 then begin
+            xml.Attributes.Clear();
+            xml.Attributes.Add('val', IntToStr(part.Font.Charset), false);
+            xml.WriteEmptyTag('charset', true);
+          end;
 
-          xml.Attributes.Clear();
-          xml.Attributes.Add('val', part.Font.Scheme, false);
-          xml.WriteEmptyTag('scheme', true);
+          if not trim(part.Font.Scheme).IsEmpty then begin
+            xml.Attributes.Clear();
+            xml.Attributes.Add('val', part.Font.Scheme, false);
+            xml.WriteEmptyTag('scheme', true);
+          end;
 
           xml.WriteEndTagNode();// rPr
 
