@@ -3113,6 +3113,7 @@ begin
       case ss[1] of
         '<':
           begin
+            FValue := FTextBeforeTag;
             FRawTextTag := ss;
             RawTextTagNonDecoded := ch;
             ProcessTag();

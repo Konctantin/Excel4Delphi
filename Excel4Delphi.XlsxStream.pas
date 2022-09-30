@@ -3798,14 +3798,14 @@ begin
       xml.ReadTag();
 
       if xml.IsTagStartByName('definedName') then begin
-         xml.ReadTag();
-         SetLength(FWorkBook.FDefinedNames, dn + 1);
-         FWorkBook.FDefinedNames[dn].LocalSheetId := StrToIntDef(xml.Attributes.ItemsByName['localSheetId'], 0);
-         FWorkBook.FDefinedNames[dn].Name := xml.Attributes.ItemsByName['name'];
-         FWorkBook.FDefinedNames[dn].Body := xml.TagValue;
-         inc(dn);
-      end else
-      if xml.IsTagClosedByName('sheet') then begin
+        SetLength(FWorkBook.FDefinedNames, dn + 1);
+        FWorkBook.FDefinedNames[dn].LocalSheetId := StrToIntDef(xml.Attributes.ItemsByName['localSheetId'], 0);
+        FWorkBook.FDefinedNames[dn].Name := xml.Attributes.ItemsByName['name'];
+        inc(dn);
+      end
+      else if xml.IsTagEndByName('definedName') and (Length(FWorkBook.FDefinedNames) = dn) then
+        FWorkBook.FDefinedNames[dn - 1].Body := xml.TagValue
+      else if xml.IsTagClosedByName('sheet') then begin
         s := xml.Attributes.ItemsByName['r:id'];
         for i := 0 to FRelations.Count - 1 do begin
           rel := FRelations[i];
