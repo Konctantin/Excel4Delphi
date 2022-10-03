@@ -4630,28 +4630,30 @@ begin
         if XMLSS.Sheets[i].DrawingRid > 0 then begin
           // load images
           s := 'xl/drawings/drawing'+IntToStr(i+1)+'.xml';
-          zip.Read(s, stream, zipHdr);
-          try
-            ZEXLSXReadDrawing(XMLSS.Sheets[i], stream);
-          finally
-            stream.Free();
-          end;
+          if zip.IndexOf(s) > -1 then begin
+            zip.Read(s, stream, zipHdr);
+            try
+              ZEXLSXReadDrawing(XMLSS.Sheets[i], stream);
+            finally
+              stream.Free();
+            end;
 
-          // read drawing rels
-          s := 'xl/drawings/_rels/drawing'+IntToStr(i+1)+'.xml.rels';
-          zip.Read(s, stream, zipHdr);
-          try
-            ZEXLSXReadDrawingRels(XMLSS.Sheets[i], stream);
-          finally
-            stream.Free();
-          end;
+            // read drawing rels
+            s := 'xl/drawings/_rels/drawing'+IntToStr(i+1)+'.xml.rels';
+            zip.Read(s, stream, zipHdr);
+            try
+              ZEXLSXReadDrawingRels(XMLSS.Sheets[i], stream);
+            finally
+              stream.Free();
+            end;
 
-          // read img file
-          for j := 0 to XMLSS.Sheets[i].Drawing.Count-1 do begin
+            // read img file
+            for j := 0 to XMLSS.Sheets[i].Drawing.Count-1 do begin
               s := XMLSS.Sheets[i].Drawing[j].Name;
               zip.Read('xl/media/' + s, buff);
               // only unique content
               XMLSS.AddMediaContent(s, buff, true);
+            end;
           end;
         end;
       end;
