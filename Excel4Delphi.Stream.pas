@@ -1117,21 +1117,30 @@ begin
                 part.Font := TZFont.Create();
                 while xml.ReadToEndTagByName('rPr') do begin
                   if xml.IsTagClosedByName('b') then
-                    part.Font.Style := part.Font.Style + [fsBold];
-                  if xml.IsTagClosedByName('u') then
-                    part.Font.Style := part.Font.Style + [fsUnderline];
+                    part.Font.Style := part.Font.Style + [fsBold]
+                  else
                   if xml.IsTagClosedByName('i') then
-                    part.Font.Style := part.Font.Style + [fsItalic];
+                    part.Font.Style := part.Font.Style + [fsItalic]
+                  else
+                  if xml.IsTagClosedByName('u') then begin
+                    part.Font.Style := part.Font.Style + [fsUnderline];
+                    part.Font.DoubleInderLine := xml.Attributes['val'] = 'double';
+                  end else
                   if xml.IsTagClosedByName('sz') then
-                    part.Font.Size := ZETryStrToFloat(xml.Attributes['val'], 0);
+                    part.Font.Size := ZETryStrToFloat(xml.Attributes['val'], 0)
+                  else
                   if xml.IsTagClosedByName('rFont') then
-                    part.Font.Name := xml.Attributes['val'];
+                    part.Font.Name := xml.Attributes['val']
+                  else
                   if xml.IsTagClosedByName('family') then
-                    part.Font.Family := StrToIntDef(xml.Attributes['val'], 0);
+                    part.Font.Family := StrToIntDef(xml.Attributes['val'], 0)
+                  else
                   if xml.IsTagClosedByName('charset') then
-                    part.Font.Charset := StrToIntDef(xml.Attributes['val'], 0);
+                    part.Font.Charset := StrToIntDef(xml.Attributes['val'], 0)
+                  else
                   if xml.IsTagClosedByName('scheme') then
-                    part.Font.Scheme := xml.Attributes['val'];
+                    part.Font.Scheme := xml.Attributes['val']
+                  else
                   if xml.IsTagClosedByName('color') then begin
                     if not xml.Attributes['theme'].IsEmpty then
                       part.Font.ColorTheme := StrToIntDef(xml.Attributes['theme'], 0)

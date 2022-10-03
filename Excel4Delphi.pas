@@ -84,7 +84,6 @@ type
   private
     FText: string;
     FFont: TZFont;
-    // FSCheme: string; // todo: add to TZFont or use "minor" for default
   public
     property Text: string read FText write FText;
     property Font: TZFont read FFont write FFont;
@@ -104,7 +103,6 @@ type
     function GetHashCode(): integer; override;
     property List: TList<TRichString> read FList;
     class function FromText(text: string): TRichText;
-    //function ToHtml(): string;
     function ToString(): string; override;
   end;
 
@@ -463,13 +461,15 @@ type
     FScheme: string;
     FName: TFontName;
     FStyle: TFontStyles;
+    FDoubleInderLine: boolean;
+    procedure SetColor(const Value: TColor);
   public
     constructor Create;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
     procedure AssignTo(Dest: TPersistent); override;
     function GetHashCode(): integer; override;
-    property Color: TColor read FColor write FColor;
+    property Color: TColor read FColor write SetColor;
     property Size: double read FSize write FSize;
     property Charset: TFontCharset read FCharset write FCharset;
     property ColorTheme: integer read FColorTheme write FColorTheme;
@@ -477,6 +477,7 @@ type
     property Scheme: string read FScheme write FScheme;
     property Name: TFontName read FName write FName;
     property Style: TFontStyles read FStyle write FStyle;
+    property DoubleInderLine: boolean read FDoubleInderLine write FDoubleInderLine;
   end;
 
   /// <summary>
@@ -2771,6 +2772,7 @@ begin
   FScheme  := '';
   Family   := 0;
   FColorTheme := 0;
+  FDoubleInderLine := false;
 end;
 
 destructor TZFont.Destroy;
@@ -2795,6 +2797,12 @@ begin
   result := result * 23 + st;
 end;
 
+procedure TZFont.SetColor(const Value: TColor);
+begin
+  FColor := Value;
+  FColorTheme := 0;
+end;
+
 procedure TZFont.Assign(Source: TPersistent);
 var zSource: TZFont; srcFont: TFont;
 begin
@@ -2808,6 +2816,7 @@ begin
     FColorTheme := zSource.FColorTheme;
     FFamily     := zSource.FFamily;
     FScheme     := zSource.FScheme;
+    FDoubleInderLine := zSource.FDoubleInderLine;
   end else if Source is TFont then begin
     srcFont     := Source as TFont;
     FColor      := srcFont.Color;
@@ -2818,6 +2827,7 @@ begin
     FColorTheme := 0;
     FFamily     := 2;
     FScheme     := 'minor';
+    FDoubleInderLine := false;
   end else
     inherited Assign(Source);
 end;
