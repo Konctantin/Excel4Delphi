@@ -6703,10 +6703,10 @@ begin
 
   dstSheet := self.FSheet.WorkBook.Sheets[ASheet];
 
-  if dstSheet.ColCount < ACol + (FRight-FLeft) then
+  if dstSheet.ColCount < (ACol + (FRight-FLeft) + 1) then
     dstSheet.ColCount := ACol + (FRight-FLeft)+1;
 
-  if dstSheet.RowCount < ARow + (FBottom-FTop) then
+  if dstSheet.RowCount < (ARow + (FBottom-FTop) + 1) then
     dstSheet.RowCount := ARow + (FBottom-FTop)+1;
 
   cd := ACol;
