@@ -1500,8 +1500,11 @@ var
           currentCell.CellType := ZEString;
           if (TryStrToInt(v, t)) then
             if ((t >= 0) and (t < sharedStrings.Count)) then begin
-              currentCell.RichText := TRichText.Create();
-              currentCell.RichText.Assign(sharedStrings[t]);
+              if (sharedStrings[t].List.Count > 1) then begin
+                currentCell.RichText := TRichText.Create();
+                currentCell.RichText.Assign(sharedStrings[t]);
+              end else
+                v := sharedStrings[t].ToString();
             end;
         end else if (_type = 'd') then begin
           currentCell.CellType := ZEDateTime;
