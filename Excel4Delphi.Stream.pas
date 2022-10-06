@@ -5452,7 +5452,7 @@ function ZEXLSXCreateWorkBook(var XMLSS: TZWorkBook; Stream: TStream;
     const _pages: TIntegerDynArray; const _names: TStringDynArray;
     PageCount: integer; TextConverter: TAnsiToCPConverter; CodePageName: String;
     BOM: ansistring): integer;
-var xml: TZsspXMLWriterH; i: integer;
+var xml: TZsspXMLWriterH; i,id: integer;
 begin
   result := 0;
   xml := TZsspXMLWriterH.Create(Stream);
@@ -5483,8 +5483,15 @@ begin
 
     xml.WriteTagNode('bookViews', true, true, true);
 
-    xml.Attributes.Add('activeTab', '0');
-    xml.Attributes.Add('firstSheet', '0', false);
+    id := 0;
+    for i := 0 to PageCount - 1 do begin
+      if XMLSS.Sheets[_pages[i]].Visible = svVisible then begin
+        id := i;
+        break;
+      end;
+    end;
+    xml.Attributes.Add('activeTab', IntToStr(id));
+    xml.Attributes.Add('firstSheet', IntToStr(id), false);
     xml.Attributes.Add('showHorizontalScroll', 'true', false);
     xml.Attributes.Add('showSheetTabs', 'true', false);
     xml.Attributes.Add('showVerticalScroll', 'true', false);
