@@ -41,9 +41,10 @@ type
   /// <summary>
   /// Fill pattern of the cell
   /// </summary>
-  TZCellPattern = (ZPNone, ZPSolid, ZPGray75, ZPGray50, ZPGray25, ZPGray125, ZPGray0625, ZPHorzStripe, ZPVertStripe,
-                  ZPReverseDiagStripe, ZPDiagStripe, ZPDiagCross, ZPThickDiagCross, ZPThinHorzStripe, ZPThinVertStripe,
-                  ZPThinReverseDiagStripe, ZPThinDiagStripe, ZPThinHorzCross, ZPThinDiagCross);
+  TZCellPattern = (
+    ZPNone, ZPSolid, ZPGray75, ZPGray50, ZPGray25, ZPGray125, ZPGray0625, ZPHorzStripe, ZPVertStripe,
+    ZPReverseDiagStripe, ZPDiagStripe, ZPDiagCross, ZPThickDiagCross, ZPThinHorzStripe, ZPThinVertStripe,
+    ZPThinReverseDiagStripe, ZPThinDiagStripe, ZPThinHorzCross, ZPThinDiagCross);
 
   /// <summary>
   /// Borders position.
@@ -5482,7 +5483,7 @@ var t: TZConditionalFormatting; i: integer;
 begin
   if Source is TZConditionalFormatting then begin
     t := Source as TZConditionalFormatting;
-    FCount := t.Count;
+    Count := t.Count;
     for i := 0 to FCount - 1 do
       FStyles[i].Assign(t.Items[i]);
   end else
