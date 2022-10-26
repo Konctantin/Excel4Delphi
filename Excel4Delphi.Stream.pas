@@ -1797,12 +1797,12 @@ var
         currentSheet.TabColor := ARGBToColor(xml.Attributes.ItemsByName['rgb']);
 
       if xml.TagName = 'pageSetUpPr' then
-        currentSheet.FitToPage := ZEStrToBoolean(xml.Attributes.ItemsByName['fitToPage']);
+        currentSheet.FitToPage := xml.AttribBool('fitToPage');
 
       if xml.TagName = 'outlinePr' then begin
-        currentSheet.ApplyStyles := ZEStrToBoolean(xml.Attributes.ItemsByName['applyStyles']);
-        currentSheet.SummaryBelow := xml.Attributes.ItemsByName['summaryBelow'] <> '0';
-        currentSheet.SummaryRight := xml.Attributes.ItemsByName['summaryRight'] <> '0';
+        currentSheet.ApplyStyles  := xml.AttribBool('applyStyles');
+        currentSheet.SummaryBelow := xml.AttribBool('summaryBelow', true);
+        currentSheet.SummaryRight := xml.AttribBool('summaryRight', true);
       end;
     end;
   end; //_ReadSheetPr();
@@ -1812,8 +1812,7 @@ var
     currentSheet.RowBreaks := [];
     while xml.ReadToEndTagByName('rowBreaks') do begin
       if xml.TagName = 'brk' then
-        currentSheet.RowBreaks := currentSheet.RowBreaks
-            + [ StrToIntDef(xml.Attributes.ItemsByName['id'], 0) ];
+        currentSheet.RowBreaks := currentSheet.RowBreaks + [ xml.AttribInt('id', 0) ];
     end;
   end;
 
@@ -1822,8 +1821,7 @@ var
     currentSheet.ColBreaks := [];
     while xml.ReadToEndTagByName('colBreaks') do begin
       if xml.TagName = 'brk' then
-        currentSheet.ColBreaks := currentSheet.ColBreaks
-            + [ StrToIntDef(xml.Attributes.ItemsByName['id'], 0) ];
+        currentSheet.ColBreaks := currentSheet.ColBreaks + [ xml.AttribInt('id', 0) ];
     end;
   end;
 
@@ -2294,19 +2292,16 @@ begin
         //str := xml.Attributes.ItemsByName['draft'];
         //str := xml.Attributes.ItemsByName['errors'];
         str := xml.Attributes.ItemsByName['firstPageNumber'];
-        if (str > '') then
-          if (TryStrToInt(str, tempInt)) then
-            currentSheet.SheetOptions.StartPageNumber := tempInt;
+        if (str > '') and (TryStrToInt(str, tempInt)) then
+          currentSheet.SheetOptions.StartPageNumber := tempInt;
 
         str := xml.Attributes.ItemsByName['fitToHeight'];
-        if (str > '') then
-          if (TryStrToInt(str, tempInt)) then
-            currentSheet.SheetOptions.FitToHeight := tempInt;
+        if (str > '') and (TryStrToInt(str, tempInt)) then
+          currentSheet.SheetOptions.FitToHeight := tempInt;
 
         str := xml.Attributes.ItemsByName['fitToWidth'];
-        if (str > '') then
-          if (TryStrToInt(str, tempInt)) then
-            currentSheet.SheetOptions.FitToWidth := tempInt;
+        if (str > '') and (TryStrToInt(str, tempInt)) then
+          currentSheet.SheetOptions.FitToWidth := tempInt;
 
         //str := xml.Attributes.ItemsByName['horizontalDpi'];
         //str := xml.Attributes.ItemsByName['id'];
@@ -2320,9 +2315,8 @@ begin
         //str := xml.Attributes.ItemsByName['pageOrder'];
 
         str := xml.Attributes.ItemsByName['paperSize'];
-        if (str > '') then
-          if (TryStrToInt(str, tempInt)) then
-            currentSheet.SheetOptions.PaperSize := tempInt;
+        if (str > '') and (TryStrToInt(str, tempInt)) then
+          currentSheet.SheetOptions.PaperSize := tempInt;
         //str := xml.Attributes.ItemsByName['paperHeight']; //если утановлены paperHeight и Width, то paperSize игнорируется
         //str := xml.Attributes.ItemsByName['paperWidth'];
 

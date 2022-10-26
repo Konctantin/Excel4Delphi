@@ -5,6 +5,7 @@ interface
 uses
   Classes,
   SysUtils,
+  StrUtils,
   Graphics,
   UITypes,
   Math,
@@ -80,6 +81,17 @@ type
   TZSheet = class;
   TZStyle = class;
   TZFont = class;
+  TZWorkBook = class;
+
+  TZExport = class
+  protected
+    FWorkBook: TZWorkBook;
+  public
+    constructor Create(AWorkBook: TZWorkBook); virtual;
+    destructor Destroy(); override;
+    procedure ExportTo(AStream: TStream; ASheets: TArray<integer> = []); virtual; abstract;
+    property WorkBook: TZWorkBook read FWorkBook;
+  end;
 
   TRichString = class(TPersistent)
   private
@@ -309,7 +321,25 @@ type
     /// Trying to convert probably number value and change cell type to number.
     /// </summary>
     procedure TryConvertToNumber();
-
+    /// <summary>
+    /// True if cell have no data.
+    /// </summary>
+    function IsEmpty(includeFormula: boolean = true): boolean;
+    /// <summary>
+    /// True if cell within merged cells.
+    /// </summary>
+    function IsMerged(): boolean;
+    /// <summary>
+    /// True if cell within merged cells and in left-top corner.
+    /// </summary>
+    function IsLeftTopMerged(): boolean;
+    /// <summary>
+    /// Return text from merged range.
+    /// </summary>
+    function GetMergedText(onlyFromTopCorner: boolean = true): string;
+    /// <summary>
+    /// Set borders around all cell's border.
+    /// </summary>
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
   end;
 
@@ -368,19 +398,19 @@ type
     /// <summary>
     /// Left border.
     /// </summary>
-    property Left         : TZBorderStyle index bpLeft          read GetBorder write SetBorder;
+    property Left: TZBorderStyle index bpLeft read GetBorder write SetBorder;
     /// <summary>
     /// Top border.
     /// </summary>
-    property Top          : TZBorderStyle index bpTop           read GetBorder write SetBorder;
+    property Top: TZBorderStyle index bpTop read GetBorder write SetBorder;
     /// <summary>
     /// Right border.
     /// </summary>
-    property Right        : TZBorderStyle index bpRight         read GetBorder write SetBorder;
+    property Right: TZBorderStyle index bpRight read GetBorder write SetBorder;
     /// <summary>
     /// Bottom border.
     /// </summary>
-    property Bottom       : TZBorderStyle index bpBottom        read GetBorder write SetBorder;
+    property Bottom: TZBorderStyle index bpBottom read GetBorder write SetBorder;
     /// <summary>
     /// Diagonal from upper left to lower right.
     /// </summary>
@@ -420,31 +450,31 @@ type
     /// </returns>
     function IsEqual(Source: TPersistent): boolean; virtual;
     /// <summary>
-    /// Specifies how text is aligned by horizontally within the cell. <br />ZHAutomatic by default.
+    /// Specifies how text is aligned by horizontally within the cell.
     /// </summary>
     property Horizontal: TZHorizontalAlignment read FHorizontal write SetHorizontal default ZHAutomatic;
     /// <summary>
-    /// Specifies how far the cell's text is indented. <br />0 by default.
+    /// Specifies how far the cell's text is indented.
     /// </summary>
     property Indent: integer read FIndent write SetIndent default 0;
     /// <summary>
-    /// Specifies the rotation of the text within the cell (from -90 to 90). <br />0 by default.
+    /// Specifies the rotation of the text within the cell (from -90 to 90).
     /// </summary>
     property Rotate: TZCellTextRotate read FRotate write SetRotate;
     /// <summary>
-    /// If True then the text size will shrunk so to all of the text fits within the cell. <br />False by default.
+    /// If True then the text size will shrunk so to all of the text fits within the cell.
     /// </summary>
     property ShrinkToFit: boolean read FShrinkToFit write SetShrinkToFit default false;
     /// <summary>
-    /// Specifies how text is aligned by vertically within the cell. <br />ZVAutomatic by default.
+    /// Specifies how text is aligned by vertically within the cell.
     /// </summary>
     property Vertical: TZVerticalAlignment read FVertical write SetVertical default ZVAutomatic;
     /// <summary>
-    /// If True each letter is drawn horizontally, one above the other. <br />False by default.
+    /// If True each letter is drawn horizontally, one above the other.
     /// </summary>
     property VerticalText: boolean read FVerticalText write SetVerticalText default false;
     /// <summary>
-    /// Specifies whether the text in cell should wrap at the cell boundary. <br />False by default.
+    /// Specifies whether the text in cell should wrap at the cell boundary.
     /// </summary>
     property WrapText: boolean read FWrapText write SetWrapText default false;
   end;
@@ -691,8 +721,6 @@ type
 
   TZCellColumn = array of TZCell;
 
-  TZWorkBook = class;
-
   /// <summary>
   /// Common options for columns and rows. Ancestor for TZColOptions and TZRowOptions.
   /// </summary>
@@ -718,15 +746,15 @@ type
     constructor Create(ASheet: TZSheet); virtual;
     procedure Assign(Source: TPersistent); override;
     /// <summary>
-    /// True specifies that column or row is hidden. <br />False (not hidden) by default.
+    /// True specifies that column or row is hidden.
     /// </summary>
     property Hidden: boolean read FHidden write FHidden default false;
     /// <summary>
-    /// Specifies a style for column or row. <br />-1 by default.
+    /// Specifies a style for column or row.
     /// </summary>
     property StyleID: integer read FStyleID write FStyleID default -1;
     /// <summary>
-    /// Page break after column or row. <br />False (no break) by default.
+    /// Page break after column or row.
     /// </summary>
     property Breaked: boolean read FBreaked write FBreaked default false;
 
@@ -1708,6 +1736,18 @@ type
 
     function ColsWidth(AFrom, ATo: integer): real;
     function RowsHeight(AFrom, ATo: integer): real;
+    /// <summary>
+    /// Check if cell exists by column and row
+    /// </summary>
+    function Exists(col, row: integer): boolean; overload;
+    /// <summary>
+    /// Check if cell exists by column (A,B,C...) and row
+    /// </summary>
+    function Exists(col: string; row: integer): boolean; overload;
+    /// <summary>
+    /// Check if cell exists by address (A1,B5...)
+    /// </summary>
+    function Exists(address: string): boolean; overload;
 
     /// <summary>
     /// Get or set the width (in points) of column num in the sheet.
@@ -1900,6 +1940,7 @@ type
     function GetTop: Integer;
     function GetRight: Integer;
     function GetBottom: Integer;
+    function GetText: string;
     //
     property VerticalAlignment: TZVerticalAlignment read GetVerticalAlignment write SetVerticalAlignment;
     property HorizontalAlignment: TZHorizontalAlignment read GetHorizontalAlignment write SetHorizontalAlignment;
@@ -1924,6 +1965,7 @@ type
     property Top: Integer read GetTop;
     property Right: Integer read GetRight;
     property Bottom: Integer read GetBottom;
+    property Text: string read GetText;
     procedure SetBorderLeft(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderTop(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderRight(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -1984,6 +2026,7 @@ type
     function GetTop: Integer;
     function GetRight: Integer;
     function GetBottom: Integer;
+    function GetText: string;
   public
     constructor Create(ASheet: TZSheet; ALeft, ATop, ARight, ABottom: Integer); virtual;
     procedure Assign(Source: TZRange);
@@ -2011,6 +2054,7 @@ type
     property Top: Integer read GetTop;
     property Right: Integer read GetRight;
     property Bottom: Integer read GetBottom;
+    property Text: string read GetText;
     procedure SetBorderLeft(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderTop(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderRight(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -2116,11 +2160,13 @@ type
     function AddMediaContent(AFileName: string; AContent: TBytes; ACheckByName: boolean): integer;
     function GetDrawing(num: Integer): TZEDrawing;
     function GetDrawingSheetNum(Value: TZEDrawing): Integer;
+    procedure ExportTo<T: TZExport>(stream: TStream; ASheets: TArray<integer> = []);
     property Styles: TZStyles read FStyles write FStyles;
     property DefaultSheetOptions: TZSheetOptions read GetDefaultSheetOptions write SetDefaultSheetOptions;
     property DocumentProperties: TZEXMLDocumentProperties read FDocumentProperties write FDocumentProperties;
     property HorPixelSize: real read FHorPixelSize write SetHorPixelSize;  // размер пикселя по горизонтали
     property VertPixelSize: real read FVertPixelSize write SetVertPixelSize;  //размер пикселя по вертикали
+
     //property DefinedNames: TArray<TDefinedName> read FDefinedNames write FDefinedNames;
   end;
 
@@ -3280,6 +3326,41 @@ begin
     Result := Style.Alignment.Indent;
 end;
 
+function TZCell.GetMergedText(onlyFromTopCorner: boolean): string;
+var mergeIndex: integer;
+begin
+  result := '';
+  mergeIndex := FSheet.MergeCells.InMergeRange(FCol, FRow);
+  if mergeIndex > -1 then begin
+    var merge := FSheet.MergeCells[mergeIndex];
+    if onlyFromTopCorner then begin
+      if FSheet.Exists(merge.Left, merge.Top) then begin
+        var cell := FSheet.Cell[merge.Left, merge.Top];
+        if assigned(cell.FRichText) then
+          result := cell.FRichText.ToString()
+        else
+          result := cell.AsString;
+      end;
+    end else begin
+      for var c := merge.Left to merge.Right do begin
+        for var r := merge.Top to merge.Bottom do begin
+          if FSheet.Exists(c, r) then begin
+            var cell := FSheet.Cell[merge.Left, merge.Top];
+            if not cell.IsEmpty() then begin
+              exit(cell.AsString);
+            end;
+          end;
+        end;
+      end;
+    end;
+  end else begin
+    if assigned(FRichText) then
+      result := FRichText.ToString()
+    else
+      result := AsString;
+  end;
+end;
+
 function TZCell.GetNumberFormat: string;
 begin
   Result := '';
@@ -3313,6 +3394,22 @@ begin
   Result := false;
   if FCellStyle > -1 then
     Result := Style.Alignment.WrapText;
+end;
+
+function TZCell.IsEmpty(includeFormula: boolean): boolean;
+begin
+  result := string.IsNullOrWhiteSpace(FData)
+    and ((includeFormula = false) or string.IsNullOrWhiteSpace(FFormula));
+end;
+
+function TZCell.IsLeftTopMerged: boolean;
+begin
+  result := FSheet.MergeCells.InLeftTopCorner(FCol, FRow) > -1;
+end;
+
+function TZCell.IsMerged: boolean;
+begin
+  result := FSheet.MergeCells.InMergeRange(FCol, FRow) > -1;
 end;
 
 procedure TZCell.SetFontColor(const Value: TColor);
@@ -4004,6 +4101,25 @@ begin
   finally
     inherited Destroy();
   end;
+end;
+
+function TZSheet.Exists(col, row: integer): boolean;
+begin
+  result := (col >= 0) and (row >= 0)
+    and (col < FColCount) and (row < FRowCount);
+end;
+
+function TZSheet.Exists(col: string; row: integer): boolean;
+begin
+  result := Exists(ZEGetColByA1(col, true), row);
+end;
+
+function TZSheet.Exists(address: string): boolean;
+var col, row: integer;
+begin
+  result := false;
+  if ZEGetCellCoords(address, col, row, true) then
+    result := Exists(col, row);
 end;
 
 procedure TZSheet.Assign(Source: TPersistent);
@@ -4797,6 +4913,16 @@ begin
   FreeAndNil(FStyles);
   FreeAndNil(FSheets);
   inherited Destroy();
+end;
+
+procedure TZWorkBook.ExportTo<T>(stream: TStream; ASheets: TArray<integer> = []);
+begin
+  var exporter := T.Create(self);
+  try
+    exporter.ExportTo(stream, ASheets);
+  finally
+    exporter.Free();
+  end;
 end;
 
 function TZWorkBook.AddMediaContent(AFileName: string; AContent: TBytes; ACheckByName: boolean): integer;
@@ -7075,6 +7201,15 @@ begin
   Result := FLeft;
 end;
 
+function TZRange.GetText: string;
+begin
+  result := '';
+  for var c := FLeft to FRight do
+    for var r := FTop to FBottom do
+      if FSheet.Exists(c, r) and not FSheet.Cell[c, r].IsEmpty(false) then
+        exit(FSheet.Cell[c, r].AsString);
+end;
+
 function TZRange.GetTop: Integer;
 begin
   Result := FTop;
@@ -7208,6 +7343,19 @@ begin
   result := result * 23 + FText.GetHashCode();
   if Assigned(FFont) then
     result := result * 23 + FFont.GetHashCode();
+end;
+
+{ TZExport }
+
+constructor TZExport.Create(AWorkBook: TZWorkBook);
+begin
+  inherited Create;
+  FWorkBook := AWorkBook;
+end;
+
+destructor TZExport.Destroy;
+begin
+  inherited;
 end;
 
 initialization

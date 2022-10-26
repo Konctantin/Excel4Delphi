@@ -37,7 +37,7 @@ contains
   Excel4Delphi.Xml in 'Excel4Delphi.Xml.pas',
   Excel4Delphi.Common in 'Excel4Delphi.Common.pas',
   Excel4Delphi.Formula in 'Excel4Delphi.Formula.pas',
-  Excel4Delphi.Export in 'Excel4Delphi.Export.pas',
+  Excel4Delphi.ExportHTML in 'Excel4Delphi.ExportHTML.pas',
   Excel4Delphi.NumberFormat in 'Excel4Delphi.NumberFormat.pas',
   Excel4Delphi.XlsxStream in 'Excel4Delphi.XlsxStream.pas';
 

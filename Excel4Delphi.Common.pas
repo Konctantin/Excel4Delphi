@@ -221,9 +221,10 @@ function ZETryStrToBoolean(const st: string; valueIfError: boolean = false): boo
 begin
   result := valueIfError;
   if (st > '') then begin
-    if (CharInSet(st[1], ['T', 't', '1', '-'])) then
+    if CharInSet(st[1], ['T', 't', '1', '-']) then
       result := true
-    else if (CharInSet(st[1], ['F', 'f', '0'])) then
+    else
+    if CharInSet(st[1], ['F', 'f', '0']) then
       result := false
     else
       result := valueIfError;
