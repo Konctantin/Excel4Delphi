@@ -2312,7 +2312,8 @@ begin
             currentSheet.SheetOptions.PortraitOrientation := true;
         end;
 
-        //str := xml.Attributes.ItemsByName['pageOrder'];
+        // overThenDown / downThenOver (might empty)
+        currentSheet.SheetOptions.PageOrderDown := xml.AttribString('pageOrder') <> 'overThenDown';
 
         str := xml.Attributes.ItemsByName['paperSize'];
         if (str > '') and (TryStrToInt(str, tempInt)) then
@@ -5373,7 +5374,8 @@ var xml: TZsspXMLWriterH;    //писатель
         IfThen(sheet.SheetOptions.PortraitOrientation, 'portrait', 'landscape'),
         false);
 
-    xml.Attributes.Add('pageOrder', 'downThenOver', false);
+    if not sheet.SheetOptions.PageOrderDown then
+      xml.Attributes.Add('pageOrder', 'overThenDown', false);
     xml.Attributes.Add('paperSize', intToStr(sheet.SheetOptions.PaperSize), false);
     if (sheet.SheetOptions.FitToWidth=-1)and(sheet.SheetOptions.FitToWidth=-1) then
       xml.Attributes.Add('scale', IntToStr(sheet.SheetOptions.ScaleToPercent), false);

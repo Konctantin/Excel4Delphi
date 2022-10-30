@@ -913,6 +913,7 @@ type
     FPaperSize: byte;
     FPaperWidth: integer;
     FPaperHeight: integer;
+    FPageOrderDown: boolean;
 
     FFitToHeight: integer; //Number of vertical pages to fit on
     FFitToWidth: integer;  //Number of horizontal pages to fit on
@@ -933,15 +934,15 @@ type
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
     /// <summary>
-    /// Column number with active cell. <br />0 by default.
+    /// Column number with active cell.
     /// </summary>
     property ActiveCol: word read FActiveCol write FActiveCol default 0;
     /// <summary>
-    /// Row number with active cell. <br />0 by default.
+    /// Row number with active cell.
     /// </summary>
     property ActiveRow: word read FActiveRow write FActiveRow default 0;
     /// <summary>
-    /// Specifies the bottom margin on the page in millimeters. <br />25 mm by default.
+    /// Specifies the bottom margin on the page in millimeters.
     /// </summary>
     property MarginBottom: word read FMarginBottom write FMarginBottom default 25;
     /// <summary>
@@ -949,11 +950,11 @@ type
     /// </summary>
     property MarginLeft: word read FMarginLeft write FMarginLeft default 19;
     /// <summary>
-    /// Specifies the top margin on the page in millimeters. <br />25 mm by default.
+    /// Specifies the top margin on the page in millimeters.
     /// </summary>
     property MarginTop: word read FMarginTop write FMarginTop default 25;
     /// <summary>
-    /// Specifies the right margin on the page in millimeters. <br />20 mm by default.
+    /// Specifies the right margin on the page in millimeters.
     /// </summary>
     property MarginRight: word read FMarginRight write FMarginRight default 20;
     /// <summary>
@@ -970,24 +971,25 @@ type
     property PaperHeight: integer read FPaperHeight write FPaperHeight default 0;
     property FitToHeight: integer read FFitToHeight write FFitToHeight default -1;
     property FitToWidth: integer read FFitToWidth write FFitToWidth default -1;
+    property PageOrderDown: boolean read FPageOrderDown write FPageOrderDown;
     /// <summary>
-    /// Specifies the orientation of the page (True - Portrait, False - Landscape). <br />True by default.
+    /// Specifies the orientation of the page (True - Portrait, False - Landscape).
     /// </summary>
     property PortraitOrientation: boolean read FPortraitOrientation write FPortraitOrientation default true;
     /// <summary>
-    /// If True, the document should be centered horizontally on the page. <br />False by default.
+    /// If True, the document should be centered horizontally on the page.
     /// </summary>
     property CenterHorizontal: boolean read FCenterHorizontal write FCenterHorizontal default false;
     /// <summary>
-    /// If True, the document should be centered vertically on the page. <br />False by default.
+    /// If True, the document should be centered vertically on the page.
     /// </summary>
     property CenterVertical: boolean read FCenterVertical write FCenterVertical default false;
     /// <summary>
-    /// Specifies the starting page number for print. <br />1 by default.
+    /// Specifies the starting page number for print.
     /// </summary>
     property StartPageNumber: integer read FStartPageNumber write FStartPageNumber default 1;
     /// <summary>
-    /// The size of header in millimeters. <br />13 mm by default. <br />
+    /// The size of header in millimeters.
     /// </summary>
     /// <remarks>
     /// deprecated 'Use HeaderMargins.Height!'
@@ -3963,6 +3965,7 @@ begin
   FPaperHeight         := 0;
   FScaleToPercent      := 100;
   FScaleToPages        := 1;
+  FPageOrderDown       := true;
 end;
 
 destructor TZSheetOptions.Destroy();
@@ -4026,6 +4029,7 @@ begin
     IsDifferentOddEven   := t.IsDifferentOddEven;
     ScaleToPercent       := t.ScaleToPercent;
     ScaleToPages         := t.ScaleToPages;
+    PageOrderDown        := t.PageOrderDown;
     HeaderMargins.Assign(t.HeaderMargins);
     FooterMargins.Assign(t.FooterMargins);
   end else
