@@ -208,7 +208,7 @@ end; //ZEReplaceEntity
 //  const val: string - переводимая строка
 function ZEStrToBoolean(const val: string): boolean;
 begin
-  if (val = '1' ) or (UpperCase(val)='TRUE')  then
+  if (val = '1') or (UpperCase(val) = 'TRUE')  then
     result := true
   else
     result := false;

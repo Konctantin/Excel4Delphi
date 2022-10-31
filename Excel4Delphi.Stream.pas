@@ -1446,7 +1446,7 @@ var
       if (xml.TagName = 'c') then begin
         str := xml.Attributes.ItemsByName['r']; //номер
         if (str > '') then
-          if (ZEGetCellCoords(str, _cc, _cr)) then begin
+          if TZEFormula.GetCellCoords(str, _cc, _cr) then begin
             currentCol := _cc;
             CheckCol(_cc + 1);
           end;
@@ -1743,7 +1743,7 @@ var
       _maxR := -1;
       for i := 1 to l do
       if (st[i] = ':') then begin
-        if (ZEGetCellCoords(s, c, r, true)) then begin;
+        if TZEFormula.GetCellCoords(s, c, r, true) then begin;
           if (c > _maxC) then
             _maxC := c;
           if (r > _maxR) then
@@ -1770,7 +1770,7 @@ var
       if xml.IsTagClosedByName('hyperlink') then begin
         str := xml.Attributes.ItemsByName['ref'];
         if (str > '') then
-          if (ZEGetCellCoords(str, _c, _r, true)) then begin
+          if TZEFormula.GetCellCoords(str, _c, _r, true) then begin
             CheckRow(_r);
             CheckCol(_c);
             currentSheet.Cell[_c, _r].HRefScreenTip := xml.Attributes.ItemsByName['tooltip'];
@@ -1925,7 +1925,7 @@ var
             ch := st[i];
             if (ch = ':') then begin
               if (_cnt < 2) then begin
-                tmpB := ZEGetCellCoords(s, tmpArr[_cnt][0], tmpArr[_cnt][1]);
+                tmpB := TZEFormula.GetCellCoords(s, tmpArr[_cnt][0], tmpArr[_cnt][1]);
                 _isOk := _isOk and tmpB;
               end;
               s := '';
@@ -3893,7 +3893,7 @@ var xml: TZsspXMLReaderH;
     str := xml.Attributes.ItemsByName['ref'];
     if (str = '') then
       exit;
-    if (ZEGetCellCoords(str, _c, _r, true)) then
+    if TZEFormula.GetCellCoords(str, _c, _r, true) then
     begin
       if (_c >= XMLSS.Sheets[page].ColCount) then
         XMLSS.Sheets[page].ColCount := _c + 1;

@@ -4122,7 +4122,7 @@ function TZSheet.Exists(address: string): boolean;
 var col, row: integer;
 begin
   result := false;
-  if ZEGetCellCoords(address, col, row, true) then
+  if TZEFormula.GetCellCoords(address, col, row, true) then
     result := Exists(col, row);
 end;
 

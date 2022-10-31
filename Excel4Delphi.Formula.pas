@@ -3,7 +3,7 @@
 interface
 
 uses
-  SysUtils;
+  SysUtils, Math;
 
 const
   //ZE_RTA = ZE R1C1 to A1
@@ -14,75 +14,25 @@ const
   ZE_RTA_ODF_NO_BRACKET = $10;  //Для ODF, но не добавлять квадратные скобки, разделитель лист/ячейка - точка ".".
   ZE_ATR_DEL_PREFIX     =   1;  //Удалять все символы до первого '='
 
+type
+TZEFormula = class
+  class function GetA1byCol(ColNum: integer; StartZero: boolean = true): string; static;
+  class function GetColByA1(AA: string; StartZero: boolean = true): integer; static;
+  class function R1C1ToA1(const formula: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string; static;
+  class function A1ToR1C1(const formula: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string; static;
+  class function GetCellCoords(const cell: string; out column, row: integer; StartZero: boolean = true): boolean; static;
+  class function GetCellRange(const range: string; out left, top, right, bottom: integer; StartZero: boolean = true): boolean; static;
+end;
+
 function ZEGetA1byCol(ColNum: integer; StartZero: boolean = true): string;
-function ZERangeToRow(range: string): integer;
 function ZEGetColByA1(AA: string; StartZero: boolean = true): integer;
 function ZER1C1ToA1(const formula: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string;
 function ZEA1ToR1C1(const formula: string; CurCol, CurRow: integer; options: integer; StartZero: boolean = true): string;
-function ZEGetCellCoords(const cell: string; out column, row: integer; StartZero: boolean = true): boolean;
 
 implementation
 
 const
   ZE_STR_ARRAY: array [0..25] of char = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
-
-//Получает номер строки и столбца по строковому значению (для A1 стилей)
-//INPUT
-//  const cell: string      - номер ячейки в A1 стиле
-//  out column: integer     - возвращаемый номер столбца
-//  out row: integer        - возвращаемый номер строки
-//      StartZero: boolean  - признак нумерации с нуля
-//RETURN
-//      boolean - true - координаты успешно определены
-function ZEGetCellCoords(const cell: string; out column, row: integer; StartZero: boolean = true): boolean;
-var
-  i: integer;
-  s1, s2: string;
-  _isOk: boolean;
-  b: boolean;
-
-begin
-  _isOk := true;
-  s1 := '';
-  s2 := '';
-  b := false;
-  for i := 1 to length(cell) do
-  case cell[i] of
-    'A'..'Z', 'a'..'z':
-      begin
-        s1 := s1 + cell[i];
-        b := true;
-      end;
-    '0'..'9':
-      begin
-        if (not b) then
-        begin
-          _isOk := false;
-          break;
-        end;
-        s2 := s2 + cell[i];
-      end;
-    else
-      begin
-        _isOk := false;
-        break;
-      end;
-  end;
-  if (_isOk) then
-  begin
-    if (not TryStrToInt(s2, row)) then
-      _isOk := false
-    else
-    begin
-      if (StartZero) then
-        dec(row);
-      column := ZEGetColByA1(s1, StartZero);
-      if (column < 0) then
-        _isOk := false;
-    end;
-  end;
-  result := _isOk;
-end; //ZEGetCellCoords
 
 //Попытка преобразовать номер ячейки из R1C1 в A1 стиль
 //если не удалось распознать номер ячейки, то возвратит обратно тот же текст
@@ -732,17 +682,6 @@ begin
   result := retFormula;
 end; //ZEA1ToR1C1
 
-function ZERangeToRow(range: string): integer;
-var i: integer;
-begin
-    for I := 1 to Length(range)-1 do begin
-        if CharInSet(range.Chars[i], ['0'..'9']) then begin
-            exit(StrToInt(range.Substring(i)));
-        end;
-    end;
-    raise Exception.Create('Не удалось вычислить номер строки из формулы: ' + range);
-end;
-
 //Возвращает номер столбца по буквенному обозначению
 //INPUT
 //  const AA: string      - буквенное обозначение столбца
@@ -750,14 +689,13 @@ end;
 //RETURN
 //      integer -   -1 - не удалось преобразовать
 function ZEGetColByA1(AA: string; StartZero: boolean = true): integer;
-var i: integer; num, t, kol, s: integer;
+var i: integer; num, t, s: integer;
 begin
   result := -1;
   num := 0;
   AA := UpperCase(AA);
-  kol := length(AA);
   s := 1;
-  for i := kol downto 1 do begin
+  for i := length(AA) downto 1 do begin
     if not CharInSet(AA[I], ['A'..'Z']) then
         continue;
     t := ord(AA[i]) - ord('A');
@@ -792,5 +730,103 @@ begin
   for t := length(s) downto 1 do
     result := result + s[t];
 end; //ZEGetAAbyCol
+
+{ TZEFormula }
+
+class function TZEFormula.A1ToR1C1(const formula: string; CurCol, CurRow, options: integer; StartZero: boolean): string;
+begin
+  result := ZEA1ToR1C1(formula, CurCol, CurRow, options, StartZero);
+end;
+
+class function TZEFormula.GetA1byCol(ColNum: integer; StartZero: boolean): string;
+begin
+  result := ZEGetA1byCol(ColNum, StartZero);
+end;
+
+class function TZEFormula.GetCellCoords(const cell: string; out column, row: integer; StartZero: boolean): boolean;
+var i: integer;
+  colPart, rowPart: string;
+begin
+  result := true;
+  colPart := '';
+  rowPart := '';
+  for i := 1 to length(cell) do
+    case cell[i] of
+      'A'..'Z', 'a'..'z':
+          colPart := colPart + cell[i];
+      '0'..'9':
+        begin
+          if colPart='' then
+            exit(false);
+          rowPart := rowPart + cell[i];
+        end;
+    else
+      exit(false);
+    end;
+
+  if not TryStrToInt(rowPart, row) then
+    result := false
+  else begin
+    if StartZero then
+      dec(row);
+    column := ZEGetColByA1(colPart, StartZero);
+    if (column < 0) then
+      result := false;
+  end;
+end;
+
+class function TZEFormula.GetCellRange(const range: string; out left, top, right, bottom: integer; StartZero: boolean): boolean;
+var i, p: integer;
+  cols, rows: TArray<string>;
+begin
+  left := -1; top := -1; right := -1; bottom := -1;
+  cols := ['',''];
+  rows := ['',''];
+  result := true;
+  p := 0;
+  for i := 1 to length(range) do
+    case range[i] of
+      'A'..'Z', 'a'..'z':
+        cols[p] := cols[p] + range[i];
+      '0'..'9':
+        begin
+          if cols[p] = '' then
+            exit(false);
+          rows[p] := rows[p] + range[i];
+        end;
+      ':':
+        if p = 0 then
+          inc(p)
+        else
+          exit(false);
+    else
+      exit(false);
+    end;
+
+  if not TryStrToInt(rows[0], top) then
+    exit(false);
+
+  left := ZEGetColByA1(cols[0], StartZero);
+  if (left < 0) then
+    exit(false);
+
+  bottom := Max(StrToIntDef(rows[1], -1), top);
+  right  := Max(ZEGetColByA1(cols[1], StartZero), left);
+
+  if StartZero then begin
+    dec(bottom);
+    dec(top);
+  end;
+end;
+
+class function TZEFormula.GetColByA1(AA: string; StartZero: boolean): integer;
+begin
+  result := ZEGetColByA1(AA, StartZero);
+end;
+
+class function TZEFormula.R1C1ToA1(const formula: string; CurCol, CurRow, options: integer; StartZero: boolean): string;
+begin
+  result := ZER1C1ToA1(formula, CurCol, CurRow, options, StartZero);
+end;
 
 end.
