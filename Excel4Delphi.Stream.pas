@@ -5772,33 +5772,15 @@ var
       xml.Attributes.Clear();
       xml.WriteTagNode('font', true, true, true);
 
-      xml.Attributes.Clear();
-      xml.Attributes.Add('val', fnt.Name);
-      xml.WriteEmptyTag('name', true);
-
-      xml.Attributes.Clear();
-      xml.Attributes.Add('val', IntToStr(fnt.Charset));
-      xml.WriteEmptyTag('charset', true);
-
-      xml.Attributes.Clear();
-      xml.Attributes.Add('val', FloatToStr(fnt.Size, TFormatSettings.Invariant));
-      xml.WriteEmptyTag('sz', true);
-
-      if (fnt.Color <> clWindowText) then begin
-        xml.Attributes.Clear();
-        xml.Attributes.Add('rgb', '00' + ColorToHTMLHex(fnt.Color));
-        xml.WriteEmptyTag('color', true);
-      end;
-
       if (fsBold in fnt.Style) then begin
         xml.Attributes.Clear();
-        xml.Attributes.Add('val', 'true');
+        //xml.Attributes.Add('val', 'true');
         xml.WriteEmptyTag('b', true);
       end;
 
       if (fsItalic in fnt.Style) then begin
         xml.Attributes.Clear();
-        xml.Attributes.Add('val', 'true');
+        //xml.Attributes.Add('val', 'true');
         xml.WriteEmptyTag('i', true);
       end;
 
@@ -5814,6 +5796,24 @@ var
         xml.WriteEmptyTag('u', true);
       end;
 
+      xml.Attributes.Clear();
+      xml.Attributes.Add('val', FloatToStr(fnt.Size, TFormatSettings.Invariant));
+      xml.WriteEmptyTag('sz', true);
+
+      if (fnt.Color <> clWindowText) then begin
+        xml.Attributes.Clear();
+        xml.Attributes.Add('rgb', '00' + ColorToHTMLHex(fnt.Color));
+        xml.WriteEmptyTag('color', true);
+      end;
+
+      xml.Attributes.Clear();
+      xml.Attributes.Add('val', fnt.Name);
+      xml.WriteEmptyTag('name', true);
+
+      xml.Attributes.Clear();
+      xml.Attributes.Add('val', IntToStr(fnt.Charset));
+      xml.WriteEmptyTag('charset', true);
+
       //<vertAlign val="superscript"/>
       if XMLSS.Styles[i - 1].Superscript then begin
         xml.Attributes.Clear();
@@ -5823,16 +5823,11 @@ var
       end
 
       //<vertAlign val="subscript"/>
-
       else if XMLSS.Styles[i - 1].Subscript then begin
-
         xml.Attributes.Clear();
-
         xml.Attributes.Add('val', 'subscript');
         xml.WriteEmptyTag('vertAlign', true);
       end;
-
-
 
       xml.WriteEndTagNode(); //font
     end; //if
