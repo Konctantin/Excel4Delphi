@@ -237,10 +237,10 @@ type
 //Дополнительные функции для экспорта отдельных файлов
 function ZEXLSXCreateStyles(var XMLSS: TZWorkBook; Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): integer;
 function ZEXLSXCreateWorkBook(var XMLSS: TZWorkBook; Stream: TStream; const _pages: TIntegerDynArray; const _names: TStringDynArray; PageCount: integer; TextConverter: TAnsiToCPConverter; CodePageName: String; BOM: ansistring): integer;
-function ZEXLSXCreateSheet(var XMLSS: TZWorkBook; Stream: TStream; SheetNum: integer; staredStrings: TObjectList<TRichText>; TextConverter: TAnsiToCPConverter; CodePageName: String; BOM: ansistring; const WriteHelper: TZEXLSXWriteHelper): integer;
+function ZEXLSXCreateSheet(var XMLSS: TZWorkBook; Stream: TStream; SheetNum: integer; staredStrings: TSharedStringBank; TextConverter: TAnsiToCPConverter; CodePageName: String; BOM: ansistring; const WriteHelper: TZEXLSXWriteHelper): integer;
 function ZEXLSXCreateContentTypes(var XMLSS: TZWorkBook; Stream: TStream; PageCount: integer; CommentCount: integer; const PagesComments: TIntegerDynArray; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring; const WriteHelper: TZEXLSXWriteHelper): integer;
 function ZEXLSXCreateRelsMain(Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): integer;
-function ZEXLSXCreateSharedStrings(var XMLSS: TZWorkBook; Stream: TStream; const SharedStrings: TObjectList<TRichText>; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): integer;
+function ZEXLSXCreateSharedStrings(var XMLSS: TZWorkBook; Stream: TStream; const SharedStrings: TSharedStringBank; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): integer;
 function ZEXLSXCreateDocPropsApp(Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): integer;
 function ZEXLSXCreateDocPropsCore(var XMLSS: TZWorkBook; Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: string; BOM: ansistring): integer;
 function ZEXLSXCreateDrawing(sheet: TZSheet; Stream: TStream; TextConverter: TAnsiToCPConverter; CodePageName: String; BOM: ansistring): integer;
@@ -4946,7 +4946,7 @@ end;
 //    WriteHelper: TZEXLSXWriteHelper                       - additional data
 //RETURN
 //      integer
-function ZEXLSXCreateSheet(var XMLSS: TZWorkBook; Stream: TStream; SheetNum: integer; staredStrings: TObjectList<TRichText>;
+function ZEXLSXCreateSheet(var XMLSS: TZWorkBook; Stream: TStream; SheetNum: integer; staredStrings: TSharedStringBank;
   TextConverter: TAnsiToCPConverter; CodePageName: String; BOM: ansistring; const WriteHelper: TZEXLSXWriteHelper): integer;
 var xml: TZsspXMLWriterH;    //писатель
   sheet: TZSheet;
@@ -5226,14 +5226,12 @@ var xml: TZsspXMLWriterH;    //писатель
             // А.А.Валуев Общие строки пишем только, если в строке есть
             // определённые символы. Хотя можно писать и всё подряд.
             if Assigned(cell.RichText) then begin
-              staredStrings.Add(cell.RichText);
-              cellValue := IntToStr(staredStrings.Count-1);
+              cellValue := IntToStr(staredStrings.Add(cell.RichText));
               s := 's';
             end else
             if cellValue.StartsWith(' ') or cellValue.EndsWith(' ')
             or (cellValue.IndexOfAny([#10, #13]) >= 0) then begin
-              staredStrings.Add(TRichText.FromText(cellValue));
-              cellValue := IntToStr(staredStrings.Count-1);
+              cellValue := IntToStr(staredStrings.Add(cellValue));
               s := 's';
             end else
               s := 'str';
@@ -6362,7 +6360,7 @@ end; //ZEXLSXCreateRelsWorkBook
 //RETURN
 //      integer
 function ZEXLSXCreateSharedStrings(var XMLSS: TZWorkBook; Stream: TStream;
-  const SharedStrings: TObjectList<TRichText>; TextConverter: TAnsiToCPConverter;
+  const SharedStrings: TSharedStringBank; TextConverter: TAnsiToCPConverter;
   CodePageName: string; BOM: ansistring): integer;
 var xml: TZsspXMLWriterH;
 begin
@@ -6374,12 +6372,12 @@ begin
     xml.TabSymbol := ' ';
     xml.WriteHeader(CodePageName, BOM);
     xml.Attributes.Clear();
-    xml.Attributes.Add('count', SharedStrings.Count.ToString);
-    xml.Attributes.Add('uniqueCount', SharedStrings.Count.ToString, false);
+    xml.Attributes.Add('count', SharedStrings.List.Count.ToString);
+    xml.Attributes.Add('uniqueCount', SharedStrings.List.Count.ToString, false);
     xml.Attributes.Add('xmlns', SCHEMA_SHEET_MAIN, false);
     xml.WriteTagNode('sst', true, true, false);
 
-    for var sharedText in SharedStrings do begin
+    for var sharedText in SharedStrings.List do begin
       xml.Attributes.Clear();
       xml.WriteTagNode('si', false, false, false);
 
@@ -6555,7 +6553,7 @@ var
   _WriteHelper: TZEXLSXWriteHelper;
   path_xl, path_sheets, path_relsmain, path_relsw, path_docprops: string;
   s: string;
-  SharedStrings: TObjectList<TRichText>;
+  SharedStrings: TSharedStringBank;
   //iDrawingsCount: Integer;
   //path_draw, path_draw_rel, path_media: string;
   //_drawing: TZEDrawing;
@@ -6565,7 +6563,7 @@ begin
   Stream := nil;
   _WriteHelper := nil;
   kol := 0;
-  SharedStrings := TObjectList<TRichText>.Create(true);
+  SharedStrings := TSharedStringBank.Create();
   try
     if (not TDirectory.Exists(PathName)) then begin
       result := 3;
@@ -6791,14 +6789,14 @@ var
   zip: TZipFile;
   stream: TStream;
   writeHelper: TZEXLSXWriteHelper;
-  SharedStrings: TObjectList<TRichText>;
+  SharedStrings: TSharedStringBank;
 begin
   Result := 0;
   zip := TZipFile.Create();
   try
     writeHelper := TZEXLSXWriteHelper.Create();
     try
-      SharedStrings := TObjectList<TRichText>.Create(true);
+      SharedStrings := TSharedStringBank.Create();
       try
         if (not ZECheckTablesTitle(XMLSS, SheetsNumbers, SheetsNames, _pages, _names, kol)) then
           exit(2);

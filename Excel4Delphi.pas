@@ -119,6 +119,18 @@ type
     function ToString(): string; override;
   end;
 
+  TSharedStringBank = class
+  private
+    FStringDict: TDictionary<string,integer>;
+    FRichList: TObjectList<TRichText>;
+  public
+    constructor Create(); virtual;
+    destructor Destroy(); override;
+    function Add(value: string): integer; overload;
+    function Add(value: TRichText): integer; overload;
+    property List: TObjectList<TRichText> read FRichList;
+  end;
+
   /// <summary>
   /// Cell of spreadsheet.
   /// </summary>
@@ -7359,6 +7371,40 @@ end;
 
 destructor TZExport.Destroy;
 begin
+  inherited;
+end;
+
+{ TSharedStringBank }
+
+function TSharedStringBank.Add(value: string): integer;
+begin
+  if not FStringDict.TryGetValue(value, result) then begin
+    FRichList.Add(TRichText.FromText(value));
+    result := FRichList.Count-1;
+    FStringDict.Add(value, result);
+  end;
+end;
+
+function TSharedStringBank.Add(value: TRichText): integer;
+var copy: TRichText;
+begin
+  copy := TRichText.Create();
+  copy.Assign(value);
+  FRichList.Add(copy);
+  result := FRichList.Count-1;
+end;
+
+constructor TSharedStringBank.Create();
+begin
+  inherited;
+  FStringDict := TDictionary<string, integer>.Create();
+  FRichList := TObjectList<TRichText>.Create(true);
+end;
+
+destructor TSharedStringBank.Destroy();
+begin
+  FStringDict.Free();
+  FRichList.Free();
   inherited;
 end;
 
