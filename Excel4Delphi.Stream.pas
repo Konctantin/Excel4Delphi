@@ -1587,77 +1587,19 @@ var
 
   //Чтение объединённых ячеек
   procedure _ReadMerge();
-  var
-    i, t, num: integer;
-    x1, x2, y1, y2: integer;
-    s1, s2: string;
-    b: boolean;
-    function _GetCoords(var x, y: integer): boolean;
-    begin
-      result := true;
-      x := ZEGetColByA1(s1);
-      if (x < 0) then
-        result := false;
-      if (not TryStrToInt(s2, y)) then
-        result := false
-      else
-        dec(y);
-      b := result;
-    end; //_GetCoords
-
+  var left, top, right, bottom: integer;
   begin
-    x1 := 0;
-    y1 := 0;
-    x2 := 0;
-    y2 := 0;
     while xml.ReadToEndTagByName('mergeCells') do begin
       if xml.IsTagStartOrClosedByName('mergeCell') then begin
         str := xml.Attributes.ItemsByName['ref'];
-        t := length(str);
-        if (t > 0) then begin
-          str := str + ':';
-          s1 := '';
-          s2 := '';
-          b := true;
-          num := 0;
-          for i := 1 to t + 1 do
-          case str[i] of
-            'A'..'Z', 'a'..'z': s1 := s1 + str[i];
-            '0'..'9': s2 := s2 + str[i];
-            ':':
-              begin
-                inc(num);
-                if (num > 2) then begin
-                  b := false;
-                  break;
-                end;
-                if (num = 1) then begin
-                  if (not _GetCoords(x1, y1)) then
-                    break;
-                end else begin
-                  if (not _GetCoords(x2, y2)) then
-                    break;
-                end;
-                s1 := '';
-                s2 := '';
-              end;
-            else begin
-              b := false;
-              break;
-            end;
-          end; //case
-
-          if (b) then begin
-            CheckRow(y1 + 1);
-            CheckRow(y2 + 1);
-            CheckCol(x1 + 1);
-            CheckCol(x2 + 1);
-            currentSheet.MergeCells.AddRectXY(x1, y1, x2, y2);
-          end;
-        end; //if
-      end; //if
-    end; //while
-  end; //_ReadMerge
+        if TZEFormula.GetCellRange(str, left, top, right, bottom) then begin
+          CheckCol(right+1);
+          CheckRow(bottom+1);
+          currentSheet.MergeCells.AddRectXY(left, top, right, bottom);
+        end;
+      end;
+    end;
+  end;
 
   //Столбцы
   procedure _ReadCols();
@@ -1728,37 +1670,14 @@ var
   end; //_StrToMM
 
   procedure _GetDimension();
-  var st, s: string;
-    i, l, _maxC, _maxR, c, r: integer;
+  var left, top, right, bottom: integer;
   begin
-    c := 0;
-    r := 0;
-    st := xml.Attributes.ItemsByName['ref'];
-    l := Length(st);
-    if (l > 0) then begin
-      st := st + ':';
-      inc(l);
-      s := '';
-      _maxC := -1;
-      _maxR := -1;
-      for i := 1 to l do
-      if (st[i] = ':') then begin
-        if TZEFormula.GetCellCoords(s, c, r, true) then begin;
-          if (c > _maxC) then
-            _maxC := c;
-          if (r > _maxR) then
-            _maxR := r;
-        end else
-          break;
-        s := '';
-      end else
-        s := s + st[i];
-      if (_maxC > 0) then
-        CheckCol(_maxC);
-      if (_maxR > 0) then
-        CheckRow(_maxR);
+    var str := xml.Attributes.ItemsByName['ref'];
+    if TZEFormula.GetCellRange(str, left, top, right, bottom) then begin
+      CheckCol(right);
+      CheckRow(bottom);
     end;
-  end; //_GetDimension()
+  end;
 
   //Чтение ссылок
   procedure _ReadHyperLinks();
@@ -1782,13 +1701,9 @@ var
                 break;
               end;
           end;
-        //доп. атрибуты:
-        //  display - ??
-        //  id - id <> r:id??
-        //  location - ??
       end;
-    end; //while
-  end; //_ReadHyperLinks();
+    end;
+  end;
 
   procedure _ReadSheetPr();
   begin
