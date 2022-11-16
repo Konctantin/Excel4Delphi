@@ -6739,7 +6739,6 @@ begin
         end;
 
         // xl/_rels/workbook.xml.rels
-        kol := 0;
         stream := TMemoryStream.Create();
         try
           ZEXLSXCreateRelsWorkBook(kol, stream, TextConverter, CodePageName, BOM);

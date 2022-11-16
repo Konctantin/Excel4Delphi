@@ -62,7 +62,7 @@ begin
   s := 1;
   for i := length(ColumnAdress) downto 1 do begin
     if not CharInSet(ColumnAdress[I], ['A'..'Z']) then
-        continue;
+      continue;
     t := ord(ColumnAdress[i]) - ord('A');
     num := num + (t + 1) * s;
     s := s * 26;
@@ -70,7 +70,7 @@ begin
       exit;
   end;
   result := num;
-  if (FromZero) then
+  if FromZero then
     result := result - 1;
 end;
 
@@ -117,6 +117,8 @@ begin
 
   bottom := Max(StrToIntDef(rows[1], -1), top);
   right  := Max(GetColIndex(cols[1]), left);
+  dec(top);
+  dec(bottom);
 end;
 
 end.
