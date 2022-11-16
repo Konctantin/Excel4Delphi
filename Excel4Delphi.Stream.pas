@@ -1689,7 +1689,7 @@ var
       if xml.IsTagClosedByName('hyperlink') then begin
         str := xml.Attributes.ItemsByName['ref'];
         if (str > '') then
-          if TZEFormula.GetCellCoords(str, _c, _r, true) then begin
+          if TZEFormula.GetCellCoords(str, _c, _r) then begin
             CheckRow(_r);
             CheckCol(_c);
             currentSheet.Cell[_c, _r].HRefScreenTip := xml.Attributes.ItemsByName['tooltip'];
@@ -3808,7 +3808,7 @@ var xml: TZsspXMLReaderH;
     str := xml.Attributes.ItemsByName['ref'];
     if (str = '') then
       exit;
-    if TZEFormula.GetCellCoords(str, _c, _r, true) then
+    if TZEFormula.GetCellCoords(str, _c, _r) then
     begin
       if (_c >= XMLSS.Sheets[page].ColCount) then
         XMLSS.Sheets[page].ColCount := _c + 1;
@@ -4894,7 +4894,7 @@ var xml: TZsspXMLWriterH;    //писатель
       isProblem := (VMode = ZSplitSplit) or (HMode = ZSplitSplit);
       isProblem := isProblem or (VValue > 1000) or (HValue > 100);
       if not isProblem then begin
-        s := ZEGetA1byCol(VValue) + IntToSTr(HValue + 1);
+        s := TZEFormula.GetColAddres(VValue) + IntToSTr(HValue + 1);
         xml.Attributes.Add('topLeftCell', s);
       end;
     end; //_AddTopLeftCell
@@ -4923,7 +4923,7 @@ var xml: TZsspXMLWriterH;    //писатель
     xml.Attributes.Clear();
     s := 'A1';
     if (sheet.ColCount > 0) then
-      s := s + ':' + ZEGetA1byCol(sheet.ColCount - 1) + IntToStr(sheet.RowCount);
+      s := s + ':' + TZEFormula.GetColAddres(sheet.ColCount - 1) + IntToStr(sheet.RowCount);
     xml.Attributes.Add('ref', s);
     xml.WriteEmptyTag('dimension', true, false);
 
@@ -5043,7 +5043,7 @@ var xml: TZsspXMLWriterH;    //писатель
     _AddSelection('F16', 'topLeft');
     }
 
-    s := ZEGetA1byCol(sheet.SheetOptions.ActiveCol) + IntToSTr(sheet.SheetOptions.ActiveRow + 1);
+    s := TZEFormula.GetColAddres(sheet.SheetOptions.ActiveCol) + IntToSTr(sheet.SheetOptions.ActiveRow + 1);
     xml.Attributes.Clear();
     xml.Attributes.Add('activeCell', s);
     xml.Attributes.Add('sqref', s);
@@ -5118,7 +5118,7 @@ var xml: TZsspXMLWriterH;    //писатель
         if (not WriteHelper.isHaveComments) and (cell.Comment > '') then
           WriteHelper.isHaveComments := true;
         b := (cell.Data > '') or (cell.Formula > '');
-        s := ZEGetA1byCol(j) + IntToStr(i + 1);
+        s := TZEFormula.GetColAddres(j) + IntToStr(i + 1);
 
         if (cell.HRef <> '') then
           WriteHelper.AddHyperLink(s, cell.HRef, cell.HRefScreenTip, 'External');
@@ -5193,7 +5193,7 @@ var xml: TZsspXMLWriterH;    //писатель
       for i := 0 to sheet.MergeCells.Count - 1 do begin
         xml.Attributes.Clear();
         _r := sheet.MergeCells.Items[i];
-        s := ZEGetA1byCol(_r.Left) + IntToStr(_r.Top + 1) + ':' + ZEGetA1byCol(_r.Right) + IntToStr(_r.Bottom + 1);
+        s := TZEFormula.GetColAddres(_r.Left) + IntToStr(_r.Top + 1) + ':' + TZEFormula.GetColAddres(_r.Right) + IntToStr(_r.Bottom + 1);
         xml.Attributes.Add('ref', s);
         xml.WriteEmptyTag('mergeCell', true, false);
       end;
@@ -6739,6 +6739,7 @@ begin
         end;
 
         // xl/_rels/workbook.xml.rels
+        kol := 0;
         stream := TMemoryStream.Create();
         try
           ZEXLSXCreateRelsWorkBook(kol, stream, TextConverter, CodePageName, BOM);

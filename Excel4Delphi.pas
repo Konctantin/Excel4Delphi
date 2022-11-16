@@ -4138,14 +4138,14 @@ end;
 
 function TZSheet.Exists(col: string; row: integer): boolean;
 begin
-  result := Exists(ZEGetColByA1(col, true), row);
+  result := Exists(TZEFormula.GetColIndex(col), row);
 end;
 
 function TZSheet.Exists(address: string): boolean;
 var col, row: integer;
 begin
   result := false;
-  if TZEFormula.GetCellCoords(address, col, row, true) then
+  if TZEFormula.GetCellCoords(address, col, row) then
     result := Exists(col, row);
 end;
 
@@ -4269,7 +4269,7 @@ end;
 
 procedure TZSheet.InsertColumns(ACol: string; ACount: Integer);
 begin
-  InsertColumns(ZEGetColByA1(ACol, true), ACount);
+  InsertColumns(TZEFormula.GetColIndex(ACol), ACount);
 end;
 
 procedure TZSheet.InsertRows(ARow, ACount: Integer);
@@ -4379,7 +4379,7 @@ end;
 
 procedure TZSheet.DeleteColumns(ACol: string; ACount: Integer);
 begin
-  DeleteRows(ZEGetColByA1(ACol, true), ACount);
+  DeleteRows(TZEFormula.GetColIndex(ACol), ACount);
 end;
 
 procedure TZSheet.DeleteRows(ARow, ACount: Integer);
@@ -4543,7 +4543,7 @@ end;
 procedure TZSheet.SetColumnRef(column: string; const Value: TZColOptions);
 var num: integer;
 begin
-  num := ZEGetColByA1(column, true);
+  num := TZEFormula.GetColIndex(column);
   if (num >= 0) and (num < FColCount) then
     FColumns[num].Assign(Value);
 end;
@@ -4559,7 +4559,7 @@ end;
 function TZSheet.GetColumnRef(column: string): TZColOptions;
 var num: integer;
 begin
-  num := ZEGetColByA1(column, true);
+  num := TZEFormula.GetColIndex(column);
   if (num >= 0) and (num < FColCount) then
     result := FColumns[num]
   else
@@ -4586,9 +4586,9 @@ end;
 function TZSheet.GetRangeRef(AFromCol: string; AFromRow: Integer; AToCol: string; AToRow: integer): IZRange;
 var AC1,AR1,AC2,AR2: Integer;
 begin
-  AC1 := ZEGetColByA1(AFromCol);
+  AC1 := TZEFormula.GetColIndex(AFromCol);
   AR1 := AFromRow;
-  AC2 := ZEGetColByA1(AToCol);
+  AC2 := TZEFormula.GetColIndex(AToCol);
   AR2 := AToRow;
   Result := TZRange.Create(Self, AC1,AR1,AC2,AR2);
 end;
@@ -4617,7 +4617,7 @@ end;
 procedure TZSheet.SetColWidthRef(column: string; const Value: real);
 var num: integer;
 begin
-  num := ZEGetColByA1(column, true);
+  num := TZEFormula.GetColIndex(column);
   if (num < ColCount) and (num >= 0) and (Value >= 0) then
   if FColumns[num] <> nil then
     FColumns[num].Width := Value;
@@ -4635,7 +4635,7 @@ function TZSheet.GetColWidthRef(column: string): real;
 var num: integer;
 begin
   result := 0;
-  num := ZEGetColByA1(column, true);
+  num := TZEFormula.GetColIndex(column);
   if (num < ColCount) and (num >= 0) then
     if Assigned(FColumns[num]) then
       result := FColumns[num].Width;
@@ -4708,7 +4708,7 @@ end;
 
 procedure TZSheet.SetCellRef(ACol: string; ARow: integer; const Value: TZCell);
 begin
-  SetCell(ZEGetColByA1(ACol), ARow, Value);
+  SetCell(TZEFormula.GetColIndex(ACol), ARow, Value);
 end;
 
 function TZSheet.GetCell(ACol, ARow: integer): TZCell;
@@ -4721,7 +4721,7 @@ end;
 
 function TZSheet.GetCellRef(ACol: string; ARow: integer): TZCell;
 begin
-    Result := GetCell(ZEGetColByA1(ACol), ARow);
+    Result := GetCell(TZEFormula.GetColIndex(ACol), ARow);
 end;
 
 procedure TZSheet.SetColCount(const Value: integer);
