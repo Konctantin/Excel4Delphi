@@ -271,7 +271,7 @@ type
 
     FNFItems: array of TODSNumberFormatMapItem;
     FNFItemsCount: integer;
-                                               //Additional properties for number formats (currency, percentage etc)
+    //Additional properties for number formats (currency, percentage etc)
     FNumberAdditionalProps: array of integer;
 
   protected

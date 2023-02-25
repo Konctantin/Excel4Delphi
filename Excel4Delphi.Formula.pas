@@ -5,20 +5,20 @@ interface
 type
 TZEFormula = class
   /// <summary>
-  /// Возвращает буквенное обозначение столбца для АА стиля
+  /// Return absolute AA styled cell address.
   /// </summary>
   class function GetColAddres(const ColumnIndex: integer; FromZero: boolean = true): string; static;
   /// <summary>
-  /// Возвращает номер столбца по буквенному обозначению
+  /// Extracts column index from it's AA address.
   /// </summary>
   class function GetColIndex(ColumnAdress: string; FromZero: boolean = true): integer; static;
   /// <summary>
-  /// Преобразовывает строку формата "А1" в номер колонки и номер строки.
+  /// Extracts cell column and row from A1 styled address.
   /// </summary>
   class function GetCellCoords(const cell: string; out column, row: integer): boolean; static;
   /// <summary>
-  /// Преобразовывает строку формата "А1:B2" в область координат ячеек.
-  /// Если строка будет в формате "А1", то преобразует только в координаты ячеек, значение right=left, а bottom=top
+  /// Extracts range top, left right and bottom from 'А1:B2' based string.
+  /// If string is 'A1' format then right=left, bottom=top.
   /// </summary>
   class function GetCellRange(const range: string; out left, top, right, bottom: integer): boolean; static;
 end;
