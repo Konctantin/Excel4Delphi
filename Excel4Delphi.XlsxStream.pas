@@ -11,7 +11,7 @@ uses
   SysUtils,
   Classes,
   Types,
-  Graphics,
+  Vcl.Graphics,
   UITypes,
   Windows,
   Zip,
@@ -1666,7 +1666,7 @@ var xml: TZsspXMLWriterH;
       isProblem := (VMode = ZSplitSplit) or (HMode = ZSplitSplit);
       isProblem := isProblem or (VValue > 1000) or (HValue > 100);
       if not isProblem then begin
-        s := ZEGetA1byCol(VValue) + IntToSTr(HValue + 1);
+        s := TZEFormula.GetColAddres(VValue) + IntToSTr(HValue + 1);
         xml.Attributes.Add('topLeftCell', s);
       end;
     end; //_AddTopLeftCell
@@ -1695,7 +1695,7 @@ var xml: TZsspXMLWriterH;
     xml.Attributes.Clear();
     s := 'A1';
     if (sheet.ColCount > 0) then
-      s := s + ':' + ZEGetA1byCol(sheet.ColCount - 1) + IntToStr(sheet.RowCount);
+      s := s + ':' + TZEFormula.GetColAddres(sheet.ColCount - 1) + IntToStr(sheet.RowCount);
     xml.Attributes.Add('ref', s);
     xml.WriteEmptyTag('dimension', true, false);
 
@@ -1815,7 +1815,7 @@ var xml: TZsspXMLWriterH;
     _AddSelection('F16', 'topLeft');
     }
 
-    s := ZEGetA1byCol(sheet.SheetOptions.ActiveCol) + IntToSTr(sheet.SheetOptions.ActiveRow + 1);
+    s := TZEFormula.GetColAddres(sheet.SheetOptions.ActiveCol) + IntToSTr(sheet.SheetOptions.ActiveRow + 1);
     xml.Attributes.Clear();
     xml.Attributes.Add('activeCell', s);
     xml.Attributes.Add('sqref', s);
@@ -1891,7 +1891,7 @@ var xml: TZsspXMLWriterH;
 //            WriteHelper.isHaveComments := true;
         b := (sheet.Cell[j, i].Data > '') or
              (sheet.Cell[j, i].Formula > '');
-        s := ZEGetA1byCol(j) + IntToStr(i + 1);
+        s := TZEFormula.GetColAddres(j) + IntToStr(i + 1);
 
 //        if (sheet.Cell[j, i].HRef <> '') then
 //          WriteHelper.AddHyperLink(s, sheet.Cell[j, i].HRef, sheet.Cell[j, i].HRefScreenTip, 'External');
@@ -1976,7 +1976,7 @@ var xml: TZsspXMLWriterH;
       for i := 0 to sheet.MergeCells.Count - 1 do begin
         xml.Attributes.Clear();
         _r := sheet.MergeCells.Items[i];
-        s := ZEGetA1byCol(_r.Left) + IntToStr(_r.Top + 1) + ':' + ZEGetA1byCol(_r.Right) + IntToStr(_r.Bottom + 1);
+        s := TZEFormula.GetColAddres(_r.Left) + IntToStr(_r.Top + 1) + ':' + TZEFormula.GetColAddres(_r.Right) + IntToStr(_r.Bottom + 1);
         xml.Attributes.Add('ref', s);
         xml.WriteEmptyTag('mergeCell', true, false);
       end;
@@ -3884,7 +3884,7 @@ var
       if (xml.TagName = 'c') then begin
         str := xml.Attributes.ItemsByName['r']; //номер
         if (str > '') then
-          if (ZEGetCellCoords(str, _cc, _cr)) then begin
+          if TZEFormula.GetCellCoords(str, _cc, _cr) then begin
             currentCol := _cc;
             CheckCol(_cc + 1);
           end;
@@ -4024,7 +4024,7 @@ var
     function _GetCoords(var x, y: integer): boolean;
     begin
       result := true;
-      x := ZEGetColByA1(s1);
+      x := TZEFormula.GetColAddres(s1);
       if (x < 0) then
         result := false;
       if (not TryStrToInt(s2, y)) then
@@ -4172,7 +4172,7 @@ var
       _maxR := -1;
       for i := 1 to l do
       if (st[i] = ':') then begin
-        if (ZEGetCellCoords(s, c, r, true)) then begin;
+        if TZEFormula.GetCellCoords(s, c, r, true) then begin;
           if (c > _maxC) then
             _maxC := c;
           if (r > _maxR) then
@@ -4199,7 +4199,7 @@ var
       if xml.IsTagClosedByName('hyperlink') then begin
         str := xml.Attributes.ItemsByName['ref'];
         if (str > '') then
-          if (ZEGetCellCoords(str, _c, _r, true)) then begin
+          if TZEFormula.GetCellCoords(str, _c, _r) then begin
             CheckRow(_r);
             CheckCol(_c);
             sheet.Cell[_c, _r].HRefScreenTip := xml.Attributes.ItemsByName['tooltip'];
@@ -4356,7 +4356,7 @@ var
             ch := st[i];
             if (ch = ':') then begin
               if (_cnt < 2) then begin
-                tmpB := ZEGetCellCoords(s, tmpArr[_cnt][0], tmpArr[_cnt][1]);
+                tmpB := TZEFormula.GetCellCoords(s, tmpArr[_cnt][0], tmpArr[_cnt][1]);
                 _isOk := _isOk and tmpB;
               end;
               s := '';

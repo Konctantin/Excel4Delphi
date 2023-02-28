@@ -889,6 +889,13 @@ type
     function IsTagClosedByName(tagName: string): boolean;
     function IsTagStartOrClosedByName(tagName: string): boolean;
     function ReadToEndTagByName(tagName: string): boolean;
+    function AttribBool(name: string; default: boolean = false): boolean;
+    function AttribInt(name: string; default: integer = 0): integer;
+    function AttribDouble(name: string; default: double = 0): double;
+    function AttribString(name: string): string;
+    function AsBool(default: boolean = false): boolean;
+    function AsInt(default: integer = 0): integer;
+    function AsDouble(default: double = 0): double;
   end;
 
 //конец для Delphi >=2009
@@ -934,6 +941,8 @@ function RecognizeBOM(var txt: ansistring): integer;
 function RecognizeEncodingXML(var txt: ansistring; out BOM: integer; out cpfromtext: integer; out cpname: ansistring; out ftype: integer): boolean; overload;
 
 implementation
+
+uses Excel4Delphi.Common;
 
 //// читатели
 
@@ -3865,6 +3874,41 @@ end;
 procedure TZsspXMLReaderH.SetIgnoreCase(Value: boolean);
 begin
   FXMLReader.IgnoreCase := Value;
+end;
+
+function TZsspXMLReaderH.AsBool(default: boolean): boolean;
+begin
+  result := ZETryStrToBoolean(TextBeforeTag, default);
+end;
+
+function TZsspXMLReaderH.AsDouble(default: double): double;
+begin
+  result := ZETryStrToFloat(TextBeforeTag, default);
+end;
+
+function TZsspXMLReaderH.AsInt(default: integer): integer;
+begin
+  result := StrToIntDef(TextBeforeTag, default);
+end;
+
+function TZsspXMLReaderH.AttribBool(name: string; default: boolean): boolean;
+begin
+  result := ZETryStrToBoolean(Attributes.ItemsByName[name], default);
+end;
+
+function TZsspXMLReaderH.AttribDouble(name: string; default: double): double;
+begin
+  result := ZETryStrToFloat(Attributes.ItemsByName[name], default);
+end;
+
+function TZsspXMLReaderH.AttribInt(name: string; default: integer): integer;
+begin
+  result := StrToIntDef(Attributes.ItemsByName[name], default);
+end;
+
+function TZsspXMLReaderH.AttribString(name: string): string;
+begin
+  result := Attributes.ItemsByName[name];
 end;
 
 function TZsspXMLReaderH.BeginReadStream(Stream: TStream): integer;

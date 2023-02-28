@@ -5,6 +5,7 @@ interface
 uses
   Classes,
   SysUtils,
+  StrUtils,
   Graphics,
   UITypes,
   Math,
@@ -41,9 +42,10 @@ type
   /// <summary>
   /// Fill pattern of the cell
   /// </summary>
-  TZCellPattern = (ZPNone, ZPSolid, ZPGray75, ZPGray50, ZPGray25, ZPGray125, ZPGray0625, ZPHorzStripe, ZPVertStripe,
-                  ZPReverseDiagStripe, ZPDiagStripe, ZPDiagCross, ZPThickDiagCross, ZPThinHorzStripe, ZPThinVertStripe,
-                  ZPThinReverseDiagStripe, ZPThinDiagStripe, ZPThinHorzCross, ZPThinDiagCross);
+  TZCellPattern = (
+    ZPNone, ZPSolid, ZPGray75, ZPGray50, ZPGray25, ZPGray125, ZPGray0625, ZPHorzStripe, ZPVertStripe,
+    ZPReverseDiagStripe, ZPDiagStripe, ZPDiagCross, ZPThickDiagCross, ZPThinHorzStripe, ZPThinVertStripe,
+    ZPThinReverseDiagStripe, ZPThinDiagStripe, ZPThinHorzCross, ZPThinDiagCross);
 
   /// <summary>
   /// Borders position.
@@ -76,19 +78,40 @@ type
     Content: TBytes;
   end;
 
+  TProgressArgs = record
+    Current, Total: Integer;
+  end;
+
+  TExcelColor = record
+    Rgb: TColor;
+    Indexed: Byte;
+    Theme: Byte;
+    Tint: Single;
+  end;
+
   TZSheet = class;
   TZStyle = class;
   TZFont = class;
+  TZWorkBook = class;
+
+  TZExport = class
+  protected
+    FWorkBook: TZWorkBook;
+  public
+    constructor Create(AWorkBook: TZWorkBook); virtual;
+    destructor Destroy(); override;
+    procedure ExportTo(AStream: TStream; ASheets: TArray<integer>; progress: TProc<TProgressArgs>); virtual; abstract;
+    property WorkBook: TZWorkBook read FWorkBook;
+  end;
 
   TRichString = class(TPersistent)
   private
     FText: string;
     FFont: TZFont;
-    // FSCheme: string; // todo: add to TZFont or use "minor" for default
   public
     property Text: string read FText write FText;
     property Font: TZFont read FFont write FFont;
-
+    constructor Create(); virtual;
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
     function GetHashCode(): integer; override;
@@ -102,8 +125,21 @@ type
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
     function GetHashCode(): integer; override;
-    //function ToHtml(): string;
-    //function ToString(): string; override;
+    property List: TList<TRichString> read FList;
+    class function FromText(text: string): TRichText;
+    function ToString(): string; override;
+  end;
+
+  TSharedStringBank = class
+  private
+    FStringDict: TDictionary<string,integer>;
+    FRichList: TObjectList<TRichText>;
+  public
+    constructor Create(); virtual;
+    destructor Destroy(); override;
+    function Add(value: string): integer; overload;
+    function Add(value: TRichText): integer; overload;
+    property List: TObjectList<TRichText> read FRichList;
   end;
 
   /// <summary>
@@ -231,7 +267,7 @@ type
     /// <summary>
     /// Rich formated text.
     /// </summary>
-    property RichText: TRichText read FRichText;
+    property RichText: TRichText read FRichText write FRichText;
     /// <summary>
     /// Present cell data as double value
     /// </summary>
@@ -308,7 +344,25 @@ type
     /// Trying to convert probably number value and change cell type to number.
     /// </summary>
     procedure TryConvertToNumber();
-
+    /// <summary>
+    /// True if cell have no data.
+    /// </summary>
+    function IsEmpty(includeFormula: boolean = true): boolean;
+    /// <summary>
+    /// True if cell within merged cells.
+    /// </summary>
+    function IsMerged(): boolean;
+    /// <summary>
+    /// True if cell within merged cells and in left-top corner.
+    /// </summary>
+    function IsLeftTopMerged(): boolean;
+    /// <summary>
+    /// Return text from merged range.
+    /// </summary>
+    function GetMergedText(onlyFromTopCorner: boolean = true): string;
+    /// <summary>
+    /// Set borders around all cell's border.
+    /// </summary>
     procedure SetBorderAround(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
   end;
 
@@ -367,19 +421,19 @@ type
     /// <summary>
     /// Left border.
     /// </summary>
-    property Left         : TZBorderStyle index bpLeft          read GetBorder write SetBorder;
+    property Left: TZBorderStyle index bpLeft read GetBorder write SetBorder;
     /// <summary>
     /// Top border.
     /// </summary>
-    property Top          : TZBorderStyle index bpTop           read GetBorder write SetBorder;
+    property Top: TZBorderStyle index bpTop read GetBorder write SetBorder;
     /// <summary>
     /// Right border.
     /// </summary>
-    property Right        : TZBorderStyle index bpRight         read GetBorder write SetBorder;
+    property Right: TZBorderStyle index bpRight read GetBorder write SetBorder;
     /// <summary>
     /// Bottom border.
     /// </summary>
-    property Bottom       : TZBorderStyle index bpBottom        read GetBorder write SetBorder;
+    property Bottom: TZBorderStyle index bpBottom read GetBorder write SetBorder;
     /// <summary>
     /// Diagonal from upper left to lower right.
     /// </summary>
@@ -419,31 +473,31 @@ type
     /// </returns>
     function IsEqual(Source: TPersistent): boolean; virtual;
     /// <summary>
-    /// Specifies how text is aligned by horizontally within the cell. <br />ZHAutomatic by default.
+    /// Specifies how text is aligned by horizontally within the cell.
     /// </summary>
     property Horizontal: TZHorizontalAlignment read FHorizontal write SetHorizontal default ZHAutomatic;
     /// <summary>
-    /// Specifies how far the cell's text is indented. <br />0 by default.
+    /// Specifies how far the cell's text is indented.
     /// </summary>
     property Indent: integer read FIndent write SetIndent default 0;
     /// <summary>
-    /// Specifies the rotation of the text within the cell (from -90 to 90). <br />0 by default.
+    /// Specifies the rotation of the text within the cell (from -90 to 90).
     /// </summary>
     property Rotate: TZCellTextRotate read FRotate write SetRotate;
     /// <summary>
-    /// If True then the text size will shrunk so to all of the text fits within the cell. <br />False by default.
+    /// If True then the text size will shrunk so to all of the text fits within the cell.
     /// </summary>
     property ShrinkToFit: boolean read FShrinkToFit write SetShrinkToFit default false;
     /// <summary>
-    /// Specifies how text is aligned by vertically within the cell. <br />ZVAutomatic by default.
+    /// Specifies how text is aligned by vertically within the cell.
     /// </summary>
     property Vertical: TZVerticalAlignment read FVertical write SetVertical default ZVAutomatic;
     /// <summary>
-    /// If True each letter is drawn horizontally, one above the other. <br />False by default.
+    /// If True each letter is drawn horizontally, one above the other.
     /// </summary>
     property VerticalText: boolean read FVerticalText write SetVerticalText default false;
     /// <summary>
-    /// Specifies whether the text in cell should wrap at the cell boundary. <br />False by default.
+    /// Specifies whether the text in cell should wrap at the cell boundary.
     /// </summary>
     property WrapText: boolean read FWrapText write SetWrapText default false;
   end;
@@ -454,21 +508,30 @@ type
   TZFont = class (TPersistent)
   private
     FColor: TColor;
+    FColorTheme: integer;
     FSize: double;
     FCharset: TFontCharset;
+    FFamily: byte;
+    FScheme: string;
     FName: TFontName;
     FStyle: TFontStyles;
+    FDoubleInderLine: boolean;
+    procedure SetColor(const Value: TColor);
   public
     constructor Create;
     destructor Destroy; override;
     procedure Assign(Source: TPersistent); override;
     procedure AssignTo(Dest: TPersistent); override;
     function GetHashCode(): integer; override;
-    property Color: TColor read FColor write FColor;
+    property Color: TColor read FColor write SetColor;
     property Size: double read FSize write FSize;
     property Charset: TFontCharset read FCharset write FCharset;
+    property ColorTheme: integer read FColorTheme write FColorTheme;
+    property Family: byte read FFamily write FFamily;
+    property Scheme: string read FScheme write FScheme;
     property Name: TFontName read FName write FName;
     property Style: TFontStyles read FStyle write FStyle;
+    property DoubleInderLine: boolean read FDoubleInderLine write FDoubleInderLine;
   end;
 
   /// <summary>
@@ -681,8 +744,6 @@ type
 
   TZCellColumn = array of TZCell;
 
-  TZWorkBook = class;
-
   /// <summary>
   /// Common options for columns and rows. Ancestor for TZColOptions and TZRowOptions.
   /// </summary>
@@ -708,15 +769,15 @@ type
     constructor Create(ASheet: TZSheet); virtual;
     procedure Assign(Source: TPersistent); override;
     /// <summary>
-    /// True specifies that column or row is hidden. <br />False (not hidden) by default.
+    /// True specifies that column or row is hidden.
     /// </summary>
     property Hidden: boolean read FHidden write FHidden default false;
     /// <summary>
-    /// Specifies a style for column or row. <br />-1 by default.
+    /// Specifies a style for column or row.
     /// </summary>
     property StyleID: integer read FStyleID write FStyleID default -1;
     /// <summary>
-    /// Page break after column or row. <br />False (no break) by default.
+    /// Page break after column or row.
     /// </summary>
     property Breaked: boolean read FBreaked write FBreaked default false;
     /// <summary>
@@ -877,6 +938,7 @@ type
     FPaperSize: byte;
     FPaperWidth: integer;
     FPaperHeight: integer;
+    FPageOrderDown: boolean;
 
     FFitToHeight: integer; //Number of vertical pages to fit on
     FFitToWidth: integer;  //Number of horizontal pages to fit on
@@ -897,15 +959,15 @@ type
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
     /// <summary>
-    /// Column number with active cell. <br />0 by default.
+    /// Column number with active cell.
     /// </summary>
     property ActiveCol: word read FActiveCol write FActiveCol default 0;
     /// <summary>
-    /// Row number with active cell. <br />0 by default.
+    /// Row number with active cell.
     /// </summary>
     property ActiveRow: word read FActiveRow write FActiveRow default 0;
     /// <summary>
-    /// Specifies the bottom margin on the page in millimeters. <br />25 mm by default.
+    /// Specifies the bottom margin on the page in millimeters.
     /// </summary>
     property MarginBottom: word read FMarginBottom write FMarginBottom default 25;
     /// <summary>
@@ -913,11 +975,11 @@ type
     /// </summary>
     property MarginLeft: word read FMarginLeft write FMarginLeft default 19;
     /// <summary>
-    /// Specifies the top margin on the page in millimeters. <br />25 mm by default.
+    /// Specifies the top margin on the page in millimeters.
     /// </summary>
     property MarginTop: word read FMarginTop write FMarginTop default 25;
     /// <summary>
-    /// Specifies the right margin on the page in millimeters. <br />20 mm by default.
+    /// Specifies the right margin on the page in millimeters.
     /// </summary>
     property MarginRight: word read FMarginRight write FMarginRight default 20;
     /// <summary>
@@ -934,24 +996,25 @@ type
     property PaperHeight: integer read FPaperHeight write FPaperHeight default 0;
     property FitToHeight: integer read FFitToHeight write FFitToHeight default -1;
     property FitToWidth: integer read FFitToWidth write FFitToWidth default -1;
+    property PageOrderDown: boolean read FPageOrderDown write FPageOrderDown;
     /// <summary>
-    /// Specifies the orientation of the page (True - Portrait, False - Landscape). <br />True by default.
+    /// Specifies the orientation of the page (True - Portrait, False - Landscape).
     /// </summary>
     property PortraitOrientation: boolean read FPortraitOrientation write FPortraitOrientation default true;
     /// <summary>
-    /// If True, the document should be centered horizontally on the page. <br />False by default.
+    /// If True, the document should be centered horizontally on the page.
     /// </summary>
     property CenterHorizontal: boolean read FCenterHorizontal write FCenterHorizontal default false;
     /// <summary>
-    /// If True, the document should be centered vertically on the page. <br />False by default.
+    /// If True, the document should be centered vertically on the page.
     /// </summary>
     property CenterVertical: boolean read FCenterVertical write FCenterVertical default false;
     /// <summary>
-    /// Specifies the starting page number for print. <br />1 by default.
+    /// Specifies the starting page number for print.
     /// </summary>
     property StartPageNumber: integer read FStartPageNumber write FStartPageNumber default 1;
     /// <summary>
-    /// The size of header in millimeters. <br />13 mm by default. <br />
+    /// The size of header in millimeters.
     /// </summary>
     /// <remarks>
     /// deprecated 'Use HeaderMargins.Height!'
@@ -1700,6 +1763,18 @@ type
 
     function ColsWidth(AFrom, ATo: integer): real;
     function RowsHeight(AFrom, ATo: integer): real;
+    /// <summary>
+    /// Check if cell exists by column and row
+    /// </summary>
+    function Exists(col, row: integer): boolean; overload;
+    /// <summary>
+    /// Check if cell exists by column (A,B,C...) and row
+    /// </summary>
+    function Exists(col: string; row: integer): boolean; overload;
+    /// <summary>
+    /// Check if cell exists by address (A1,B5...)
+    /// </summary>
+    function Exists(address: string): boolean; overload;
 
     /// <summary>
     /// Get or set the width (in points) of column num in the sheet.
@@ -1892,6 +1967,7 @@ type
     function GetTop: Integer;
     function GetRight: Integer;
     function GetBottom: Integer;
+    function GetText: string;
     //
     property VerticalAlignment: TZVerticalAlignment read GetVerticalAlignment write SetVerticalAlignment;
     property HorizontalAlignment: TZHorizontalAlignment read GetHorizontalAlignment write SetHorizontalAlignment;
@@ -1916,6 +1992,7 @@ type
     property Top: Integer read GetTop;
     property Right: Integer read GetRight;
     property Bottom: Integer read GetBottom;
+    property Text: string read GetText;
     procedure SetBorderLeft(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderTop(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderRight(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -1976,6 +2053,7 @@ type
     function GetTop: Integer;
     function GetRight: Integer;
     function GetBottom: Integer;
+    function GetText: string;
   public
     constructor Create(ASheet: TZSheet; ALeft, ATop, ARight, ABottom: Integer); virtual;
     procedure Assign(Source: TZRange);
@@ -2003,6 +2081,7 @@ type
     property Top: Integer read GetTop;
     property Right: Integer read GetRight;
     property Bottom: Integer read GetBottom;
+    property Text: string read GetText;
     procedure SetBorderLeft(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderTop(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
     procedure SetBorderRight(borderWidth: Byte; borderColor: TColor = clBlack; borderStyle: TZBorderType = TZBorderType.ZEContinuous);
@@ -2108,11 +2187,13 @@ type
     function AddMediaContent(AFileName: string; AContent: TBytes; ACheckByName: boolean): integer;
     function GetDrawing(num: Integer): TZEDrawing;
     function GetDrawingSheetNum(Value: TZEDrawing): Integer;
+    procedure ExportTo<T: TZExport>(AStream: TStream; ASheets: TArray<integer>; progress: TProc<TProgressArgs>);
     property Styles: TZStyles read FStyles write FStyles;
     property DefaultSheetOptions: TZSheetOptions read GetDefaultSheetOptions write SetDefaultSheetOptions;
     property DocumentProperties: TZEXMLDocumentProperties read FDocumentProperties write FDocumentProperties;
     property HorPixelSize: real read FHorPixelSize write SetHorPixelSize;  // размер пикселя по горизонтали
     property VertPixelSize: real read FVertPixelSize write SetVertPixelSize;  //размер пикселя по вертикали
+
     //property DefinedNames: TArray<TDefinedName> read FDefinedNames write FDefinedNames;
   end;
 
@@ -2762,6 +2843,10 @@ begin
   FCharset := DEFAULT_CHARSET;
   FName    := 'MS Sans Serif';
   FStyle   := [];
+  FScheme  := '';
+  Family   := 0;
+  FColorTheme := 0;
+  FDoubleInderLine := false;
 end;
 
 destructor TZFont.Destroy;
@@ -2786,23 +2871,37 @@ begin
   result := result * 23 + st;
 end;
 
+procedure TZFont.SetColor(const Value: TColor);
+begin
+  FColor := Value;
+  FColorTheme := 0;
+end;
+
 procedure TZFont.Assign(Source: TPersistent);
 var zSource: TZFont; srcFont: TFont;
 begin
   if Source is TZFont then begin
-    zSource  := Source as TZFont;
-    FColor   := zSource.Color;
-    FSize    := zSource.Size;
-    FCharset := zSource.Charset;
-    FName    := zSource.Name;
-    FStyle   := zSource.Style;
+    zSource     := Source as TZFont;
+    FColor      := zSource.Color;
+    FSize       := zSource.Size;
+    FCharset    := zSource.Charset;
+    FName       := zSource.Name;
+    FStyle      := zSource.Style;
+    FColorTheme := zSource.FColorTheme;
+    FFamily     := zSource.FFamily;
+    FScheme     := zSource.FScheme;
+    FDoubleInderLine := zSource.FDoubleInderLine;
   end else if Source is TFont then begin
-    srcFont  := Source as TFont;
-    FColor   := srcFont.Color;
-    FSize    := srcFont.Size;
-    FCharset := srcFont.Charset;
-    FName    := srcFont.Name;
-    FStyle   := srcFont.Style;
+    srcFont     := Source as TFont;
+    FColor      := srcFont.Color;
+    FSize       := srcFont.Size;
+    FCharset    := srcFont.Charset;
+    FName       := srcFont.Name;
+    FStyle      := srcFont.Style;
+    FColorTheme := 0;
+    FFamily     := 2;
+    FScheme     := 'minor';
+    FDoubleInderLine := false;
   end else
     inherited Assign(Source);
 end;
@@ -3099,7 +3198,7 @@ begin
   FCellStyle         := -1; //по дефолту
   FAlwaysShowComment := false;
   FShowComment       := false;
-  FRichText := TRichText.Create();
+  FRichText          := nil;
 end;
 
 destructor TZCell.Destroy;
@@ -3122,7 +3221,13 @@ begin
     FCellType          := zSource.CellType;
     FAlwaysShowComment := zSource.AlwaysShowComment;
     FShowComment       := zSource.ShowComment;
-    FRichText.Assign(zSource.FRichText);
+    if assigned(zSource.FRichText) then begin
+      FRichText := TRichText.Create();
+      FRichText.Assign(zSource.FRichText);
+    end else if assigned(FRichText) then begin
+      FRichText.Free();
+      FRichText := nil;
+    end;
   end else
     inherited Assign(Source);
 end;
@@ -3139,6 +3244,10 @@ begin
   FCellStyle         := -1;
   FAlwaysShowComment := false;
   FShowComment       := false;
+  if Assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end
 end;
 
 procedure TZCell.ApplyStyleValue(proc: TProc<TZStyle>);
@@ -3244,6 +3353,41 @@ begin
     Result := Style.Alignment.Indent;
 end;
 
+function TZCell.GetMergedText(onlyFromTopCorner: boolean): string;
+var mergeIndex: integer;
+begin
+  result := '';
+  mergeIndex := FSheet.MergeCells.InMergeRange(FCol, FRow);
+  if mergeIndex > -1 then begin
+    var merge := FSheet.MergeCells[mergeIndex];
+    if onlyFromTopCorner then begin
+      if FSheet.Exists(merge.Left, merge.Top) then begin
+        var cell := FSheet.Cell[merge.Left, merge.Top];
+        if assigned(cell.FRichText) then
+          result := cell.FRichText.ToString()
+        else
+          result := cell.AsString;
+      end;
+    end else begin
+      for var c := merge.Left to merge.Right do begin
+        for var r := merge.Top to merge.Bottom do begin
+          if FSheet.Exists(c, r) then begin
+            var cell := FSheet.Cell[merge.Left, merge.Top];
+            if not cell.IsEmpty() then begin
+              exit(cell.AsString);
+            end;
+          end;
+        end;
+      end;
+    end;
+  end else begin
+    if assigned(FRichText) then
+      result := FRichText.ToString()
+    else
+      result := AsString;
+  end;
+end;
+
 function TZCell.GetNumberFormat: string;
 begin
   Result := '';
@@ -3277,6 +3421,22 @@ begin
   Result := false;
   if FCellStyle > -1 then
     Result := Style.Alignment.WrapText;
+end;
+
+function TZCell.IsEmpty(includeFormula: boolean): boolean;
+begin
+  result := string.IsNullOrWhiteSpace(FData)
+    and ((includeFormula = false) or string.IsNullOrWhiteSpace(FFormula));
+end;
+
+function TZCell.IsLeftTopMerged: boolean;
+begin
+  result := FSheet.MergeCells.InLeftTopCorner(FCol, FRow) > -1;
+end;
+
+function TZCell.IsMerged: boolean;
+begin
+  result := FSheet.MergeCells.InMergeRange(FCol, FRow) > -1;
 end;
 
 procedure TZCell.SetFontColor(const Value: TColor);
@@ -3396,6 +3556,10 @@ begin
   FCellType := ZEDateTime;
   //FData := ZEDateTimeToStr(Value, true);
   FData := FloatToStr(Value).Replace(',','.');
+  if assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end;
 end;
 
 function TZCell.GetDataAsDouble: double;
@@ -3436,20 +3600,30 @@ procedure TZCell.SetDataAsInteger(const Value: integer);
 begin
   Data := Trim(IntToStr(Value));
   CellType := ZENumber;
-// Val adds the prepending space, maybe some I2S implementation would adds too
-// and Excel dislikes it. Better safe than sorry.
+  if assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end;
 end;
 
 procedure TZCell.SetDataAsDouble(const Value: double);
 begin
   CellType := ZENumber;
   FData := FloatToStr(value, invariantFormatSertting).ToUpper;
+  if assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end;
 end;
 
 procedure TZCell.SetDataAsString(const Value: string);
 begin
   FData := Value;
   CellType := ZEString;
+  if assigned(FRichText) then begin
+    FRichText.Free();
+    FRichText := nil;
+  end;
 end;
 
 ////::::::::::::: TZMergeCells :::::::::::::::::////
@@ -3816,6 +3990,7 @@ begin
   FPaperHeight         := 0;
   FScaleToPercent      := 100;
   FScaleToPages        := 1;
+  FPageOrderDown       := true;
 end;
 
 destructor TZSheetOptions.Destroy();
@@ -3879,6 +4054,7 @@ begin
     IsDifferentOddEven   := t.IsDifferentOddEven;
     ScaleToPercent       := t.ScaleToPercent;
     ScaleToPages         := t.ScaleToPages;
+    PageOrderDown        := t.PageOrderDown;
     HeaderMargins.Assign(t.HeaderMargins);
     FooterMargins.Assign(t.FooterMargins);
   end else
@@ -3954,6 +4130,25 @@ begin
   finally
     inherited Destroy();
   end;
+end;
+
+function TZSheet.Exists(col, row: integer): boolean;
+begin
+  result := (col >= 0) and (row >= 0)
+    and (col < FColCount) and (row < FRowCount);
+end;
+
+function TZSheet.Exists(col: string; row: integer): boolean;
+begin
+  result := Exists(TZEFormula.GetColIndex(col), row);
+end;
+
+function TZSheet.Exists(address: string): boolean;
+var col, row: integer;
+begin
+  result := false;
+  if TZEFormula.GetCellCoords(address, col, row) then
+    result := Exists(col, row);
 end;
 
 procedure TZSheet.Assign(Source: TPersistent);
@@ -4076,7 +4271,7 @@ end;
 
 procedure TZSheet.InsertColumns(ACol: string; ACount: Integer);
 begin
-  InsertColumns(ZEGetColByA1(ACol, true), ACount);
+  InsertColumns(TZEFormula.GetColIndex(ACol), ACount);
 end;
 
 procedure TZSheet.InsertRows(ARow, ACount: Integer);
@@ -4186,7 +4381,7 @@ end;
 
 procedure TZSheet.DeleteColumns(ACol: string; ACount: Integer);
 begin
-  DeleteRows(ZEGetColByA1(ACol, true), ACount);
+  DeleteRows(TZEFormula.GetColIndex(ACol), ACount);
 end;
 
 procedure TZSheet.DeleteRows(ARow, ACount: Integer);
@@ -4350,7 +4545,7 @@ end;
 procedure TZSheet.SetColumnRef(column: string; const Value: TZColOptions);
 var num: integer;
 begin
-  num := ZEGetColByA1(column, true);
+  num := TZEFormula.GetColIndex(column);
   if (num >= 0) and (num < FColCount) then
     FColumns[num].Assign(Value);
 end;
@@ -4366,7 +4561,7 @@ end;
 function TZSheet.GetColumnRef(column: string): TZColOptions;
 var num: integer;
 begin
-  num := ZEGetColByA1(column, true);
+  num := TZEFormula.GetColIndex(column);
   if (num >= 0) and (num < FColCount) then
     result := FColumns[num]
   else
@@ -4393,9 +4588,9 @@ end;
 function TZSheet.GetRangeRef(AFromCol: string; AFromRow: Integer; AToCol: string; AToRow: integer): IZRange;
 var AC1,AR1,AC2,AR2: Integer;
 begin
-  AC1 := ZEGetColByA1(AFromCol);
+  AC1 := TZEFormula.GetColIndex(AFromCol);
   AR1 := AFromRow;
-  AC2 := ZEGetColByA1(AToCol);
+  AC2 := TZEFormula.GetColIndex(AToCol);
   AR2 := AToRow;
   Result := TZRange.Create(Self, AC1,AR1,AC2,AR2);
 end;
@@ -4424,7 +4619,7 @@ end;
 procedure TZSheet.SetColWidthRef(column: string; const Value: real);
 var num: integer;
 begin
-  num := ZEGetColByA1(column, true);
+  num := TZEFormula.GetColIndex(column);
   if (num < ColCount) and (num >= 0) and (Value >= 0) then
   if FColumns[num] <> nil then
     FColumns[num].Width := Value;
@@ -4442,7 +4637,7 @@ function TZSheet.GetColWidthRef(column: string): real;
 var num: integer;
 begin
   result := 0;
-  num := ZEGetColByA1(column, true);
+  num := TZEFormula.GetColIndex(column);
   if (num < ColCount) and (num >= 0) then
     if Assigned(FColumns[num]) then
       result := FColumns[num].Width;
@@ -4515,7 +4710,7 @@ end;
 
 procedure TZSheet.SetCellRef(ACol: string; ARow: integer; const Value: TZCell);
 begin
-  SetCell(ZEGetColByA1(ACol), ARow, Value);
+  SetCell(TZEFormula.GetColIndex(ACol), ARow, Value);
 end;
 
 function TZSheet.GetCell(ACol, ARow: integer): TZCell;
@@ -4528,7 +4723,7 @@ end;
 
 function TZSheet.GetCellRef(ACol: string; ARow: integer): TZCell;
 begin
-    Result := GetCell(ZEGetColByA1(ACol), ARow);
+    Result := GetCell(TZEFormula.GetColIndex(ACol), ARow);
 end;
 
 procedure TZSheet.SetColCount(const Value: integer);
@@ -4747,6 +4942,16 @@ begin
   FreeAndNil(FStyles);
   FreeAndNil(FSheets);
   inherited Destroy();
+end;
+
+procedure TZWorkBook.ExportTo<T>(AStream: TStream; ASheets: TArray<integer>; progress: TProc<TProgressArgs>);
+begin
+  var exporter := T.Create(self);
+  try
+    exporter.ExportTo(AStream, ASheets, progress);
+  finally
+    exporter.Free();
+  end;
 end;
 
 function TZWorkBook.AddMediaContent(AFileName: string; AContent: TBytes; ACheckByName: boolean): integer;
@@ -5433,7 +5638,7 @@ var t: TZConditionalFormatting; i: integer;
 begin
   if Source is TZConditionalFormatting then begin
     t := Source as TZConditionalFormatting;
-    FCount := t.Count;
+    Count := t.Count;
     for i := 0 to FCount - 1 do
       FStyles[i].Assign(t.Items[i]);
   end else
@@ -6654,10 +6859,10 @@ begin
 
   dstSheet := self.FSheet.WorkBook.Sheets[ASheet];
 
-  if dstSheet.ColCount < ACol + (FRight-FLeft) then
+  if dstSheet.ColCount < (ACol + (FRight-FLeft) + 1) then
     dstSheet.ColCount := ACol + (FRight-FLeft)+1;
 
-  if dstSheet.RowCount < ARow + (FBottom-FTop) then
+  if dstSheet.RowCount < (ARow + (FBottom-FTop) + 1) then
     dstSheet.RowCount := ARow + (FBottom-FTop)+1;
 
   cd := ACol;
@@ -7025,6 +7230,15 @@ begin
   Result := FLeft;
 end;
 
+function TZRange.GetText: string;
+begin
+  result := '';
+  for var c := FLeft to FRight do
+    for var r := FTop to FBottom do
+      if FSheet.Exists(c, r) and not FSheet.Cell[c, r].IsEmpty(false) then
+        exit(FSheet.Cell[c, r].AsString);
+end;
+
 function TZRange.GetTop: Integer;
 begin
   Result := FTop;
@@ -7078,51 +7292,73 @@ end;
 destructor TRichText.Destroy();
 var i: Integer;
 begin
-
   for I := 0 to FList.Count-1 do
-
     FList[i].Free();
-
   FList.Clear();
-
   FList.Free();
 end;
 
+class function TRichText.FromText(text: string): TRichText;
+var part: TRichString;
+begin
+  result := TRichText.Create();
+  part := TRichString.Create();
+  part.Font := nil;
+  part.FText := text;
+  result.List.Add(part);
+end;
+
 procedure TRichText.Assign(Source: TPersistent);
-var i: integer;
+var i: integer; part: TRichString;
 begin
   if Source is TRichText then begin
     FList.Clear();
-    for I := 0 to TRichText(Source).FList.Count-1 do
-      FList.Add(TRichText(Source).FList[i]);
+    for I := 0 to TRichText(Source).FList.Count-1 do begin
+      part := TRichString.Create();
+      part.Assign(TRichText(Source).FList[i]);
+      FList.Add(part);
+    end;
   end;
 end;
 
 function TRichText.GetHashCode(): integer;
 var i: integer;
 begin
-
   result := 17;
   for I := 0 to FList.Count-1 do
     result := result * 23 + FList[i].GetHashCode();
 end;
 
+function TRichText.ToString: string;
+var part: TRichString;
+begin
+  result := '';
+  for part in List do
+    result := result + part.Text;
+end;
+
 {TRichString}
+
+constructor TRichString.Create;
+begin
+  FText := '';
+  FFont := nil;
+end;
 
 destructor TRichString.Destroy();
 begin
   if Assigned(FFont) then
-
     FFont.Free();
-
 end;
 
 procedure TRichString.Assign(Source: TPersistent);
 begin
   if Source is TRichString then begin
     FText := TRichString(Source).FText;
-    if Assigned(TRichString(Source).FFont) then
-       FFont.Assign(TRichString(Source).FFont);
+    if Assigned(TRichString(Source).FFont) then begin
+      FFont := TZFont.Create();
+      FFont.Assign(TRichString(Source).FFont);
+    end;
   end;
 end;
 
@@ -7132,6 +7368,53 @@ begin
   result := result * 23 + FText.GetHashCode();
   if Assigned(FFont) then
     result := result * 23 + FFont.GetHashCode();
+end;
+
+{ TZExport }
+
+constructor TZExport.Create(AWorkBook: TZWorkBook);
+begin
+  inherited Create;
+  FWorkBook := AWorkBook;
+end;
+
+destructor TZExport.Destroy;
+begin
+  inherited;
+end;
+
+{ TSharedStringBank }
+
+function TSharedStringBank.Add(value: string): integer;
+begin
+  if not FStringDict.TryGetValue(value, result) then begin
+    FRichList.Add(TRichText.FromText(value));
+    result := FRichList.Count-1;
+    FStringDict.Add(value, result);
+  end;
+end;
+
+function TSharedStringBank.Add(value: TRichText): integer;
+var copy: TRichText;
+begin
+  copy := TRichText.Create();
+  copy.Assign(value);
+  FRichList.Add(copy);
+  result := FRichList.Count-1;
+end;
+
+constructor TSharedStringBank.Create();
+begin
+  inherited;
+  FStringDict := TDictionary<string, integer>.Create();
+  FRichList := TObjectList<TRichText>.Create(true);
+end;
+
+destructor TSharedStringBank.Destroy();
+begin
+  FStringDict.Free();
+  FRichList.Free();
+  inherited;
 end;
 
 initialization

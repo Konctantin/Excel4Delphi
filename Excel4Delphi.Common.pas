@@ -44,8 +44,10 @@ procedure ZESClearArrays(var _pages: TIntegerDynArray;  var _names: TStringDynAr
 //Переводит строку в boolean
 function ZEStrToBoolean(const val: string): boolean;
 
-//Заменяет в строке последовательности на спецсимволы
-function ZEReplaceEntity(const st: string): string;
+/// <summary>
+/// Decodes the input HTML data and returns the decoded HTML data.
+/// </summary>
+function ZEReplaceEntity(const text: string): string;
 
 // despite formal angle datatype declaration in default "range check off" mode
 //    it can be anywhere -32K to +32K
@@ -61,7 +63,7 @@ function ZENormalizeAngle180(const value: TZCellTextRotate): integer;
 implementation
 
 uses
-  DateUtils, IOUtils, Winapi.Windows;
+  DateUtils, IOUtils, Winapi.Windows, NetEncoding;
 
 function FileCreateTemp(var tempName: string): THandle;
 begin
@@ -80,7 +82,7 @@ var FileHandle: THandle;
 begin
   FileHandle := FileCreateTemp(FFileName);
   if FileHandle = INVALID_HANDLE_VALUE then
-    raise Exception.Create('Не удалось создать временный файл');
+    raise  Exception.Create('The file cannot be created.');
   inherited Create(FileHandle);
 end;
 
@@ -123,92 +125,17 @@ begin
 end;
 
 
-//Заменяет в строке последовательности на спецсимволы
-//INPUT
-//  const st: string - входящая строка
-//RETURN
-//      string - обработанная строка
-function ZEReplaceEntity(const st: string): string;
-var
-  s, s1: string;
-  i: integer;
-  isAmp: boolean;
-  ch: char;
-
-  procedure CheckS();
-  begin
-    s1 := UpperCase(s);
-    if (s1 = '&GT;') then
-      s := '>'
-    else
-    if (s1 = '&LT;') then
-      s := '<'
-    else
-    if (s1 = '&AMP;') then
-      s := '&'
-    else
-    if (s1 = '&APOS;') then
-      s := ''''
-    else
-    if (s1 = '&QUOT;') then
-      s := '"';
-  end; //_checkS
-
+function ZEReplaceEntity(const text: string): string;
 begin
-  s := '';
-  result := '';
-  isAmp := false;
-  for i := 1 to length(st) do
-  begin
-    ch := st[i];
-    case ch of
-      '&':
-          begin
-            if (isAmp) then
-            begin
-              result := result + s;
-              s := ch;
-            end else
-            begin
-              isAmp := true;
-              s := ch;
-            end;
-          end;
-      ';':
-          begin
-            if (isAmp) then
-            begin
-              s := s + ch;
-              CheckS();
-              result := result + s;
-              s := '';
-              isAmp := false;
-            end else
-            begin
-              result := result + s + ch;
-              s := '';
-            end;
-          end;
-      else
-        if (isAmp) then
-          s := s + ch
-        else
-          result := result + ch;
-    end; //case
-  end; //for
-  if (s > '') then
-  begin
-    CheckS();
-    result := result + s;
-  end;
-end; //ZEReplaceEntity
+  result := TNetEncoding.HTML.Decode(text);
+end;
 
 //Переводит строку в boolean
 //INPUT
 //  const val: string - переводимая строка
 function ZEStrToBoolean(const val: string): boolean;
 begin
-  if (val = '1' ) or (UpperCase(val)='TRUE')  then
+  if (val = '1') or (UpperCase(val) = 'TRUE')  then
     result := true
   else
     result := false;
@@ -221,9 +148,10 @@ function ZETryStrToBoolean(const st: string; valueIfError: boolean = false): boo
 begin
   result := valueIfError;
   if (st > '') then begin
-    if (CharInSet(st[1], ['T', 't', '1', '-'])) then
+    if CharInSet(st[1], ['T', 't', '1', '-']) then
       result := true
-    else if (CharInSet(st[1], ['F', 'f', '0'])) then
+    else
+    if CharInSet(st[1], ['F', 'f', '0']) then
       result := false
     else
       result := valueIfError;
@@ -287,22 +215,6 @@ begin
     if (not isOk) then
       Result := valueIfError;
   end;
-
-  // Здесь были ошибки из-за того, что в конце строки оказывался не символ #0.
-  {result := 0;
-  isOk := true;
-  if (length(trim(st)) <> 0) then begin
-    s := '';
-    for i := 1 to length(st) do
-      if (CharInSet(st[i], ['.', ','])) then
-        s := s + FormatSettings.DecimalSeparator
-      else if (st[i] <> ' ') then
-        s := s + st[i];
-
-    isOk := TryStrToFloat(s, result);
-    if (not isOk) then
-      result := valueIfError;
-  end;}
 end; //ZETryStrToFloat
 
 //Попытка преобразовать строку в число
@@ -310,8 +222,7 @@ end; //ZETryStrToFloat
 //  const st: string        - строка
 //    valueIfError: double  - значение, которое подставляется при ошибке преобразования
 function ZETryStrToFloat(const st: string; valueIfError: double = 0): double;
-var
-  isOk: boolean;
+var isOk: boolean;
 begin
   Result := ZETryStrToFloat(st, isOk, valueIfError);
 end; //ZETryStrToFloat

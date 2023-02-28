@@ -129,7 +129,7 @@
         <DCCReference Include="Excel4Delphi.Xml.pas"/>
         <DCCReference Include="Excel4Delphi.Common.pas"/>
         <DCCReference Include="Excel4Delphi.Formula.pas"/>
-        <DCCReference Include="Excel4Delphi.Export.pas"/>
+        <DCCReference Include="Excel4Delphi.ExportHTML.pas"/>
         <DCCReference Include="Excel4Delphi.NumberFormat.pas"/>
         <DCCReference Include="Excel4Delphi.XlsxStream.pas"/>
         <BuildConfiguration Include="Base">
