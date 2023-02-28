@@ -719,7 +719,9 @@ type
     /// Page break after column or row. <br />False (no break) by default.
     /// </summary>
     property Breaked: boolean read FBreaked write FBreaked default false;
-
+    /// <summary>
+    /// Outlining level of the column/row, when outlining is on.
+    /// </summary>
     property OutlineLevel: integer read FOutlineLevel write FOutlineLevel;
   end;
 
@@ -3421,13 +3423,13 @@ begin
     Result := 0
   else if not TryZEStrToDateTime(FData, Result) then begin
     //If cell type is number then try convert "float" to datetime
-    if CellType = ZENumber then
+    if (CellType = ZENumber) or (CellType = ZEGeneral) then
       Result := AsDouble
     else
       b := true;
   end;
   if (b) then
-    Raise EConvertError.Create('ZxCell: Cannot cast data to DateTime');;
+    Raise EConvertError.Create('ZxCell: Cannot cast data to DateTime');
 end;
 
 procedure TZCell.SetDataAsInteger(const Value: integer);
