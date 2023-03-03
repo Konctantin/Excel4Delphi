@@ -138,7 +138,7 @@ type
 
   TSharedStringBank = class
   private
-    FStringDict: TDictionary<string,integer>;
+    FStringDict: TDictionary<string, integer>;
     FRichList: TObjectList<TRichText>;
   public
     constructor Create(); virtual;
@@ -206,8 +206,9 @@ type
     procedure SetVerticalAlignment(const Value: TZVerticalAlignment);
     procedure SetVerticalText(const Value: Boolean);
     procedure SetWrapText(const Value: Boolean);
-  public
+  protected
     constructor Create(ASheet: TZSheet; ACol, ARow: integer); virtual;
+  public
     destructor Destroy(); override;
     procedure Assign(Source: TPersistent); override;
     /// <summary>
