@@ -14,7 +14,8 @@ uses
   {$ENDIF }
   DUnitX.TestFramework,
   Excel4DelphiTest in 'Excel4DelphiTest.pas',
-  Excel4DelphiTest.Converters in 'Excel4DelphiTest.Converters.pas';
+  Excel4DelphiTest.Converters in 'Excel4DelphiTest.Converters.pas',
+  Excel4DelphiTest.Formula in 'Excel4DelphiTest.Formula.pas';
 
 {$IFNDEF TESTINSIGHT}
 var

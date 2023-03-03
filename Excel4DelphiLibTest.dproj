@@ -144,6 +144,7 @@
         </DelphiCompile>
         <DCCReference Include="Excel4DelphiTest.pas"/>
         <DCCReference Include="Excel4DelphiTest.Converters.pas"/>
+        <DCCReference Include="Excel4DelphiTest.Formula.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
