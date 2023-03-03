@@ -13,7 +13,8 @@ uses
   DUnitX.Loggers.Xml.NUnit,
   {$ENDIF }
   DUnitX.TestFramework,
-  Excel4DelphiTest in 'Excel4DelphiTest.pas';
+  Excel4DelphiTest in 'Excel4DelphiTest.pas',
+  Excel4DelphiTest.Converters in 'Excel4DelphiTest.Converters.pas';
 
 {$IFNDEF TESTINSIGHT}
 var

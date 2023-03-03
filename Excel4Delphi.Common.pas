@@ -26,6 +26,14 @@ type
 function ZEIsTryStrToFloat(const st: string; out retValue: double): boolean;
 function ZETryStrToFloat(const st: string; valueIfError: double = 0): double; overload;
 function ZETryStrToFloat(const st: string; out isOk: boolean; valueIfError: double = 0): double; overload;
+/// <summary>
+/// Try convert string (any formats) to datetime
+/// </summary>
+function ZETryParseDateTime(const AStrDateTime: string; out retDateTime: TDateTime): boolean;
+/// <summary>
+/// Try convert string (YYYY-MM-DDTHH:MM:SS[.mmm]) to datetime
+/// </summary>
+function TryZEStrToDateTime(const AStrDateTime: string; out retDateTime: TDateTime): boolean;
 
 //Попытка преобразовать строку в boolean
 function ZETryStrToBoolean(const st: string; valueIfError: boolean = false): boolean;
@@ -63,7 +71,7 @@ function ZENormalizeAngle180(const value: TZCellTextRotate): integer;
 implementation
 
 uses
-  DateUtils, IOUtils, Winapi.Windows, NetEncoding;
+  DateUtils, IOUtils, Winapi.Windows, Variants, VarUtils, NetEncoding;
 
 function FileCreateTemp(var tempName: string): THandle;
 begin
@@ -238,6 +246,247 @@ begin
     else
       result := result + st[k];
 end;
+
+function ZETryParseDateTime(const AStrDateTime: string; out retDateTime: TDateTime): boolean;
+var err: Integer;
+  doubleVal: Double;
+  LResult: HResult;
+begin
+  result := false;
+
+  if TryZEStrToDateTime(AStrDateTime, retDateTime) then
+    exit(true);
+
+  retDateTime := StrToDateTimeDef(AStrDateTime, 0);
+  if retDateTime > 0 then
+    exit(true);
+
+  Val(AStrDateTime, retDateTime, err);
+  if err = 0 then
+    exit(true);
+
+  LResult := VarDateFromStr(PWideChar(AStrDateTime), VAR_LOCALE_USER_DEFAULT, 0, retDateTime);
+  if LResult = VAR_OK then
+    exit(true);
+
+  if LResult = VAR_TYPEMISMATCH then begin
+    if not TryStrToDate(PWideChar(AStrDateTime), retDateTime) then begin
+      if TryStrToFloat(AStrDateTime, doubleVal) then begin
+        retDateTime := doubleVal;
+        exit(true);
+      end;
+    end;
+  end;
+
+  Val(AStrDateTime, doubleVal, err);
+  if err = 0 then begin
+    retDateTime := doubleVal;
+    exit(true);
+  end;
+
+  retDateTime := 0;
+end;
+
+function TryZEStrToDateTime(const AStrDateTime: string; out retDateTime: TDateTime): boolean;
+var a: array [0..10] of word;
+  i, l: integer;
+  s, ss: string;
+  count: integer;
+  ch: char;
+  datedelimeters: integer;
+  istimesign: boolean;
+  timedelimeters: integer;
+  istimezone: boolean;
+  lastdateindex: integer;
+  tmp: integer;
+  msindex: integer;
+  tzindex: integer;
+  timezonemul: integer;
+  _ms: word;
+
+  function TryAddToArray(const ST: string): boolean;
+  begin
+    if (count > 10) then begin
+      Result := false;
+      exit;
+    end;
+    Result := TryStrToInt(ST, tmp);
+    if (Result) then begin
+      a[Count] := word(tmp);
+      inc(Count);
+    end
+  end;
+
+  procedure _CheckDigits();
+  var _l: integer;
+  begin
+    _l := length(s);
+    if (_l > 0) then begin
+      if (_l > 4) then begin//it is not good
+        if (istimesign) then begin
+          // HHMMSS?
+          if (_l = 6) then begin
+            ss := copy(s, 1, 2);
+            if (TryAddToArray(ss)) then begin
+              ss := copy(s, 3, 2);
+              if (TryAddToArray(ss)) then begin
+                ss := copy(s, 5, 2);
+                if (not TryAddToArray(ss)) then
+                  Result := false;
+              end else
+                Result := false;
+            end else
+              Result := false
+          end else
+            Result := false;
+        end else begin
+          // YYYYMMDD?
+          if (_l = 8) then begin
+            ss := copy(s, 1, 4);
+            if (not TryAddToArray(ss)) then
+              Result := false
+            else begin
+              ss := copy(s, 5, 2);
+              if (not TryAddToArray(ss)) then
+                Result := false
+              else begin
+                ss := copy(s, 7, 2);
+                if (not TryAddToArray(ss)) then
+                  Result := false;
+              end;
+            end;
+          end else
+            Result := false;
+        end;
+      end else
+        if (not TryAddToArray(s)) then
+          Result := false;
+    end; //if
+    if (Count > 10) then
+      Result := false;
+    s := '';
+  end;
+
+  procedure _processDigit();
+  begin
+    s := s + ch;
+  end;
+
+  procedure _processTimeSign();
+  begin
+    istimesign := true;
+    if (count > 0) then
+      lastdateindex := count;
+
+    _CheckDigits();
+  end;
+
+  procedure _processTimeDelimiter();
+  begin
+    _CheckDigits();
+    inc(timedelimeters)
+  end;
+
+  procedure _processDateDelimiter();
+  begin
+    _CheckDigits();
+    if (istimesign) then begin
+      tzindex := count;
+      istimezone := true;
+      timezonemul := -1;
+    end else
+      inc(datedelimeters);
+  end;
+
+  procedure _processMSDelimiter();
+  begin
+    _CheckDigits();
+    msindex := count;
+  end;
+
+  procedure _processTimeZoneSign();
+  begin
+    _CheckDigits();
+    istimezone := true;
+  end;
+
+  procedure _processTimeZonePlus();
+  begin
+    _CheckDigits();
+    istimezone := true;
+    timezonemul := -1;
+  end;
+
+  function _TryGetDateTime(): boolean;
+  var _time, _date: TDateTime;
+  begin
+    //Result := true;
+    if (msindex >= 0) then
+      _ms := a[msindex];
+    if (lastdateindex >= 0) then begin
+      Result := TryEncodeDate(a[0], a[1], a[2], _date);
+      if (Result) then begin
+        Result := TryEncodeTime(a[lastdateindex + 1], a[lastdateindex + 2], a[lastdateindex + 3], _ms, _time);
+        if (Result) then
+          retDateTime := _date + _time;
+      end;
+    end else
+      Result := TryEncodeTime(a[lastdateindex + 1], a[lastdateindex + 2], a[lastdateindex + 3], _ms, retDateTime);
+  end;
+
+  function _TryGetDate(): boolean;
+  begin
+    if (datedelimeters = 0) and (timedelimeters >= 2) then begin
+      if (msindex >= 0) then
+        _ms := a[msindex];
+      result := TryEncodeTime(a[0], a[1], a[2], _ms, retDateTime);
+    end else if (count >= 3) then
+      Result := TryEncodeDate(a[0], a[1], a[2], retDateTime)
+    else
+      Result := false;
+  end;
+
+begin
+  Result := true;
+  datedelimeters := 0;
+  istimesign := false;
+  timedelimeters := 0;
+  istimezone := false;
+  lastdateindex := -1;
+  msindex := -1;
+  tzindex := -1;
+  timezonemul := 0;
+  _ms := 0;
+  FillChar(a, sizeof(a), 0);
+
+  l := length(AStrDateTime);
+  s := '';
+  count := 0;
+  for i := 1 to l do begin
+    ch := AStrDateTime[i];
+    case (ch) of
+      '0'..'9': _processDigit();
+      't', 'T': _processTimeSign();
+      '-':      _processDateDelimiter();
+      ':':      _processTimeDelimiter();
+      '.', ',': _processMSDelimiter();
+      'z', 'Z': _processTimeZoneSign();
+      '+':      _processTimeZonePlus();
+    end;
+    if (not Result) then
+      break
+  end;
+
+  if (Result and (s <> '')) then
+    _CheckDigits();
+
+  if (Result) then begin
+    if (istimesign) then
+      Result := _TryGetDateTime()
+    else
+      Result := _TryGetDate();
+  end;
+end; //TryZEStrToDateTime
 
 //Очищает массивы
 procedure ZESClearArrays(var _pages: TIntegerDynArray;  var _names: TStringDynArray);

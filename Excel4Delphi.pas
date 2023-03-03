@@ -352,6 +352,18 @@ type
     /// </summary>
     procedure TryConvertToNumber();
     /// <summary>
+    /// Trying to extract TDateTime value from cell content.
+    /// </summary>
+    function TryGetDate(const defaultValue: TDateTime = 0): TDateTime;
+    /// <summary>
+    /// Trying to extract integer value from cell content.
+    /// </summary>
+    function TryGetInteger(const defaultValue: Integer = 0): Integer;
+    /// <summary>
+    /// Trying to extract double value from cell content.
+    /// </summary>
+    function TryGetDouble(const defaultValue: Double = 0): Double;
+    /// <summary>
     /// True if cell have no data.
     /// </summary>
     function IsEmpty(includeFormula: boolean = true): boolean;
@@ -2255,11 +2267,6 @@ function ZEIsFontsEquals(const Font1, Font2: TFont): boolean; overload;
 function ZEDateTimeToStr(ATime: TDateTime; Addmms: boolean = false): string;
 
 /// <summary>
-/// Try convert string (YYYY-MM-DDTHH:MM:SS[.mmm]) to datetime
-/// </summary>
-function TryZEStrToDateTime(const AStrDateTime: string; out retDateTime: TDateTime): boolean;
-
-/// <summary>
 /// Convert the number to string min count NullCount
 /// </summary>
 function IntToStrN(value: integer; NullCount: integer): string;
@@ -2312,207 +2319,6 @@ begin
   if (Addmms) then
     Result := Result + '.' + IntToStrN(MS, 3);
 end;
-
-function TryZEStrToDateTime(const AStrDateTime: string; out retDateTime: TDateTime): boolean;
-var a: array [0..10] of word;
-  i, l: integer;
-  s, ss: string;
-  count: integer;
-  ch: char;
-  datedelimeters: integer;
-  istimesign: boolean;
-  timedelimeters: integer;
-  istimezone: boolean;
-  lastdateindex: integer;
-  tmp: integer;
-  msindex: integer;
-  tzindex: integer;
-  timezonemul: integer;
-  _ms: word;
-
-  function TryAddToArray(const ST: string): boolean;
-  begin
-    if (count > 10) then begin
-      Result := false;
-      exit;
-    end;
-    Result := TryStrToInt(ST, tmp);
-    if (Result) then begin
-      a[Count] := word(tmp);
-      inc(Count);
-    end
-  end;
-
-  procedure _CheckDigits();
-  var _l: integer;
-  begin
-    _l := length(s);
-    if (_l > 0) then begin
-      if (_l > 4) then begin//it is not good
-        if (istimesign) then begin
-          // HHMMSS?
-          if (_l = 6) then begin
-            ss := copy(s, 1, 2);
-            if (TryAddToArray(ss)) then begin
-              ss := copy(s, 3, 2);
-              if (TryAddToArray(ss)) then begin
-                ss := copy(s, 5, 2);
-                if (not TryAddToArray(ss)) then
-                  Result := false;
-              end else
-                Result := false;
-            end else
-              Result := false
-          end else
-            Result := false;
-        end else begin
-          // YYYYMMDD?
-          if (_l = 8) then begin
-            ss := copy(s, 1, 4);
-            if (not TryAddToArray(ss)) then
-              Result := false
-            else begin
-              ss := copy(s, 5, 2);
-              if (not TryAddToArray(ss)) then
-                Result := false
-              else begin
-                ss := copy(s, 7, 2);
-                if (not TryAddToArray(ss)) then
-                  Result := false;
-              end;
-            end;
-          end else
-            Result := false;
-        end;
-      end else
-        if (not TryAddToArray(s)) then
-          Result := false;
-    end; //if
-    if (Count > 10) then
-      Result := false;
-    s := '';
-  end;
-
-  procedure _processDigit();
-  begin
-    s := s + ch;
-  end;
-
-  procedure _processTimeSign();
-  begin
-    istimesign := true;
-    if (count > 0) then
-      lastdateindex := count;
-
-    _CheckDigits();
-  end;
-
-  procedure _processTimeDelimiter();
-  begin
-    _CheckDigits();
-    inc(timedelimeters)
-  end;
-
-  procedure _processDateDelimiter();
-  begin
-    _CheckDigits();
-    if (istimesign) then begin
-      tzindex := count;
-      istimezone := true;
-      timezonemul := -1;
-    end else
-      inc(datedelimeters);
-  end;
-
-  procedure _processMSDelimiter();
-  begin
-    _CheckDigits();
-    msindex := count;
-  end;
-
-  procedure _processTimeZoneSign();
-  begin
-    _CheckDigits();
-    istimezone := true;
-  end;
-
-  procedure _processTimeZonePlus();
-  begin
-    _CheckDigits();
-    istimezone := true;
-    timezonemul := -1;
-  end;
-
-  function _TryGetDateTime(): boolean;
-  var _time, _date: TDateTime;
-  begin
-    //Result := true;
-    if (msindex >= 0) then
-      _ms := a[msindex];
-    if (lastdateindex >= 0) then begin
-      Result := TryEncodeDate(a[0], a[1], a[2], _date);
-      if (Result) then begin
-        Result := TryEncodeTime(a[lastdateindex + 1], a[lastdateindex + 2], a[lastdateindex + 3], _ms, _time);
-        if (Result) then
-          retDateTime := _date + _time;
-      end;
-    end else
-      Result := TryEncodeTime(a[lastdateindex + 1], a[lastdateindex + 2], a[lastdateindex + 3], _ms, retDateTime);
-  end;
-
-  function _TryGetDate(): boolean;
-  begin
-    if (datedelimeters = 0) and (timedelimeters >= 2) then begin
-      if (msindex >= 0) then
-        _ms := a[msindex];
-      result := TryEncodeTime(a[0], a[1], a[2], _ms, retDateTime);
-    end else if (count >= 3) then
-      Result := TryEncodeDate(a[0], a[1], a[2], retDateTime)
-    else
-      Result := false;
-  end;
-
-begin
-  Result := true;
-  datedelimeters := 0;
-  istimesign := false;
-  timedelimeters := 0;
-  istimezone := false;
-  lastdateindex := -1;
-  msindex := -1;
-  tzindex := -1;
-  timezonemul := 0;
-  _ms := 0;
-  FillChar(a, sizeof(a), 0);
-
-  l := length(AStrDateTime);
-  s := '';
-  count := 0;
-  for i := 1 to l do begin
-    ch := AStrDateTime[i];
-    case (ch) of
-      '0'..'9': _processDigit();
-      't', 'T': _processTimeSign();
-      '-':      _processDateDelimiter();
-      ':':      _processTimeDelimiter();
-      '.', ',': _processMSDelimiter();
-      'z', 'Z': _processTimeZoneSign();
-      '+':      _processTimeZonePlus();
-    end;
-    if (not Result) then
-      break
-  end;
-
-  if (Result and (s <> '')) then
-    _CheckDigits();
-
-  if (Result) then begin
-    if (istimesign) then
-      Result := _TryGetDateTime()
-    else
-      Result := _TryGetDate();
-  end;
-end; //TryZEStrToDateTime
 
 function ZEIsFontsEquals(const Font1, Font2: TZFont): boolean;
 begin
@@ -3544,7 +3350,7 @@ begin
   end);
 end;
 
-procedure TZCell.TryConvertToNumber;
+procedure TZCell.TryConvertToNumber();
 var val: double;
 begin
   if self.CellType <> TZCellType.ZENumber then begin
@@ -3553,15 +3359,38 @@ begin
   end;
 end;
 
+function TZCell.TryGetDate(const defaultValue: TDateTime): TDateTime;
+begin
+  if not ZETryParseDateTime(FData, result) then
+    result := defaultValue;
+end;
+
+function TZCell.TryGetDouble(const defaultValue: Double): Double;
+var err: Integer; dt: TDateTime;
+begin
+  Val(FData, Result, err);
+  if err = 0 then
+    exit;
+
+  if ZETryParseDateTime(FData, dt) then
+    exit(dt);
+
+  result := defaultValue;
+end;
+
+function TZCell.TryGetInteger(const defaultValue: Integer): Integer;
+begin
+  result := StrToIntDef(FData, defaultValue);
+end;
+
 function TZCell.GetDataAsInteger: integer;
 begin
-  Result := StrToInt(Data);
+  Result := StrToInt(FData);
 end;
 
 procedure TZCell.SetDataAsDateTime(const Value: TDateTime);
 begin
   FCellType := ZEDateTime;
-  //FData := ZEDateTimeToStr(Value, true);
   FData := FloatToStr(Value).Replace(',','.');
   if assigned(FRichText) then begin
     FRichText.Free();
