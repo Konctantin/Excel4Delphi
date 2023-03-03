@@ -94,13 +94,19 @@ type
   TZFont = class;
   TZWorkBook = class;
 
+  TExportOptions = class
+    Progress: TProc<TProgressArgs>;
+    ResetPageNumberOnEachSheet: Boolean;
+    BookmarkName: string;
+  end;
+
   TZExport = class
   protected
     FWorkBook: TZWorkBook;
   public
     constructor Create(AWorkBook: TZWorkBook); virtual;
     destructor Destroy(); override;
-    procedure ExportTo(AStream: TStream; ASheets: TArray<integer>; progress: TProc<TProgressArgs>); virtual; abstract;
+    procedure ExportTo(AStream: TStream; ASheets: TArray<integer>; options: TExportOptions); virtual; abstract;
     property WorkBook: TZWorkBook read FWorkBook;
   end;
 
@@ -2187,7 +2193,7 @@ type
     function AddMediaContent(AFileName: string; AContent: TBytes; ACheckByName: boolean): integer;
     function GetDrawing(num: Integer): TZEDrawing;
     function GetDrawingSheetNum(Value: TZEDrawing): Integer;
-    procedure ExportTo<T: TZExport>(AStream: TStream; ASheets: TArray<integer>; progress: TProc<TProgressArgs>);
+    procedure ExportTo<T: TZExport>(AStream: TStream; ASheets: TArray<integer>; options: TExportOptions);
     property Styles: TZStyles read FStyles write FStyles;
     property DefaultSheetOptions: TZSheetOptions read GetDefaultSheetOptions write SetDefaultSheetOptions;
     property DocumentProperties: TZEXMLDocumentProperties read FDocumentProperties write FDocumentProperties;
@@ -4944,11 +4950,11 @@ begin
   inherited Destroy();
 end;
 
-procedure TZWorkBook.ExportTo<T>(AStream: TStream; ASheets: TArray<integer>; progress: TProc<TProgressArgs>);
+procedure TZWorkBook.ExportTo<T>(AStream: TStream; ASheets: TArray<integer>; options: TExportOptions);
 begin
   var exporter := T.Create(self);
   try
-    exporter.ExportTo(AStream, ASheets, progress);
+    exporter.ExportTo(AStream, ASheets, options);
   finally
     exporter.Free();
   end;

@@ -17,14 +17,14 @@ uses
 type
   TZExportHTML = class(TZExport)
   public
-    procedure ExportTo(AStream: TStream; ASheets: TArray<integer>; progress: TProc<TProgressArgs>); override;
+    procedure ExportTo(AStream: TStream; ASheets: TArray<integer>; options: TExportOptions); override;
   end;
 
 implementation
 
 { TZExportHTML }
 
-procedure TZExportHTML.ExportTo(AStream: TStream; ASheets: TArray<integer>; progress: TProc<TProgressArgs>);
+procedure TZExportHTML.ExportTo(AStream: TStream; ASheets: TArray<integer>; options: TExportOptions);
 var xml: TZsspXMLWriterH;
   i, j, t, l, r: integer;
   NumTopLeft: integer;
