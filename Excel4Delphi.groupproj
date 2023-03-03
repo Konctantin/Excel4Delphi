@@ -6,7 +6,7 @@
         <Projects Include="Excel4DelphiLib.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="Excel4DelphiLibTest.dproj">
+        <Projects Include="Test\Excel4DelphiLibTest.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -27,13 +27,13 @@
         <MSBuild Projects="Excel4DelphiLib.dproj" Targets="Make"/>
     </Target>
     <Target Name="Excel4DelphiLibTest">
-        <MSBuild Projects="Excel4DelphiLibTest.dproj"/>
+        <MSBuild Projects="Test\Excel4DelphiLibTest.dproj"/>
     </Target>
     <Target Name="Excel4DelphiLibTest:Clean">
-        <MSBuild Projects="Excel4DelphiLibTest.dproj" Targets="Clean"/>
+        <MSBuild Projects="Test\Excel4DelphiLibTest.dproj" Targets="Clean"/>
     </Target>
     <Target Name="Excel4DelphiLibTest:Make">
-        <MSBuild Projects="Excel4DelphiLibTest.dproj" Targets="Make"/>
+        <MSBuild Projects="Test\Excel4DelphiLibTest.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
         <CallTarget Targets="Excel4DelphiLib;Excel4DelphiLibTest"/>

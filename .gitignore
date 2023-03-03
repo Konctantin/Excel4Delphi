@@ -44,6 +44,7 @@
 *.orig
 *.rar
 *.zip
+*.xml
 *.dproj.local
 *.groupproj.local
 *.tvsconfig
@@ -53,6 +54,12 @@ Win32/Debug/*
 Win64/Debug/*
 Win32/Release/*
 Win64/Release/*
+
+Test/Win32/Debug/*
+Test/Win64/Debug/*
+Test/Win32/Release/*
+Test/Win64/Release/*
+
 **/__history/*
 **/__recovery/*
 **/__astcache/*
