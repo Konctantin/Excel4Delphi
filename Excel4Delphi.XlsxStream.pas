@@ -74,75 +74,75 @@ type
     sheetid: integer;     //номер листа
   end;
 
-  TZXLSXDiffBorderItemStyle = class(TPersistent)
-  private
-    FUseStyle: boolean;             //заменять ли стиль
-    FUseColor: boolean;             //заменять ли цвет
-    FColor: TColor;                 //цвет линий
-    FLineStyle: TZBorderType;       //стиль линий
-    FWeight: byte;
-  protected
-  public
-    constructor Create();
-    procedure Clear();
-    procedure Assign(Source: TPersistent); override;
-    property UseStyle: boolean read FUseStyle write FUseStyle;
-    property UseColor: boolean read FUseColor write FUseColor;
-    property Color: TColor read FColor write FColor;
-    property LineStyle: TZBorderType read FLineStyle write FLineStyle;
-    property Weight: byte read FWeight write FWeight;
-  end;
+//  TZXLSXDiffBorderItemStyle = class(TPersistent)
+//  private
+//    FUseStyle: boolean;             //заменять ли стиль
+//    FUseColor: boolean;             //заменять ли цвет
+//    FColor: TColor;                 //цвет линий
+//    FLineStyle: TZBorderType;       //стиль линий
+//    FWeight: byte;
+//  protected
+//  public
+//    constructor Create();
+//    procedure Clear();
+//    procedure Assign(Source: TPersistent); override;
+//    property UseStyle: boolean read FUseStyle write FUseStyle;
+//    property UseColor: boolean read FUseColor write FUseColor;
+//    property Color: TColor read FColor write FColor;
+//    property LineStyle: TZBorderType read FLineStyle write FLineStyle;
+//    property Weight: byte read FWeight write FWeight;
+//  end;
 
-  TZXLSXDiffBorder = class(TPersistent)
-  private
-    FBorder: array [0..5] of TZXLSXDiffBorderItemStyle;
-    procedure SetBorder(Num: TZBordersPos; Const Value: TZXLSXDiffBorderItemStyle);
-    function GetBorder(Num: TZBordersPos): TZXLSXDiffBorderItemStyle;
-  public
-    constructor Create(); virtual;
-    destructor Destroy(); override;
-    procedure Clear();
-    procedure Assign(Source: TPersistent);override;
-    property Border[Num: TZBordersPos]: TZXLSXDiffBorderItemStyle read GetBorder write SetBorder; default;
-  end;
+//  TZXLSXDiffBorder = class(TPersistent)
+//  private
+//    FBorder: array [0..5] of TZXLSXDiffBorderItemStyle;
+//    procedure SetBorder(Num: TZBordersPos; Const Value: TZXLSXDiffBorderItemStyle);
+//    function GetBorder(Num: TZBordersPos): TZXLSXDiffBorderItemStyle;
+//  public
+//    constructor Create(); virtual;
+//    destructor Destroy(); override;
+//    procedure Clear();
+//    procedure Assign(Source: TPersistent);override;
+//    property Border[Num: TZBordersPos]: TZXLSXDiffBorderItemStyle read GetBorder write SetBorder; default;
+//  end;
 
-type TZXLSXDiffFormattingItem = class(TPersistent)
-  private
-    FUseFont: boolean;              //заменять ли шрифт
-    FUseFontColor: boolean;         //заменять ли цвет шрифта
-    FUseFontStyles: boolean;        //заменять ли стиль шрифта
-    FFontColor: TColor;             //цвет шрифта
-    FFontStyles: TFontStyles;       //стиль шрифта
-    FUseBorder: boolean;            //заменять ли рамку
-    FBorders: TZXLSXDiffBorder;     //Что менять в рамке
-    FUseFill: boolean;              //заменять ли заливку
-    FUseCellPattern: boolean;       //Заменять ли тип заливки
-    FCellPattern: TZCellPattern;    //тип заливки
-    FUseBGColor: boolean;           //заменять ли цвет заливки
-    FBGColor: TColor;               //цвет заливки
-    FUsePatternColor: boolean;      //Заменять ли цвет шаблона заливки
-    FPatternColor: TColor;          //Цвет шаблона заливки
-  protected
-  public
-    constructor Create();
-    destructor Destroy(); override;
-    procedure Clear();
-    procedure Assign(Source: TPersistent); override;
-    property UseFont: boolean read FUseFont write FUseFont;
-    property UseFontColor: boolean read FUseFontColor write FUseFontColor;
-    property UseFontStyles: boolean read FUseFontStyles write FUseFontStyles;
-    property FontColor: TColor read FFontColor write FFontColor;
-    property FontStyles: TFontStyles read FFontStyles write FFontStyles;
-    property UseBorder: boolean read FUseBorder write FUseBorder;
-    property Borders: TZXLSXDiffBorder read FBorders write FBorders;
-    property UseFill: boolean read FUseFill write FUseFill;
-    property UseCellPattern: boolean read FUseCellPattern write FUseCellPattern;
-    property CellPattern: TZCellPattern read FCellPattern write FCellPattern;
-    property UseBGColor: boolean read FUseBGColor write FUseBGColor;
-    property BGColor: TColor read FBGColor write FBGColor;
-    property UsePatternColor: boolean read FUsePatternColor write FUsePatternColor;
-    property PatternColor: TColor read FPatternColor write FPatternColor;
-  end;
+//type TZXLSXDiffFormattingItem = class(TPersistent)
+//  private
+//    FUseFont: boolean;              //заменять ли шрифт
+//    FUseFontColor: boolean;         //заменять ли цвет шрифта
+//    FUseFontStyles: boolean;        //заменять ли стиль шрифта
+//    FFontColor: TColor;             //цвет шрифта
+//    FFontStyles: TFontStyles;       //стиль шрифта
+//    FUseBorder: boolean;            //заменять ли рамку
+//    FBorders: TZXLSXDiffBorder;     //Что менять в рамке
+//    FUseFill: boolean;              //заменять ли заливку
+//    FUseCellPattern: boolean;       //Заменять ли тип заливки
+//    FCellPattern: TZCellPattern;    //тип заливки
+//    FUseBGColor: boolean;           //заменять ли цвет заливки
+//    FBGColor: TColor;               //цвет заливки
+//    FUsePatternColor: boolean;      //Заменять ли цвет шаблона заливки
+//    FPatternColor: TColor;          //Цвет шаблона заливки
+//  protected
+//  public
+//    constructor Create();
+//    destructor Destroy(); override;
+//    procedure Clear();
+//    procedure Assign(Source: TPersistent); override;
+//    property UseFont: boolean read FUseFont write FUseFont;
+//    property UseFontColor: boolean read FUseFontColor write FUseFontColor;
+//    property UseFontStyles: boolean read FUseFontStyles write FUseFontStyles;
+//    property FontColor: TColor read FFontColor write FFontColor;
+//    property FontStyles: TFontStyles read FFontStyles write FFontStyles;
+//    property UseBorder: boolean read FUseBorder write FUseBorder;
+//    property Borders: TZXLSXDiffBorder read FBorders write FBorders;
+//    property UseFill: boolean read FUseFill write FUseFill;
+//    property UseCellPattern: boolean read FUseCellPattern write FUseCellPattern;
+//    property CellPattern: TZCellPattern read FCellPattern write FCellPattern;
+//    property UseBGColor: boolean read FUseBGColor write FUseBGColor;
+//    property BGColor: TColor read FBGColor write FBGColor;
+//    property UsePatternColor: boolean read FUsePatternColor write FUsePatternColor;
+//    property PatternColor: TColor read FPatternColor write FPatternColor;
+//  end;
 
 type
   TXlsxReader = class
@@ -294,12 +294,12 @@ function GetMaximumDigitWidth(fontName: string; fontSize: double): double;
 const
   numbers = '0123456789';
 var
-  bitmap: Graphics.TBitmap;
+  bitmap: Vcl.Graphics.TBitmap;
   number: string;
 begin
   //А.А.Валуев Расчитываем ширину самого широкого числа.
   Result := 0;
-  bitmap := Graphics.TBitmap.Create;
+  bitmap := Vcl.Graphics.TBitmap.Create;
   try
     bitmap.Canvas.Font.PixelsPerInch := 96;
     bitmap.Canvas.Font.Size := Trunc(fontSize);
@@ -4024,7 +4024,7 @@ var
     function _GetCoords(var x, y: integer): boolean;
     begin
       result := true;
-      x := TZEFormula.GetColAddres(s1);
+      x := TZEFormula.GetColIndex(s1);
       if (x < 0) then
         result := false;
       if (not TryStrToInt(s2, y)) then
@@ -4172,7 +4172,7 @@ var
       _maxR := -1;
       for i := 1 to l do
       if (st[i] = ':') then begin
-        if TZEFormula.GetCellCoords(s, c, r, true) then begin;
+        if TZEFormula.GetCellCoords(s, c, r) then begin;
           if (c > _maxC) then
             _maxC := c;
           if (r > _maxR) then
