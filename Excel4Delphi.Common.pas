@@ -257,6 +257,10 @@ begin
   if TryZEStrToDateTime(AStrDateTime, retDateTime) then
     exit(true);
 
+  retDateTime := StrToDateDef(AStrDateTime, 0);
+  if retDateTime > 0 then
+    exit(true);
+
   retDateTime := StrToDateTimeDef(AStrDateTime, 0);
   if retDateTime > 0 then
     exit(true);

@@ -3366,10 +3366,10 @@ begin
 end;
 
 function TZCell.TryGetDouble(const defaultValue: Double): Double;
-var err: Integer; dt: TDateTime;
+var isOk: Boolean; dt: TDateTime;
 begin
-  Val(FData, Result, err);
-  if err = 0 then
+  Result := ZETryStrToFloat(FData, isOk, defaultValue);
+  if isOk then
     exit;
 
   if ZETryParseDateTime(FData, dt) then
