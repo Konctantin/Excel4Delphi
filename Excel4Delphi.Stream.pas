@@ -3,19 +3,25 @@
 interface
 
 uses
-  SysUtils,
-  Classes,
-  Types,
-  Graphics,
-  UITypes,
-  Windows,
-  Zip,
-  IOUtils,
+{$IFDEF MSWINDOWS}
+  Winapi.Windows,
+{$ENDIF}
+  System.SysUtils,
+  System.Classes,
+  System.Types,
+{$IFDEF FMX}
+  FMX.Graphics,
+{$ELSE}
+  Vcl.Graphics,
+{$ENDIF}
+  System.UITypes,
+  System.Zip,
+  System.IOUtils,
+  System.Generics.Collections,
   Excel4Delphi.Formula,
   Excel4Delphi.Xml,
   Excel4Delphi,
-  Excel4Delphi.Common,
-  Generics.Collections;
+  Excel4Delphi.Common;
 
 type
   TRelationType = (
@@ -269,7 +275,12 @@ function ZEXSLXReadComments(var XMLSS: TZWorkBook; var Stream: TStream): boolean
 
 implementation
 
-uses AnsiStrings, StrUtils, Math, Excel4Delphi.NumberFormat, NetEncoding;
+uses
+  System.AnsiStrings,
+  System.StrUtils,
+  System.Math,
+  System.NetEncoding,
+  Excel4Delphi.NumberFormat;
 
 
 const
@@ -354,12 +365,12 @@ function GetMaximumDigitWidth(fontName: string; fontSize: double): double;
 const
   numbers = '0123456789';
 var
-  bitmap: Graphics.TBitmap;
+  bitmap: TBitmap;
   number: string;
 begin
   //А.А.Валуев Расчитываем ширину самого широкого числа.
   Result := 0;
-  bitmap := Graphics.TBitmap.Create;
+  bitmap := TBitmap.Create;
   try
     bitmap.Canvas.Font.PixelsPerInch := 96;
     bitmap.Canvas.Font.Size := Trunc(fontSize);

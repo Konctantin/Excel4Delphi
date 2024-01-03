@@ -3,30 +3,31 @@
 interface
 
 type
-TZEFormula = class
-  /// <summary>
-  /// Return absolute AA styled cell address.
-  /// </summary>
-  class function GetColAddres(const ColumnIndex: integer; FromZero: boolean = true): string; static;
-  /// <summary>
-  /// Extracts column index from it's AA address.
-  /// </summary>
-  class function GetColIndex(ColumnAdress: string; FromZero: boolean = true): integer; static;
-  /// <summary>
-  /// Extracts cell column and row from A1 styled address.
-  /// </summary>
-  class function GetCellCoords(const cell: string; out column, row: integer): boolean; static;
-  /// <summary>
-  /// Extracts range top, left right and bottom from 'А1:B2' based string.
-  /// If string is 'A1' format then right=left, bottom=top.
-  /// </summary>
-  class function GetCellRange(const range: string; out left, top, right, bottom: integer): boolean; static;
-end;
+  TZEFormula = class
+    /// <summary>
+    /// Return absolute AA styled cell address.
+    /// </summary>
+    class function GetColAddres(const ColumnIndex: integer; FromZero: boolean = true): string; static;
+    /// <summary>
+    /// Extracts column index from it's AA address.
+    /// </summary>
+    class function GetColIndex(ColumnAdress: string; FromZero: boolean = true): integer; static;
+    /// <summary>
+    /// Extracts cell column and row from A1 styled address.
+    /// </summary>
+    class function GetCellCoords(const cell: string; out column, row: integer): boolean; static;
+    /// <summary>
+    /// Extracts range top, left right and bottom from 'А1:B2' based string.
+    /// If string is 'A1' format then right=left, bottom=top.
+    /// </summary>
+    class function GetCellRange(const range: string; out left, top, right, bottom: integer): boolean; static;
+  end;
 
 implementation
 
 uses
-  SysUtils, Math;
+  System.SysUtils,
+  System.Math;
 
 const
   CHARS: array [0..25] of char = (

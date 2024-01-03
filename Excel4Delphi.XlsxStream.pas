@@ -8,19 +8,25 @@
 interface
 
 uses
-  SysUtils,
-  Classes,
-  Types,
+{$IFDEF MSWINDOWS}
+  Winapi.Windows,
+{$ENDIF}
+  System.SysUtils,
+  System.Classes,
+  System.Types,
+{$IFDEF FMX}
+  FMX.Graphics,
+{$ELSE}
   Vcl.Graphics,
-  UITypes,
-  Windows,
-  Zip,
-  IOUtils,
+{$ENDIF}
+  System.UITypes,
+  System.Zip,
+  System.IOUtils,
+  System.Generics.Collections,
   Excel4Delphi.Formula,
   Excel4Delphi.Xml,
   Excel4Delphi,
-  Excel4Delphi.Common,
-  Generics.Collections;
+  Excel4Delphi.Common;
 
 type
   TRelationType = (
@@ -204,10 +210,13 @@ type
 
 implementation
 
-uses AnsiStrings, StrUtils, Math, NetEncoding
-  , Excel4Delphi.NumberFormat
-  , Excel4Delphi.Stream
-;
+uses
+  System.AnsiStrings,
+  System.StrUtils,
+  System.Math,
+  System.NetEncoding,
+  Excel4Delphi.NumberFormat,
+  Excel4Delphi.Stream;
 
 const
   SCHEMA_DOC         = 'http://schemas.openxmlformats.org/officeDocument/2006';

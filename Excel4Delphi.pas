@@ -3,15 +3,21 @@
 interface
 
 uses
-  Classes,
-  SysUtils,
-  StrUtils,
-  Graphics,
-  UITypes,
-  Math,
-  Windows,
-  RegularExpressions,
-  Generics.Collections,
+{$IFDEF MSWINDOWS}
+  Winapi.Windows,
+{$ENDIF}
+  System.Classes,
+  System.SysUtils,
+{$IFDEF FMX}
+  FMX.Graphics,
+{$ELSE}
+  Vcl.Graphics,
+{$ENDIF}
+  System.StrUtils,
+  System.UITypes,
+  System.Math,
+  System.RegularExpressions,
+  System.Generics.Collections,
   System.Contnrs,
   Excel4Delphi.Xml;
 
@@ -2275,7 +2281,9 @@ function IsIdenticalByteArray(Src, Dst: TBytes): boolean;
 
 implementation
 
-uses Excel4Delphi.Formula, Excel4Delphi.Common;
+uses
+  Excel4Delphi.Formula,
+  Excel4Delphi.Common;
 
 var invariantFormatSertting: TFormatSettings;
 

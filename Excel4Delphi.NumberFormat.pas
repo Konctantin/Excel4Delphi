@@ -3,7 +3,7 @@
 interface
 
 uses
-  SysUtils,
+  System.SysUtils,
   Excel4Delphi.Xml;
 
 const
@@ -341,7 +341,8 @@ function TryXlsxTimeToDateTime(const XlsxDateTime: string; out retDateTime: TDat
 
 implementation
 
-uses StrUtils,
+uses
+  System.StrUtils,
   Excel4Delphi.Common;
 
 const
