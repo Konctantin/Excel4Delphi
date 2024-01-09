@@ -4665,8 +4665,10 @@ end;
 function TZSheets.Add(title: string): TZSheet;
 begin
   result := TZSheet.Create(FStore);
+  Result.Title := title;
   SetLength(FSheets, Length(FSheets) + 1);
   FSheets[High(FSheets)] := result;
+  FCount := Length(FSheets);
 end;
 
 procedure TZSheets.Assign(Source: TPersistent);
