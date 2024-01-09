@@ -3,9 +3,9 @@
 interface
 
 uses
-  SysUtils,
-  Types,
-  Classes,
+  System.SysUtils,
+  System.Types,
+  System.Classes,
   Excel4Delphi,
   Excel4Delphi.Xml;
 
@@ -71,7 +71,14 @@ function ZENormalizeAngle180(const value: TZCellTextRotate): integer;
 implementation
 
 uses
-  DateUtils, IOUtils, Winapi.Windows, Variants, VarUtils, NetEncoding;
+{$IFDEF MSWINDOWS}
+  Winapi.Windows,
+{$ENDIF}
+  System.DateUtils,
+  System.IOUtils,
+  System.Variants,
+  System.VarUtils,
+  System.NetEncoding;
 
 function FileCreateTemp(var tempName: string): THandle;
 begin

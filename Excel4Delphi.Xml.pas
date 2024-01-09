@@ -3,7 +3,8 @@
 interface
 
 uses
-  SysUtils, Classes;
+  System.SysUtils,
+  System.Classes;
 
 const
   BOMUTF8    = #239#187#191; // EF BB BF
@@ -942,7 +943,8 @@ function RecognizeEncodingXML(var txt: ansistring; out BOM: integer; out cpfromt
 
 implementation
 
-uses Excel4Delphi.Common;
+uses
+  Excel4Delphi.Common;
 
 //// читатели
 

@@ -3,14 +3,20 @@
 interface
 
 uses
-  Windows,
-  SysUtils,
-  UITypes,
-  Types,
-  Classes,
-  Math,
-  Graphics,
-  AnsiStrings,
+{$IFDEF MSWINDOWS}
+  Winapi.Windows,
+{$ENDIF}
+  System.SysUtils,
+  System.UITypes,
+  System.Types,
+  System.Classes,
+  System.Math,
+  System.AnsiStrings,
+{$IFDEF FMX}
+  FMX.Graphics,
+{$ELSE}
+  Vcl.Graphics,
+{$ENDIF}
   Excel4Delphi,
   Excel4Delphi.Xml;
 
